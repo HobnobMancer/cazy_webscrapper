@@ -628,7 +628,7 @@ def parse_configuration_for_cazy_dict(file_io_path, args):
     :param file_io_path: Path to file_io module
     :param args: cmd-line argument parser
 
-    Return a set of CAZy classes and families to retrieve protein sequences for.
+    Return a dict of two sets: (1)CAZy classes and (2) families to retrieve protein sequences for.
     """
     logger = logging.getLogger(__name__)
 
@@ -675,6 +675,13 @@ def parse_configuration_for_cazy_dict(file_io_path, args):
         for item in cmd_config[key]:
             if item not in config_dict[key]:  # do not add duplicates
                 config_dict[key].append(item)
-        
+    
+    cazy_classes = set(config_dict["classes"])
+    cazy_families = []
+    for key in config_dict:
+        if key != "classes":
+            cazy_families += config_dict[key]
+    
+    cazy_families = set(cazy_families)
 
-    return set(config_dict.values())
+    return {"classes": cazy_classes, "families": cazy_families}
