@@ -289,7 +289,8 @@ def get_cazy_dict_std_names(file_io_path):
             std_class_names = list(cazy_dict.keys())
     except FileNotFoundError:
         logger.error(
-            "Could not open the CAZy synonym dictionary.\n"
+            "Could not open the CAZy synonym dictionary at\n"
+            f"{dict_path}\n"
             "Terminating programme"
         )
         sys.exit(1)
