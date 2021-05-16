@@ -105,16 +105,11 @@ def write_out_fasta(record, genbank_accession, args):
 
     Return nothing.
     """
-    if args.fasta == 'separate':
-        fasta_name = f"{genbank_accession}.fasta"
-        fasta_name = args.write / fasta_name
+    fasta_name = args.fasta
+    fasta_name = fasta_name / f"{genbank_accession}.fasta"
 
-        with open(fasta_name, "w") as fh:
-            SeqIO.write(record, fh, "fasta")
-
-    else:  # add sequences to FASTA file
-        with open(args.fasta, "a") as fh:
-            SeqIO.write(record, fh, "fasta")
+    with open(fasta_name, "a") as fh:
+        SeqIO.write(record, fh, "fasta")
 
     return
 

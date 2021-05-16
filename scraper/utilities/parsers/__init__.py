@@ -365,14 +365,9 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     # Add option to enable writing sequences to FASTA file or files, or not at all
     parser.add_argument(
         "--fasta",
-        type=str,
+        type=Path,
         default=Path(os.getcwd()),
-        help=(
-            "Enable writing out retrieved sequences to FASTA file(s).\n"
-            "Writing 'separate' produces a single FASTA file per retrieved protein sequence,\n"
-            "else, write the path to the FASTA to add retrieved protein sequences to\n"
-            "(this can be a pre-existing or non-existing FASTA file."
-        ),
+        help="Directory to write out retrieved protein sequences to FASTA files to",
     )
 
     # Add option to restrict the scrape to specific kingdoms
@@ -405,6 +400,17 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         help="Defines log file name and/or path",
     )
 
+    # Add option to prevent over writing of existing files
+    # and cause addition of files to output directory
+    parser.add_argument(
+        "-n",
+        "--nodelete",
+        dest="nodelete",
+        action="store_true",
+        default=False,
+        help="enable/disable deletion of exisiting files",
+    )
+
     # enable retrieving protein sequences for only primary GenBank accessions
     parser.add_argument(
         "-p",
@@ -413,6 +419,16 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         action="store_true",
         default=False,
         help="Enable retrieveing protein sequences for only primary GenBank accessions",
+    )
+
+    # Add option to change the number of times to try the connection to NCBI if it fails
+    parser.add_argument(
+        "-r",
+        "--retries",
+        dest="retries",
+        type=int,
+        default=10,
+        help="Number of times to retry connection to NCBI if connection fails",
     )
 
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
