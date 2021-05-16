@@ -271,17 +271,27 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
 
     # Add positional/required arguments
     parser.add_argument(
-        "database",
+        "email",
+        type=str,
+        metavar="user email address",
+        help="User email address, requirement of NCBI-Entrez",
+    )
+
+    # these args appear optional but wither database OR dict must be given, and NOT both
+    parser.add_argument(
+        "--database",
         type=Path,
+        default=None,
         metavar="local CAZy database",
         help="Path to local CAZy database",
     )
 
     parser.add_argument(
-        "email",
-        type=str,
-        metavar="user email address",
-        help="User email address, requirement of NCBI-Entrez",
+        "--dict",
+        type=Path,
+        default=None,
+        metavar="local CAZy didct",
+        help="Path to local CAZy dict (JSON file)",
     )
 
     # Add optional arguments to parser
