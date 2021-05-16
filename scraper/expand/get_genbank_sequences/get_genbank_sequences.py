@@ -40,27 +40,14 @@
 
 
 import logging
-import os
-import re
 import sys
-import time
-
-import pandas as pd
 
 from datetime import datetime
 from typing import List, Optional
 
-from Bio import Entrez, SeqIO
-from tqdm import tqdm
-
-from scraper.sql.sql_orm import (
-    Cazyme,
-    CazyFamily,
-    Cazymes_Genbanks,
-    Genbank,
-    Kingdom,
-    Taxonomy,
-    get_db_session,
+from scraper.expand.get_genbank_sequences import (
+    from_dict,
+    from_sql_db,
 )
 from scraper.utilities import config_logger, file_io, parse_configuration
 from scraper.utilities.parsers import build_genbank_sequences_parser
@@ -107,6 +94,9 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                 "Check path is correct.\nTerminating programme."
             )
             sys.exit(1)
+        
+        # move to script that handles retrieving sequences for proteins in a SQL database
+        from_sql_db.sequences_for_proteins_from_db(args)
     
     elif args.dict is not None:
         # check the path to the local CAZy dict is valid
@@ -116,3 +106,29 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                 "Check path is correct.\nTerminating programme."
             )
             sys.exit(1)
+        
+        # move to script that handles retrieving sequences for proteins in dict (JSON file)
+        from_dict.sequences_for_proteins_from_dict(args)
+    
+    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
+    end_time = pd.to_datetime(start_time)
+    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    end_time = pd.to_datetime(end_time)
+    total_time = end_time - start_time
+
+    logger.info(
+        "Finished retrieving protein sequences.\n"
+        "Terminating program.\n"
+        f"Scrape initated at {start_time}\n"
+        f"Scrape finished at {end_time}\n"
+        f"Total run time: {total_time}"
+    )
+
+    print(
+        "=====================cazy_webscraper-expand-get_genank_sequences=====================\n"
+        "Finished retrieving protein sequences.\n"
+        "Terminating program.\n"
+        f"Scrape initated at {start_time}\n"
+        f"Scrape finished at {end_time}\n"
+        f"Total run time: {total_time}\n"
+    )
