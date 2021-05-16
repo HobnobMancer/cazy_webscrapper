@@ -42,6 +42,8 @@
 import logging
 import sys
 
+import pandas as pd
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -49,7 +51,7 @@ from scraper.expand.get_genbank_sequences import (
     from_dict,
     from_sql_db,
 )
-from scraper.utilities import config_logger, file_io, parse_configuration
+from scraper.utilities import config_logger
 from scraper.utilities.parsers import build_genbank_sequences_parser
 
 
