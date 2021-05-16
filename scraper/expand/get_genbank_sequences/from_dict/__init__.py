@@ -40,6 +40,7 @@
 
 
 import logging
+import json
 import sys
 
 from tqdm import tqdm
@@ -89,7 +90,7 @@ def get_cazy_dict(args):
     logger = logging.getLogger(__name__)
 
     try:
-        with open(cazy_path, "r") as fh:
+        with open(args.dict, "r") as fh:
             cazy_dict = json.load(fh)
 
     except FileNotFoundError:
