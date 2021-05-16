@@ -55,6 +55,7 @@ from scraper.expand.get_genbank_sequences import (
     from_dict,
     from_sql_db,
 )
+from scraper.expand.get_genbank_sequences.ncbi import blast_db
 from scraper.utilities import config_logger
 from scraper.utilities.parsers import build_genbank_sequences_parser
 
@@ -122,6 +123,9 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
         from_dict.sequences_for_proteins_from_dict(date_today, args)
+    
+    if args.blastdb is not None:  # build a local BLAST database
+        blast_db.build_blast_db(args)
     
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     end_time = pd.to_datetime(start_time)
