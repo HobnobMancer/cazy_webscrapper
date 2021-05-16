@@ -40,12 +40,16 @@
 
 
 import logging
+import os
 import sys
 
 import pandas as pd
 
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
+
+from Bio import Entrez
 
 from scraper.expand.get_genbank_sequences import (
     from_dict,
@@ -98,7 +102,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             sys.exit(1)
         
         # move to script that handles retrieving sequences for proteins in a SQL database
-        from_sql_db.sequences_for_proteins_from_db(args)
+        from_sql_db.sequences_for_proteins_from_db(date_today, args)
     
     elif args.dict is not None:
         # check the path to the local CAZy dict is valid
@@ -109,8 +113,15 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             )
             sys.exit(1)
         
+        if args.fasta == Path(os.getcwd()):
+            logger.error(
+                "Writing out FASTA files of protein sequences to the current working directory.\n"
+                "If this is NOT desired, cancel and reinvoke the script with the --fasta flag\n"
+                "defining the path to the directory to write fasta files to."
+            )
+        
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
-        from_dict.sequences_for_proteins_from_dict(args)
+        from_dict.sequences_for_proteins_from_dict(date_today, args)
     
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     end_time = pd.to_datetime(start_time)
@@ -134,3 +145,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         f"Scrape finished at {end_time}\n"
         f"Total run time: {total_time}\n"
     )
+
+
+if __name__ == "__main__":
+    main()
