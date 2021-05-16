@@ -44,9 +44,8 @@ import json
 import sys
 
 from tqdm import tqdm
-from yaml import parse
 
-from scraper.expand. import get_genbank_sequences
+from scraper.expand import get_genbank_sequences
 from scraper.expand.get_genbank_sequences import ncbi
 from scraper.utilities import file_io, parse_configuration
 
