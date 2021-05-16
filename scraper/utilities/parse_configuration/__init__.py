@@ -599,3 +599,61 @@ def get_configuration(file_io_path, args):
     kingdoms = set(kingdoms)
 
     return config_dict, taxonomy_filters, kingdoms
+
+
+def parse_configuration_for_cazy_dict(file_io_path, args):
+    """Get configuration for the Expand module when CAZy data is in a dict not database.
+
+    :param file_io_path: Path to file_io module
+    :param args: cmd-line argument parser
+
+    Return a set of CAZy classes and families to retrieve protein sequences for.
+    """
+    logger = logging.getLogger(__name__)
+
+    # open config dict if provided by the user
+    raw_config_dict = None
+    if args.config is not None:
+        try:
+            with open(args.config, "r") as fh:
+                raw_config_dict = yaml.full_load(fh)
+        except FileNotFoundError:
+            logger.error(
+                "Did not find the configuration file. Check the path is correct.\n"
+                "Terminating programme"
+            )
+            sys.exit(1)
+    
+    # Get dictionary of accepted CAZy class synonyms
+    cazy_dict, std_class_names = get_cazy_dict_std_names(file_io_path)
+
+    # Retrieve user specified CAZy classes and families to be scraped at CAZy
+
+    # create dictionary to store families and classes to be scraped
+    config_dict = {
+        'classes': [],
+        'Glycoside Hydrolases (GHs)': [],
+        'GlycosylTransferases (GTs)': [],
+        'Polysaccharide Lyases (PLs)': [],
+        'Carbohydrate Esterases (CEs)': [],
+        'Auxiliary Activities (AAs)': [],
+        'Carbohydrate-Binding Modules (CBMs)': [],
+    }
+    cmd_config = config_dict
+
+    # user passed a YAML configuration file
+    if args.config is not None:
+        # add configuration data from YAML file yo configuration dictionary
+        config_dict = get_yaml_configuration(config_dict, cazy_dict, std_class_names, args)
+
+    if (args.classes is not None) or (args.families is not None):
+        cmd_config = get_cmd_defined_fams_classes(cazy_dict, std_class_names, args)
+
+    # combine cmd_config and config_dict
+    for key in cmd_config:
+        for item in cmd_config[key]:
+            if item not in config_dict[key]:  # do not add duplicates
+                config_dict[key].append(item)
+        
+
+    return set(config_dict.values())
