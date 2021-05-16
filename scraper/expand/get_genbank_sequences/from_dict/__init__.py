@@ -46,7 +46,7 @@ import sys
 from tqdm import tqdm
 
 from scraper.expand import get_genbank_sequences
-from scraper.expand.get_genbank_sequences import ncbi
+from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from scraper.utilities import file_io, parse_configuration
 
 
@@ -58,11 +58,19 @@ def sequences_for_proteins_from_dict(date_today, args):
     
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
+
     file_io.make_output_directory(args.fasta, args.force, args.nodelete)
 
+    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
+        file_io.make_output_directory(args.blastdb, args.force, args.nodelete)
+
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
-    file_io_path = file_io.__file__
-    config_dict = parse_configuration.parse_configuration_for_cazy_dict(file_io_path, args)
+    parse_configuration_path = parse_configuration.__file__
+    config_dict = parse_configuration.parse_configuration_for_cazy_dict(
+        parse_configuration_path,
+        args,
+    )
 
     # retrieve dict of CAZy family classifications of proteins
     cazy_dict = get_cazy_dict(args)
@@ -70,16 +78,22 @@ def sequences_for_proteins_from_dict(date_today, args):
     if (len(config_dict["classes"]) == 0) and (len(config_dict["families"]) == 0):
         # retrieve sequences for all proteins in the cazy_dict
         protein_list = get_qualifying_proteins(cazy_dict, config_dict)
-        protein_list.remove("NA")  # incase 'NA' was added when scraping CAZy
+        try:
+            protein_list.remove("NA")  # incase 'NA' was added when scraping CAZy
+        except ValueError:
+            pass
     
     else:  # retrieve sequences for only the proteins matching criteria in the config_data
         protein_list = get_qualifying_proteins(cazy_dict, config_dict)
     
+    logger.warning(f"Retrieving sequences for {len(protein_list)} proteins")
+
     # break up protein_list into multiple, smaller lists for batch querying Entrez
     # batches of greater than 200 can be rejected by Entrez during busy periods
     # args.epost=size of chunks
+
     for accession_list in get_genbank_sequences.get_accession_chunks(protein_list, args.epost):
-        ncbi.get_sequences_for_dict(accession_list, date_today, args)
+        query_entrez.get_sequences_for_dict(accession_list, date_today, args)
 
     return
 

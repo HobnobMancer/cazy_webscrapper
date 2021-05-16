@@ -56,7 +56,7 @@ from scraper.expand.get_genbank_sequences import (
     from_sql_db,
 )
 from scraper.expand.get_genbank_sequences.ncbi import blast_db
-from scraper.utilities import config_logger
+from scraper.utilities import config_logger, file_io
 from scraper.utilities.parsers import build_genbank_sequences_parser
 
 
