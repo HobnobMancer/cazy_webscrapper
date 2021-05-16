@@ -42,6 +42,7 @@
 
 
 import argparse
+import os
 import sys
 
 from pathlib import Path
@@ -357,7 +358,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     parser.add_argument(
         "--fasta",
         type=str,
-        default=None,
+        default=Path(os.getcwd()),
         help=(
             "Enable writing out retrieved sequences to FASTA file(s).\n"
             "Writing 'separate' produces a single FASTA file per retrieved protein sequence,\n"
