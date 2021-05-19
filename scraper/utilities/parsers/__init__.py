@@ -96,6 +96,13 @@ def build_parser(argv: Optional[List] = None):
         help="path to an existing local CAZy SQL database",
     )
 
+    parser.add_argument(
+        "--dict",
+        type=Path,
+        default=None,
+        help="Path to a JSON file to write out CAZy data to",
+    )
+
     # Add option to limit scrape to CAZymes with specific EC numbers
     parser.add_argument(
         "--ec",
@@ -180,6 +187,16 @@ def build_parser(argv: Optional[List] = None):
         metavar="output file name",
         default=sys.stdout,
         help="Output filename",
+    )
+
+    # add option to only retrieve primary accessions
+    parser.add_argument(
+        "-p",
+        "--primary",
+        dest="primary",
+        action="store_true",
+        default=False,
+        help="Enable retrieval of ONLY primary accessions",
     )
 
     # Add option to enable number of times to retry scraping

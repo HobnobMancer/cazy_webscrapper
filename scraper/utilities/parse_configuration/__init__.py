@@ -584,7 +584,7 @@ def create_streamline_scraping_warning(args):
     )
 
 
-def get_configuration(args):
+def parse_configuration_for_cazy_database(file_io_path, args):
     """Get configuration for the Expand module.
 
     :param file_io_path: Path to file_io module
@@ -594,8 +594,10 @@ def get_configuration(args):
     """
     # retrieve inital parsing of configuration data
     (
-        excluded_classes, config_dict, cazy_dict, taxonomy_filters_dict, kingdoms, ec_filter,
-    ) = parse_configuration(args)
+        excluded_classes, config_dict, cazy_dict, taxonomy_filters_dict, kingdoms, ec_filters,
+    ) = parse_configuration(
+        file_io_path, args,
+    )
     # excluded_classes and cazy_dict are used in the crawler module but are not needed for the
     # the expand module
 
@@ -619,7 +621,7 @@ def get_configuration(args):
 
     kingdoms = set(kingdoms)
 
-    return config_dict, taxonomy_filters, kingdoms
+    return config_dict, taxonomy_filters, kingdoms, ec_filters
 
 
 def parse_configuration_for_cazy_dict(file_io_path, args):

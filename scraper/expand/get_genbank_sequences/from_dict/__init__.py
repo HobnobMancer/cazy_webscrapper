@@ -41,6 +41,7 @@
 
 import logging
 import json
+import math
 import sys
 
 from tqdm import tqdm
@@ -92,9 +93,33 @@ def sequences_for_proteins_from_dict(date_today, args):
     # batches of greater than 200 can be rejected by Entrez during busy periods
     # args.epost=size of chunks
 
-    for accession_list in get_genbank_sequences.get_accession_chunks(protein_list, args.epost):
-        query_entrez.get_sequences_for_dict(accession_list, date_today, args)
+    accessions_lists_for_individual_queries = []
 
+    for accession_list in tqdm(
+        get_genbank_sequences.get_accession_chunks(protein_list, args.epost),
+        desc="Batch retrieving sequences from NCBI",
+        total=(math.ceil(len(protein_list) / args.epost)),
+    ):
+        try:
+            query_entrez.get_sequences_for_dict(accession_list, date_today, args)
+        except RuntimeError:  # typically Some IDs have invalid value and were omitted.
+            logger.warning(
+                "RuntimeError raised for accession list. Will query accessions individualy after"
+            )
+            accessions_lists_for_individual_queries.append(accession_list)
+
+    for accession_list in tqdm(
+        accessions_lists_for_individual_queries,
+        desc="Performing individual queries to parse GenBank accessions without records",
+    ):
+        for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
+            try:
+                query_entrez.get_sequences_for_dict([accession], date_today, args)
+            except RuntimeError as err:
+                logger.warning(
+                    f"Querying NCBI for {accession} raised the following RuntimeError:\n"
+                    f"{err}"
+                )
     return
 
 
