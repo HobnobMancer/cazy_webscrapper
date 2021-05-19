@@ -4,10 +4,10 @@
 # (c) University of Strathclyde 2020-2021
 # Author:
 # Emma E. M. Hobbs
-
+#
 # Contact
 # eemh1@st-andrews.ac.uk
-
+#
 # Emma E. M. Hobbs,
 # Biomolecular Sciences Building,
 # University of St Andrews,
@@ -16,7 +16,7 @@
 # KY16 9ST
 # Scotland,
 # UK
-
+#
 # The MIT License
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,10 +25,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -86,9 +86,9 @@ def get_sequences_for_dict(accessions, date_today, args):
         for record in SeqIO.parse(seq_handle, "fasta"):
             # retrieve the accession of the record
             temp_accession = record.id  # accession of the current working protein record
-            print("temp accession: ", temp_accession)
 
             if temp_accession.find("|") != -1:  # sometimes multiple items are listed
+                print("temp accession: ", temp_accession)
                 success = False   # will be true if finds protein accession
 
                 temp_accessions = temp_accession.split("|")
@@ -132,10 +132,119 @@ def get_sequences_for_dict(accessions, date_today, args):
                 file_io.write_fasta_for_db(record, args)
 
             # remove the accession from the list
-            accessions.remove(temp_accession)
+            try:
+                accessions.remove(temp_accession)
+            except ValueError:
+                logger.warning(
+                    f"Tried to remove {temp_accession} from list of accessions, but it was not "
+                    "in the list of accessions.\n"
+                    "The returned accession and the one present in CAZy do not match."
+                )
 
     if len(accessions) != 0:
         logger.warning("Protein sequences for the following CAZymes were not retrieved:")
+        for acc in accessions:
+            logger.warning(f"GenBank accession: {acc}")
+
+    return
+
+
+def get_sequences_add_to_db(accessions, date_today, session, args):
+    """Retrieve protein sequences from Entrez and add to the local database.
+
+    :param accessions: list, GenBank accessions
+    :param date_today: str, YYYY/MM/DD
+    :param session: open SQL database session
+    :param args: cmb-line args parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+    # perform batch query of Entrez
+    accessions_string = ",".join(accessions)
+    epost_result = Entrez.read(
+        entrez_retry(
+            Entrez.epost, "Protein", id=accessions_string,
+        )
+    )
+    # retrieve the web environment and query key from the Entrez post
+    epost_webenv = epost_result["WebEnv"]
+    epost_query_key = epost_result["QueryKey"]
+
+    # retrieve the protein sequences
+    with entrez_retry(
+        Entrez.efetch,
+        db="Protein",
+        query_key=epost_query_key,
+        WebEnv=epost_webenv,
+        rettype="fasta",
+        retmode="text",
+    ) as seq_handle:
+        for record in SeqIO.parse(seq_handle, "fasta"):
+            # retrieve the accession of the record
+            temp_accession = record.id  # accession of the current working protein record
+
+            if temp_accession.find("|") != -1:  # sometimes multiple items are listed
+                success = False   # will be true if finds protein accession
+                temp_accession = temp_accession.split("|")
+                for item in temp_accession:
+                    # check if a accession number
+                    try:
+                        re.match(
+                            (
+                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
+                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                            ),
+                            item,
+                        ).group()
+                        temp_accession = item
+                        success = True
+                        break
+                    except AttributeError:  # raised if not an accession
+                        continue
+
+            else:
+                success = True  # have protein accession number
+
+            if success is False:
+                logger.error(
+                    f"Could not retrieve accession from {record.id}, therefore, "
+                    "protein sequence not added to the database,\n"
+                    "because cannot retrieve the necessary CAZyme record"
+                )
+                continue
+
+            # check the retrieve protein accession is in the list of retrieved accession
+            if temp_accession not in accessions:
+                logger.warning(
+                    f"Retrieved the accession {temp_accession} from the record id={record.id}, "
+                    "but this accession is not in the database.\n"
+                    "Therefore, not adding this protein seqence to the local database"
+                )
+                continue
+
+            # retrieve the GenBank record from the local data base to add the seq to
+            genbank_record = session.query(Genbank).\
+                filter(Genbank.genbank_accession == temp_accession).first()
+
+            retrieved_sequence = str(record.seq)  # convert to a string becuase SQL expects a string
+            genbank_record.sequence = retrieved_sequence
+            genbank_record.seq_update_date = date_today
+            session.commit()
+
+            if args.fasta is not None:
+                file_io.write_out_fasta(record, temp_accession, args)
+
+            if args.blastdb is not None:
+                file_io.write_fasta_for_db(record, temp_accession, args)
+
+            # remove the accession from the list
+            accessions.remove(temp_accession)
+
+    if len(accessions) != 0:
+        logger.warning(
+            "Protein sequences were not retrieved for the following CAZyme in the local database"
+        )
         for acc in accessions:
             logger.warning(f"GenBank accession: {acc}")
 

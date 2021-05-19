@@ -72,7 +72,10 @@ def parse_configuration(file_io_path, args):
                 raw_config_dict = yaml.full_load(fh)
         except FileNotFoundError:
             logger.error(
-                "Did not find the configuration file. Check the path is correct.\n"
+                "Did not find the configuration file.\n"
+                f"Looked for the configuration file at {args.config}\n"
+                "Check the path is correct.\n"
+                "Check the path is correct.\n"
                 "Terminating programme"
             )
             sys.exit(1)
@@ -620,7 +623,9 @@ def parse_configuration_for_cazy_dict(file_io_path, args):
                 raw_config_dict = yaml.full_load(fh)
         except FileNotFoundError:
             logger.error(
-                "Did not find the configuration file. Check the path is correct.\n"
+                "Did not find the configuration file.\n"
+                f"Looked for the configuration file at {args.config}\n"
+                "Check the path is correct.\n"
                 "Terminating programme"
             )
             sys.exit(1)
