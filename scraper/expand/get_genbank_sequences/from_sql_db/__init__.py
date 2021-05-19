@@ -4,10 +4,10 @@
 # (c) University of Strathclyde 2020-2021
 # Author:
 # Emma E. M. Hobbs
-
+#
 # Contact
 # eemh1@st-andrews.ac.uk
-
+#
 # Emma E. M. Hobbs,
 # Biomolecular Sciences Building,
 # University of St Andrews,
@@ -16,7 +16,7 @@
 # KY16 9ST
 # Scotland,
 # UK
-
+#
 # The MIT License
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,79 +25,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-"""Submodule for retieving sequences for proteins in an SQL database"""
-
-
-from scraper.sql.sql_orm import (
-    Cazyme,
-    CazyFamily,
-    Cazymes_Genbanks,
-    Genbank,
-    Kingdom,
-    Taxonomy,
-    get_db_session,
-)
-
-
-def sequences_for_proteins_from_db(args):
-    """docstring"""
-    # create session to local database
-    session = get_db_session(args)
-
-    # retrieve configuration data
-    file_io_path = file_io.__file__
-    config_dict, taxonomy_filters, kingdoms = parse_configuration.get_configuration(
-        file_io_path,
-        args,
-    )
-
-    # no configuration data provided, retrieve sequences for all proteins
-
-    # retrieve sequences for proteins matching configuration data
-
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# (c) University of St Andrews 2020-2021
-# (c) University of Strathclyde 2020-2021
-# Author:
-# Emma E. M. Hobbs
-
-# Contact
-# eemh1@st-andrews.ac.uk
-
-# Emma E. M. Hobbs,
-# Biomolecular Sciences Building,
-# University of St Andrews,
-# North Haugh Campus,
-# St Andrews,
-# KY16 9ST
-# Scotland,
-# UK
-
-# The MIT License
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -135,50 +66,45 @@ from scraper.utilities import config_logger, file_io, parse_configuration
 from scraper.utilities.parsers import build_genbank_sequences_parser
 
 
-def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = None):
-    """Set up programme and initate run."""
-    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
-    start_time = pd.to_datetime(start_time)
-    date_today = datetime.now().strftime("%Y/%m/%d")  # used as seq_update_date in the db
+def sequences_for_proteins_from_db(date_today, args):
+    """Coordinate retrievel of protein sequences for proteins in a SQL database.
+    
+    :param date_today: str, date script was invoked, used for naming files
+    :param args: cmd-line args parser
+    
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
 
-    # parse cmd-line arguments
-    if argv is None:
-        parser = build_genbank_sequences_parser()
-        args = parser.parse_args()
-    else:
-        args = build_genbank_sequences_parser(argv).parse_args()
-
-    if logger is None:
-        logger = logging.getLogger(__name__)
-        config_logger(args)
-
-    # check database was passed
-    if os.path.isfile(args.database) is False:
-        logger.error(
-            "Could not find local CAZy database. Check path is correct. Terminating programme."
-        )
-        sys.exit(1)
-
-    Entrez.email = args.email
-
-    # create session to local database
+    # get database session
     session = get_db_session(args)
 
-    # retrieve configuration data
-    file_io_path = file_io.__file__
-    config_dict, taxonomy_filters, kingdoms = parse_configuration.get_configuration(
-        file_io_path,
+    file_io.make_output_directory(args.fasta, args.force, args.nodelete)
+
+    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
+        file_io.make_output_directory(args.blastdb, args.force, args.nodelete)
+
+    # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
+    parse_configuration_path = parse_configuration.__file__
+    (
+        config_dict, taxonomy_filters, kingdoms, ec_filters,
+    ) = parse_configuration.parse_configuration_for_cazy_database(
+        parse_configuration_path,
         args,
     )
 
+    # check if config dict contains any specific CAZy classes or families
+
     if config_dict is None:
+        # retrieve all protein GenBank accessions, and apply taxonomic and EC number filters
+
         if args.update:
             # get sequence for everything without a sequence and those with newer remote sequence
             add_and_update_all_sequences(date_today, taxonomy_filters, kingdoms, session, args)
 
         else:
             # get sequences for everything without a sequence
-            get_missing_sequences_for_everything(
+            get_all_missing_sequences(
                 date_today,
                 taxonomy_filters,
                 kingdoms,
@@ -187,6 +113,8 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             )
 
     else:
+        # apply CAZy class and family filters, and apply taxonomic and EC number filters
+
         # get sequences for only specified classes/families
         if args.update:
             update_sequences_for_specific_records(
@@ -197,6 +125,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                 session,
                 args,
             )
+
         else:
             get_missing_sequences_for_specific_records(
                 date_today,
@@ -207,90 +136,6 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                 args,
             )
 
-    if args.blastdb is not None:
-        file_io.build_blast_db(args)
-
-    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
-    end_time = pd.to_datetime(start_time)
-    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    end_time = pd.to_datetime(end_time)
-    total_time = end_time - start_time
-
-    logger.info(
-        "Finished populating local CAZy database with GenBank protein sequences. "
-        "Terminating program.\n"
-        f"Scrape initated at {start_time}\n"
-        f"Scrape finished at {end_time}\n"
-        f"Total run time: {total_time}"
-    )
-
-    print(
-        "=====================cazy_webscraper-expand-genank_sequences=====================\n"
-        "Finished populating local CAZy database with GenBank protein sequences. "
-        "Terminating program.\n"
-        f"Scrape initated at {start_time}\n"
-        f"Scrape finished at {end_time}\n"
-        f"Total run time: {total_time}\n"
-    )
-
-
-# The folowing functions are for querying the local database to get GenBank accessions
-
-
-def get_missing_sequences_for_everything(date_today, taxonomy_filters, kingdoms, session, args):
-    """Retrieve protein sequences for all CAZymes in the local CAZy database that don't have seq.
-
-    :param date_today: str, today's date, used for logging the date the seq is retrieved in the db
-    :param taxonomy_filters: set of genera, species and strains to restrict sequence retrieval
-    :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
-    :param session: open SQLite db session
-    :param args: cmd-line argument parser
-
-    Return nothing.
-    """
-    logger = logging.getLogger(__name__)
-
-    # retrieve only sequences for primary GenBank accessions, and those without sequences
-    if args.primary is True:
-        logger.warning(
-            "Retrieving sequences for all primary GenBank accessions that do not have sequences"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Cazymes_Genbanks.primary == True).\
-            filter(Genbank.sequence == None).\
-            all()
-
-    # retrieve sequences for all GenBank accessions without sequences
-    else:
-        logger.warning(
-            "Retrieving sequences for all GenBank accessions that do not have sequences"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Genbank.sequence == None).\
-            all()
-
-    # retrieve the genbank_accessions
-    accessions = extract_accessions(genbank_query, taxonomy_filters)
-
-    if len(accessions) == 0:
-        logger.warning(
-            "Did not retrieve any GenBank accessions from the local database\n"
-            "that have sequences missing. Not adding sequences to the local database."
-        )
-        return
-
-    # separate accesions in to separate lists of length args.epost, epost doesn't like more than 200
-    accessions = get_accession_chunks(accessions, args.epost)  # args.epost = number per chunk
-    for lst in accessions:
-        get_sequences_add_to_db(lst, date_today, session, args)
     return
 
 
@@ -363,7 +208,67 @@ def add_and_update_all_sequences(date_today, taxonomy_filters, kingdoms, session
     accessions = get_accession_chunks(accessions, args.epost)  # args.epost = number per chunk
     for lst in accessions:
         get_sequences_add_to_db(lst, date_today, session, args)
+    
     return
+
+
+def get_all_missing_sequences(date_today, taxonomy_filters, kingdoms, session, args):
+    """Retrieve protein sequences for all CAZymes in the local CAZy database that don't have seq.
+
+    :param date_today: str, today's date, used for logging the date the seq is retrieved in the db
+    :param taxonomy_filters: set of genera, species and strains to restrict sequence retrieval
+    :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
+    :param session: open SQLite db session
+    :param args: cmd-line argument parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+
+    # retrieve only sequences for primary GenBank accessions, and those without sequences
+    if args.primary is True:
+        logger.warning(
+            "Retrieving sequences for all primary GenBank accessions that do not have sequences"
+        )
+        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
+            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
+            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
+            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
+            filter(Cazymes_Genbanks.primary == True).\
+            filter(Genbank.sequence == None).\
+            all()
+
+    # retrieve sequences for all GenBank accessions without sequences
+    else:
+        logger.warning(
+            "Retrieving sequences for all GenBank accessions that do not have sequences"
+        )
+        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
+            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
+            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
+            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
+            filter(Genbank.sequence == None).\
+            all()
+
+    # retrieve the genbank_accessions
+    accessions = extract_accessions(genbank_query, taxonomy_filters)
+
+    if len(accessions) == 0:
+        logger.warning(
+            "Did not retrieve any GenBank accessions from the local database\n"
+            "that have sequences missing. Not adding sequences to the local database."
+        )
+        return
+
+    # separate accesions in to separate lists of length args.epost, epost doesn't like more than 200
+    accessions = get_accession_chunks(accessions, args.epost)  # args.epost = number per chunk
+    for lst in accessions:
+        get_sequences_add_to_db(lst, date_today, session, args)
+    return
+
+
 
 
 def get_missing_sequences_for_specific_records(
@@ -781,164 +686,3 @@ def get_accessions_for_new_sequences(accessions):
                 accessions_list.remove(temp_accession)
 
     return accessions_list
-
-
-def get_accession_chunks(lst, chunk_length):
-    """Separate the long list into separate chunks.
-
-    :param lst: list to be separated into smaller lists (or chunks)
-    :param chunk_length: int, the length of the lists the longer list is to be split up into
-
-    Return a generator object containing lists.
-    """
-    for i in range(0, len(lst), chunk_length):
-        yield lst[i:i + chunk_length]
-
-
-# The following functions are for retrieving sequences, adding to the db and writing fasta files
-
-
-def get_sequences_add_to_db(accessions, date_today, session, args):
-    """Retrieve protein sequences from Entrez and add to the local database.
-
-    :param accessions: list, GenBank accessions
-    :param date_today: str, YYYY/MM/DD
-    :param session: open SQL database session
-    :param args: cmb-line args parser
-
-    Return nothing.
-    """
-    logger = logging.getLogger(__name__)
-    # perform batch query of Entrez
-    accessions_string = ",".join(accessions)
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost, "Protein", id=accessions_string,
-        )
-    )
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
-
-    # retrieve the protein sequences
-    with entrez_retry(
-        Entrez.efetch,
-        db="Protein",
-        query_key=epost_query_key,
-        WebEnv=epost_webenv,
-        rettype="fasta",
-        retmode="text",
-    ) as seq_handle:
-        for record in SeqIO.parse(seq_handle, "fasta"):
-            # retrieve the accession of the record
-            temp_accession = record.id  # accession of the current working protein record
-
-            if temp_accession.find("|") != -1:  # sometimes multiple items are listed
-                success = False   # will be true if finds protein accession
-                temp_accession = temp_accession.split("|")
-                for item in temp_accession:
-                    # check if a accession number
-                    try:
-                        re.match(
-                            (
-                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
-                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
-                            ),
-                            item,
-                        ).group()
-                        temp_accession = item
-                        success = True
-                        break
-                    except AttributeError:  # raised if not an accession
-                        continue
-
-            else:
-                success = True  # have protein accession number
-
-            if success is False:
-                logger.error(
-                    f"Could not retrieve accession from {record.id}, therefore, "
-                    "protein sequence not added to the database,\n"
-                    "because cannot retrieve the necessary CAZyme record"
-                )
-                continue
-
-            # check the retrieve protein accession is in the list of retrieved accession
-            if temp_accession not in accessions:
-                logger.warning(
-                    f"Retrieved the accession {temp_accession} from the record id={record.id}, "
-                    "but this accession is not in the database.\n"
-                    "Therefore, not adding this protein seqence to the local database"
-                )
-                continue
-
-            # retrieve the GenBank record from the local data base to add the seq to
-            genbank_record = session.query(Genbank).\
-                filter(Genbank.genbank_accession == temp_accession).first()
-
-            retrieved_sequence = str(record.seq)  # convert to a string becuase SQL expects a string
-            genbank_record.sequence = retrieved_sequence
-            genbank_record.seq_update_date = date_today
-            session.commit()
-
-            if args.fasta is not None:
-                file_io.write_out_fasta(record, temp_accession, args)
-
-            if args.blastdb is not None:
-                file_io.write_fasta_for_db(record, temp_accession, args)
-
-            # remove the accession from the list
-            accessions.remove(temp_accession)
-
-    if len(accessions) != 0:
-        logger.warning(
-            "Protein sequences were not retrieved for the following CAZyme in the local database"
-        )
-        for acc in accessions:
-            logger.warning(f"GenBank accession: {acc}")
-
-    return
-
-
-def entrez_retry(entrez_func, args, *func_args, **func_kwargs):
-    """Call to NCBI using Entrez.
-
-    Maximum number of retries is 10, retry initated when network error encountered.
-
-    :param logger: logger object
-    :param retries: parser argument, maximum number of retries excepted if network error encountered
-    :param entrez_func: function, call method to NCBI
-
-    :param *func_args: tuple, arguments passed to Entrez function
-    :param ** func_kwargs: dictionary, keyword arguments passed to Entrez function
-
-    Returns record.
-    """
-    logger = logging.getLogger(__name__)
-    record, retries, tries = None, args.retries, 0
-
-    while record is None and tries < retries:
-        try:
-            record = entrez_func(*func_args, **func_kwargs)
-
-        except IOError:
-            # log retry attempt
-            if tries < retries:
-                logger.warning(
-                    f"Network error encountered during try no.{tries}.\nRetrying in 10s",
-                    exc_info=1,
-                )
-                time.sleep(10)
-            tries += 1
-
-    if record is None:
-        logger.error(
-            "Network error encountered too many times. Exiting attempt to call to NCBI"
-        )
-        return
-
-    return record
-
-
-if __name__ == "__main__":
-    main()
