@@ -139,6 +139,7 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
             taxonomy_filters,
             kingdoms,
             ec_filters,
+            session,
         )
 
         family_genbank_accessions = parse_genbank_query(
@@ -146,6 +147,7 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
             taxonomy_filters,
             kingdoms,
             ec_filters,
+            session,
         )
 
         genbank_accessions = class_genbank_accessions + family_genbank_accessions
@@ -187,6 +189,7 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
             taxonomy_filters,
             kingdoms,
             ec_filters,
+            session,
         )
 
     return list(set(genbank_accessions))  # prevent quering the same accession multiple times
@@ -261,7 +264,7 @@ def get_cazy_class_fam_genbank_records(args, session, config_dict):
     return genbank_query_class, genbank_query_family
 
 
-def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters):
+def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, session):
     """Parse SQL query result and retrieve GenBank accessions of CAZymes that meet the user cirteria
 
     :param:
@@ -295,8 +298,13 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters):
         return genbank_accessions
     
     # check if the parent CAZymes of the GenBank accessions meet the EC number filter
+    filtered_genbank_accessions = []
+    for i in tqdm(range(len(genbank_accessions), desc="Applying EC number filter")):
+        ec_annotations = query_sql_db.query_sql_db.query_ec_number(session, genbank_accessions[i])
+        if (set(ec_annotations) and set(ec_filters)):
+            filtered_genbank_accessions.append(genbank_accessions[i])
 
-    return genbank_accessions
+    return filtered_genbank_accessions
     
 
 # The following functions are retrieving the list of Genbank accessions to retrieve sequences for #
