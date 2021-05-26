@@ -45,9 +45,9 @@ import sys
 
 from tqdm import tqdm
 
-from scraper.expand import get_genbank_sequences
-from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
+from scraper.expand import get_accession_chunks
 from scraper.expand.get_genbank_sequences.ncbi import query_entrez
+from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
 from scraper.utilities import file_io, parse_configuration
 
@@ -102,7 +102,7 @@ def sequences_for_proteins_from_db(date_today, args):
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
-        get_genbank_sequences.get_accession_chunks(genbank_accessions, args.epost),
+        get_accession_chunks(genbank_accessions, args.epost),
         desc="Batch retrieving sequences from NCBI",
         total=(math.ceil(len(genbank_accessions) / args.epost)),
     ):
@@ -110,7 +110,6 @@ def sequences_for_proteins_from_db(date_today, args):
             accession_list.remove("NA")
         except ValueError:
             pass
-
         try:
             query_entrez.get_sequences_add_to_db(accession_list, date_today, args)
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
@@ -118,33 +117,38 @@ def sequences_for_proteins_from_db(date_today, args):
                 "RuntimeError raised for accession list. Will query accessions individualy after.\n"
                 f"The following error was raised:\n{err}"
             )
-            with open("legihton_error.txt", "a") as fh:
-                fh.write(f"{err}\n{str(accession_list)}")
-            accessions_lists_for_individual_queries.append(accession_list)
 
     if len(accessions_lists_for_individual_queries) != 0:
         for accession_list in tqdm(
             accessions_lists_for_individual_queries,
-            desc="Performing individual queries to parse GenBank accessions without records",
+            desc="Performing individual queries for records that previously raised errors",
         ):
             for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
                 try:
-                    query_entrez.get_sequences_for_dict([accession], date_today, args)
+                    query_entrez.get_sequences_add_to_db([accession], date_today, args)
                 except RuntimeError as err:
                     logger.warning(
-                        f"Querying NCBI for {accession} raised the following RuntimeError:\n"
+                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
                         f"{err}"
                     )
     return
 
-    return
 
 
-def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdoms, ec_filters):
+def get_genbank_accessions(
+    args,
+    session,
+    date_today,
+    config_dict,
+    taxonomy_filters,
+    kingdoms,
+    ec_filters,
+):
     """Retrieve the GenBank accessions for all proteins for which a sequence will be retrieved.
 
     :param args: cmd-line argument parser
     :param session: open SQLite db session
+    :param date_today: str, date script was invoked
     :param config_dict: dict, defines CAZy classes and families to get sequences for
     :param taxonomy_filters: set of genera, species and strains to retrieve sequences for
     :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
@@ -156,10 +160,66 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
     logger = logging.getLogger(__name__)
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
-        genbank_query_class, genbank_query_family = get_cazy_class_fam_genbank_records(
-            session,
-            config_dict,
-        )
+
+        if args.update:
+            
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
+                )
+                (
+                    genbank_query_class,
+                    genbank_query_family,
+                ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams(
+                    session,
+                    config_dict,
+                )
+
+            else:
+                logger.warning(
+                    "Retrieving sequences for ALL GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
+                )
+                (
+                    genbank_query_class,
+                    genbank_query_family,
+                ) = query_sql_db.get_all_gnbk_acc_from_clss_fams(
+                    session,
+                    config_dict,
+                )
+        
+        else:  # retrieve GenBank accesions of records that don't have a sequence
+
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND do not have a sequence in the db"
+                )
+                (
+                    genbank_query_class,
+                    genbank_query_family,
+                ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams_no_seq(
+                    session,
+                    config_dict,
+                )
+            
+            else:
+                logger.warning(
+                    "Retrieving sequences for ALL GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND do not have a sequence in the db"
+                )
+                (
+                    genbank_query_class,
+                    genbank_query_family,
+                ) = query_sql_db.get_all_gnbk_acc_from_clss_fams_no_seq(
+                    session,
+                    config_dict,
+                )
+
+        # parse retrieved records from the SQL database by applying taxonomic and EC number filters
 
         class_genbank_accessions = parse_genbank_query(
             genbank_query_class,
@@ -187,14 +247,14 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
                     "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
                     "Do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_all_prim_genbank_acc(session)
+                genbank_query = query_sql_db.get_prim_genbank_acc_for_update(session, date_today)
 
             else:
                 logger.warning(
-                    "Retrieving sequences for all PRIMARY GenBank accessions that\n"
-                    "do not have a sequence in the db"
+                    "Retrieving sequences for ALL GenBank accessions that\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_all_genbank_acc(session)
+                genbank_query = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
             if args.primary:
@@ -211,6 +271,7 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
                 )
                 genbank_query = query_sql_db.get_genbank_accessions_with_no_seq(session)
 
+        # apply taxonomic and EC number filters
         genbank_accessions = parse_genbank_query(
             genbank_query,
             taxonomy_filters,
@@ -220,75 +281,6 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
         )
 
     return list(set(genbank_accessions))  # prevent quering the same accession multiple times
-
-
-def get_cazy_class_fam_genbank_records(args, session, config_dict):
-    """GenBank acc query results from the local CAZyme database for CAZyme from specific classes/fams
-
-    :param args: cmd-line argument parser
-    :param session: open SQLite db session
-    :param config_dict: dict, defines CAZy classes and families to get sequences for
-
-    Return CAZy class and CAZy family GenBank accession query results
-    """
-    logger = logging.getLogger(__name__)
-    if args.update:  # retrieve all GenBank accessions
-        if args.primary:
-            logger.warning(
-                "Retrieving sequences for PRIMARY GenBank accessions that:\n"
-                "belong to specific CAZy classes/families AND\n"
-                "do not have a sequence in the db OR the sequence has been updated in NCBI"
-            )
-            (
-                genbank_query_class,
-                genbank_query_family,
-            ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams(
-                session,
-                config_dict,
-            )
-
-        else:
-            logger.warning(
-                "Retrieving sequences for PRIMARY GenBank accessions that:\n"
-                "belong to specific CAZy classes/families AND\n"
-                "do not have a sequence in the db OR the sequence has been updated in NCBI"
-            )
-            (
-                genbank_query_class,
-                genbank_query_family,
-            ) = query_sql_db.get_all_gnbk_acc_from_clss_fams(
-                session,
-                config_dict,
-            )
-
-    else:  # retrieve GenBank accesions of records that don't have a sequence
-        if args.primary:
-            logger.warning(
-                "Retrieving sequences for PRIMARY GenBank accessions that:\n"
-                "belong to specific CAZy classes/families AND do not have a sequence in the db"
-            )
-            (
-                genbank_query_class,
-                genbank_query_family,
-            ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams_no_seq(
-                session,
-                config_dict,
-            )
-
-        else:
-            logger.warning(
-                "Retrieving sequences for PRIMARY GenBank accessions that:\n"
-                "belong to specific CAZy classes/families AND do not have a sequence in the db"
-            )
-            (
-                genbank_query_class,
-                genbank_query_family,
-            ) = query_sql_db.get_all_gnbk_acc_from_clss_fams_no_seq(
-                session,
-                config_dict,
-            )
-
-    return genbank_query_class, genbank_query_family
 
 
 def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, session):
@@ -328,6 +320,9 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
     filtered_genbank_accessions = []
     for i in tqdm(range(len(genbank_accessions), desc="Applying EC number filter")):
         ec_annotations = query_sql_db.query_sql_db.query_ec_number(session, genbank_accessions[i])
+
+        # check if any of the EC number annotations for the protein (identified by its genbank 
+        # accession) are included in the EC numbers specificed by the user
         if (set(ec_annotations) and set(ec_filters)):
             filtered_genbank_accessions.append(genbank_accessions[i])
 
