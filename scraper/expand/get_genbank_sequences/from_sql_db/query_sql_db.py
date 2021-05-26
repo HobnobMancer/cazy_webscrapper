@@ -45,6 +45,7 @@ from scraper.sql.sql_orm import (
     Cazyme,
     CazyFamily,
     Cazymes_Genbanks,
+    EC,
     Genbank,
     Kingdom,
     Taxonomy,
@@ -366,3 +367,22 @@ def get_genbank_accessions_with_no_seq(session):
         all()
     return genbank_query
 
+
+def query_ec_number(session, genbank_accession):
+    """Retrieve the EC numbers of the parent CAZyme record of a GenBank accession.
+
+    :param session: open SQL database session
+    :param genbank_accession: str, GenBank protein accession
+
+    Return a list of EC numbers.
+    """
+    ec_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, EC).\
+        join(EC, Cazyme.ecs).\
+        join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
+        join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
+        filter(Genbank.genbank_accession == genbank_accession).\
+        all()
+
+    record_ecs = [result[-1] for result in ec_query]
+
+    return record_ecs
