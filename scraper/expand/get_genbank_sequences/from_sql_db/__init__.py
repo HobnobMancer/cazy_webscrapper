@@ -40,17 +40,10 @@
 
 
 import logging
-import os
-import re
 import sys
-import time
-
-import pandas as pd
 
 from datetime import datetime
-from typing import List, Optional
 
-from Bio import Entrez, SeqIO
 from tqdm import tqdm
 
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
@@ -306,31 +299,6 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
 
     return filtered_genbank_accessions
     
-
-# The following functions are retrieving the list of Genbank accessions to retrieve sequences for #
-
-
-def extract_accessions(genbank_query, taxonomy_filters):
-    """The query contains GenBank accessions and Cazymes_Genbanks records, retrieve the accessions.
-
-    :param genbank_query: sql collection
-    :param taxonomy_filters: set of genera, species and strains to restrict retrieval of sequences
-
-    Return a list of GenBank accessions. Each element is a string of a unique accession.
-    """
-    if taxonomy_filters is None:
-        accessions = [item[0] for item in genbank_query]
-        return [x for x in accessions if "NA" != x]
-
-    else:
-        accessions = []
-        for item in genbank_query:
-            if item[0] != "NA":  # if GenBank accession not stored as 'NA'
-                source_organism = item[-1].genus + item[-1].species
-                if any(filter in source_organism for filter in taxonomy_filters):
-                    accessions.append(item[0])
-    return accessions
-
 
 def get_accessions_for_new_sequences(accessions):
     """Get the GenBank accessions of sequences to be added to the local database.
