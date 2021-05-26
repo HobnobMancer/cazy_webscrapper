@@ -53,6 +53,7 @@ from typing import List, Optional
 from Bio import Entrez, SeqIO
 from tqdm import tqdm
 
+from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import (
     Cazyme,
     CazyFamily,
@@ -77,7 +78,14 @@ def sequences_for_proteins_from_db(date_today, args):
     logger = logging.getLogger(__name__)
 
     # get database session
-    session = get_db_session(args)
+    try:
+        session = get_db_session(args)
+    except Exception as err:
+        logger.error(
+            "Could not connect to local CAZyme database.\nThe following error was raised:\n"
+            f"{err}\nTerminating program\n"
+        )
+        sys.exit(1)
 
     file_io.make_output_directory(args.fasta, args.force, args.nodelete)
 
@@ -93,98 +101,99 @@ def sequences_for_proteins_from_db(date_today, args):
         args,
     )
 
-    # check if config dict contains any specific CAZy classes or families
-
-    if config_dict is None:
-        # retrieve all protein GenBank accessions, and apply taxonomic and EC number filters
-
-        if args.update:
-            # get sequence for everything without a sequence and those with newer remote sequence
-            add_and_update_all_sequences(date_today, taxonomy_filters, kingdoms, session, args)
-
-        else:
-            # get sequences for everything without a sequence
-            get_all_missing_sequences(
-                date_today,
-                taxonomy_filters,
-                kingdoms,
-                session,
-                args,
-            )
-
-    else:
-        # apply CAZy class and family filters, and apply taxonomic and EC number filters
-
-        # get sequences for only specified classes/families
-        if args.update:
-            update_sequences_for_specific_records(
-                date_today,
-                config_dict,
-                taxonomy_filters,
-                kingdoms,
-                session,
-                args,
-            )
-
-        else:
-            get_missing_sequences_for_specific_records(
-                date_today,
-                config_dict,
-                taxonomy_filters,
-                kingdoms,
-                session,
-                args,
-            )
+    genbank_accessions = get_genbank_accessions(
+        args,
+        session,
+        config_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+    )
 
     return
 
 
-def add_and_update_all_sequences(date_today, taxonomy_filters, kingdoms, session, args):
-    """Retrieve sequences for all proteins in the database.
+def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdoms, ec_filters):
+    """Retrieve the GenBank accessions for all proteins for which a sequence will be retrieved.
 
-    For records with no sequences, add the retrieved sequence.
-    For records with a sequence, check if the remove sequence is more recent than the existing
-    sequence. It it is, update the local sequence.
-
-    :param date_today: str, today's date, used for logging the date the seq is retrieved in the db
+    :param args: cmd-line argument parser
+    :param session: open SQLite db session
+    :param config_dict: dict, defines CAZy classes and families to get sequences for
     :param taxonomy_filters: set of genera, species and strains to retrieve sequences for
     :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
-    :param session: open SQLite db session
-    :param args: cmd-line argument parser
+    :param ec_filters: set of EC numbers annotations CAZymes must have at least one to retrieve
+        a sequence
 
-    Return nothing.
+    Return a list of GenBank accessions, containing no duplicate GenBank accessions
     """
     logger = logging.getLogger(__name__)
 
-    # retrieve only sequences for primary GenBank accessions, and those without sequences
-    if args.primary is True:
-        logger.warning(
-            "Retrieving sequences for all primary GenBank accessions that do not have sequences\n"
-            "and those whose sequences have been updated in NCBI "
-            "since they were retrieved previously"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Cazymes_Genbanks.primary == True).\
-            all()
+    if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
-    # retrieve sequences for all GenBank accessions
+        if args.update:  # retrieve all GenBank accessions
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
+                )
+            else:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
+                )
+        else:  # retrieve GenBank accesions of records that don't have a sequence
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND do not have a sequence in the db"
+                )
+            else:
+                logger.warning(
+                    "Retrieving sequences for PRIMARY GenBank accessions that:\n"
+                    "belong to specific CAZy classes/families AND do not have a sequence in the db"
+                )
+    
     else:
-        logger.warning(
-            "Retrieving sequences for all GenBank accessions that do not have sequences\n"
-            "and those whose sequences have been updated in NCBI "
-            "since they were retrieved previously"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            all()
+        if args.update:  # retrieve all GenBank accessions
 
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
+                    "Do not have a sequence in the db OR the sequence has been updated in NCBI"
+                )
+                genbank_query = query_sql_db.get_all_prim_genbank_acc(session)
+
+            else:
+                logger.warning(
+                    "Retrieving sequences for all PRIMARY GenBank accessions that\n"
+                    "do not have a sequence in the db"
+                )
+                genbank_query = query_sql_db.get_all_genbank_acc(session)
+
+        else:  # retrieve GenBank accesions of records that don't have a sequence
+            if args.primary:
+                logger.warning(
+                    "Retrieving sequences for all PRIMARY GenBank accessions that\n"
+                    "do not have a sequence in the db"
+                )
+                genbank_query = query_sql_db.get_prim_genbank_accessions_with_no_seq(session)
+
+            else:
+                logger.warning(
+                    "Retrieving sequences for ALL GenBank accessions that\n"
+                    "do not have a sequence in the db"
+                )
+                genbank_query = query_sql_db.get_genbank_accessions_with_no_seq(session)
+
+    return                
+
+
+
+
+
+###
     # create dictionary of {genbank_accession: 'sequence update date' (str)}
     accessions = extract_accessions_and_dates(genbank_query, taxonomy_filters)
 
@@ -210,66 +219,6 @@ def add_and_update_all_sequences(date_today, taxonomy_filters, kingdoms, session
         get_sequences_add_to_db(lst, date_today, session, args)
     
     return
-
-
-def get_all_missing_sequences(date_today, taxonomy_filters, kingdoms, session, args):
-    """Retrieve protein sequences for all CAZymes in the local CAZy database that don't have seq.
-
-    :param date_today: str, today's date, used for logging the date the seq is retrieved in the db
-    :param taxonomy_filters: set of genera, species and strains to restrict sequence retrieval
-    :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
-    :param session: open SQLite db session
-    :param args: cmd-line argument parser
-
-    Return nothing.
-    """
-    logger = logging.getLogger(__name__)
-
-    # retrieve only sequences for primary GenBank accessions, and those without sequences
-    if args.primary is True:
-        logger.warning(
-            "Retrieving sequences for all primary GenBank accessions that do not have sequences"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Cazymes_Genbanks.primary == True).\
-            filter(Genbank.sequence == None).\
-            all()
-
-    # retrieve sequences for all GenBank accessions without sequences
-    else:
-        logger.warning(
-            "Retrieving sequences for all GenBank accessions that do not have sequences"
-        )
-        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
-            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
-            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
-            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
-            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Genbank.sequence == None).\
-            all()
-
-    # retrieve the genbank_accessions
-    accessions = extract_accessions(genbank_query, taxonomy_filters)
-
-    if len(accessions) == 0:
-        logger.warning(
-            "Did not retrieve any GenBank accessions from the local database\n"
-            "that have sequences missing. Not adding sequences to the local database."
-        )
-        return
-
-    # separate accesions in to separate lists of length args.epost, epost doesn't like more than 200
-    accessions = get_accession_chunks(accessions, args.epost)  # args.epost = number per chunk
-    for lst in accessions:
-        get_sequences_add_to_db(lst, date_today, session, args)
-    return
-
-
-
 
 def get_missing_sequences_for_specific_records(
     date_today,
