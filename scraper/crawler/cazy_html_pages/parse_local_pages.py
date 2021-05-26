@@ -53,7 +53,7 @@ from tqdm import tqdm
 
 from bs4 import BeautifulSoup
 
-from scraper.crawler import row_to_protein
+from scraper.crawler import row_to_protein, row_to_protein_in_dict
 from scraper.utilities import build_logger
 
 
@@ -79,7 +79,7 @@ def parse_local_pages(
     if args.output is not sys.stdout:
         out_log_path = args.output
     else:
-        out_log_path = None
+        out_log_path = Path(os.getcwd())
 
     sql_failures_logger = build_logger(out_log_path, f"SQL_errors_CW_{time_stamp}.log")
     logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ def parse_local_pages(
         except IndexError:
             logger.warning(
                 f"No CAZyme table found in {html_file_path}.\n"
-                "Retrieving not proteins from this file"
+                "Retrieving no proteins from this file"
             )
             continue
 
@@ -120,7 +120,7 @@ def parse_local_pages(
 
         # check if a deleted and/or empty family
         try:
-            if len(cazyme_table.selected("tr")) == 1:
+            if len(cazyme_table.select("tr")) == 1:
                 activities = page.select("table")[0].select("tr")[0].select("td")[0].contents
                 if type(activities) is list:
 
@@ -186,13 +186,17 @@ def parse_local_pages(
                                 f"{html_file_path} protein table does not include any CAZymes"
                             )
                             continue
-        except TypeError:
-            logger.warning(f"no CAZyme table in {html_file_path}\nNot retrieving CAZyme from {family_name}")
+        except TypeError as e:
+            logger.warning(
+                f"no CAZyme table in {html_file_path}\n"
+                f"Not retrieving CAZyme from {family_name}\n"
+                f"{e}"
+            )
             continue
 
         # check if an 'all' or 'kingdom' page:
         path_ = str(args.scrape_files)
-        filename = html_file_path.replace(path_, "")
+        filename = str(html_file_path).replace(path_, "")
 
         if str(filename).find("_all") != -1:  # scraping an 'all' page
             for row in tqdm(
@@ -209,15 +213,27 @@ def parse_local_pages(
                     pass
 
                 if ('class' not in row.attrs) and ('id' not in row.attrs):  # row contains protein
-                    report, session = row_to_protein(
-                        row,
-                        family_name,
-                        taxonomy_filters,
-                        tax_kingdom,
-                        ec_filters,
-                        session,
-                        args,
-                    )
+                    if type(session) is dict:
+                        report, session = row_to_protein_in_dict(
+                            row,
+                            family_name,
+                            taxonomy_filters,
+                            ec_filters,
+                            session,
+                            args,
+                        )
+
+                    else:
+                        report, session = row_to_protein(
+                            row,
+                            family_name,
+                            taxonomy_filters,
+                            tax_kingdom,
+                            ec_filters,
+                            session,
+                            args,
+                        )
+
                     if report["sql"] is not None:
                         sql_failures_logger.warning(report["sql"])
 
@@ -239,24 +255,34 @@ def parse_local_pages(
                     "Not scraping this file and adding proteins to the local databsae."
                 )
                 continue
-                report, session = row_to_protein(
+
+            if type(session) is dict:
+                report, session = row_to_protein_in_dict(
                     row,
                     family_name,
                     taxonomy_filters,
-                    kingdom,
                     ec_filters,
                     session,
                     args,
                 )
-                if report["sql"] is not None:
-                    sql_failures_logger.warning(report["sql"])
+
+            else:
+                report, session = row_to_protein(
+                    row,
+                    family_name,
+                    taxonomy_filters,
+                    tax_kingdom,
+                    ec_filters,
+                    session,
+                    args,
+                )
+
+            if report["sql"] is not None:
+                sql_failures_logger.warning(report["sql"])
 
     if type(session) is dict:
-        if args.output is not sys.stdout:
-            output_path = args.output / f"cazy_dict_{time_stamp}.json"
-            json.dump(session, output_path)
-        else:
-            json.dump(session, sys.stdout)
+        with open(args.dict, "w") as fh:
+            json.dump(session, fh)
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = pd.to_datetime(end_time)
@@ -296,9 +322,9 @@ def get_html_files(args):
             html_files.append(item)
 
     if len(html_files) == 0:
-        logger.error(f"Not HTML files found in {args.scrape_files}.\nTerminating program")
+        logger.error(f"No HTML files found in {args.scrape_files}.\nTerminating program")
         sys.exit(1)
 
-    logger.warning(f"Retrieved {len(html_files)} from {args.scrape_files}")
+    logger.warning(f"Retrieved {len(html_files)} files from {args.scrape_files}")
 
     return html_files
