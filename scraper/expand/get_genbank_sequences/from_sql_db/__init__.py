@@ -313,8 +313,7 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
                 genbank_accessions.append(item[0])
                 continue
 
-    # do not apply ec filter
-    if ec_filters is None:
+    if ec_filters is None:  # do not apply filter
         return genbank_accessions
     
     # check if the parent CAZymes of the GenBank accessions meet the EC number filter
