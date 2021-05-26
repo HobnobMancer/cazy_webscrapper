@@ -101,25 +101,32 @@ def sequences_for_proteins_from_dict(date_today, args):
         total=(math.ceil(len(protein_list) / args.epost)),
     ):
         try:
+            accession_list.remove("NA")
+        except ValueError:
+            pass
+        try:
             query_entrez.get_sequences_for_dict(accession_list, date_today, args)
-        except RuntimeError:  # typically Some IDs have invalid value and were omitted.
+        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
             logger.warning(
                 "RuntimeError raised for accession list. Will query accessions individualy after"
             )
+            with open("legihton_error.txt", "a") as fh:
+                fh.write(f"{err}\n{str(accession_list)}")
             accessions_lists_for_individual_queries.append(accession_list)
 
-    for accession_list in tqdm(
-        accessions_lists_for_individual_queries,
-        desc="Performing individual queries to parse GenBank accessions without records",
-    ):
-        for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
-            try:
-                query_entrez.get_sequences_for_dict([accession], date_today, args)
-            except RuntimeError as err:
-                logger.warning(
-                    f"Querying NCBI for {accession} raised the following RuntimeError:\n"
-                    f"{err}"
-                )
+    if len(accessions_lists_for_individual_queries) != 0:
+        for accession_list in tqdm(
+            accessions_lists_for_individual_queries,
+            desc="Performing individual queries to parse GenBank accessions without records",
+        ):
+            for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
+                try:
+                    query_entrez.get_sequences_for_dict([accession], date_today, args)
+                except RuntimeError as err:
+                    logger.warning(
+                        f"Querying NCBI for {accession} raised the following RuntimeError:\n"
+                        f"{err}"
+                    )
     return
 
 
