@@ -313,7 +313,7 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
                 genbank_accessions.append(item[0])
                 continue
 
-    #
+    # do not apply ec filter
     if ec_filters is None:
         return genbank_accessions
     
