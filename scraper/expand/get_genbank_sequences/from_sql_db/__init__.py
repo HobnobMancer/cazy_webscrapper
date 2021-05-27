@@ -121,19 +121,18 @@ def sequences_for_proteins_from_db(date_today, args):
     if len(accessions_lists_for_individual_queries) != 0:
         for accession_list in tqdm(
             accessions_lists_for_individual_queries,
-            desc="Performing individual queries to parse GenBank accessions without records",
+            desc="Performing individual queries for records that previously raised errors",
         ):
             for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
                 try:
                     query_entrez.get_sequences_for_dict([accession], date_today, args)
                 except RuntimeError as err:
                     logger.warning(
-                        f"Querying NCBI for {accession} raised the following RuntimeError:\n"
+                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
                         f"{err}"
                     )
     return
 
-    return
 
 
 def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdoms, ec_filters):
