@@ -95,6 +95,9 @@ def sequences_for_proteins_from_db(date_today, args):
         ec_filters,
     )
 
+    if args.update:  # check through protein sequences which need to updated and which don't
+        genbank_accessions
+
     # break up protein_list into multiple, smaller lists for batch querying Entrez
     # batches of greater than 200 can be rejected by Entrez during busy periods
     # args.epost=size of chunks
@@ -135,11 +138,20 @@ def sequences_for_proteins_from_db(date_today, args):
 
 
 
-def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdoms, ec_filters):
+def get_genbank_accessions(
+    args,
+    session,
+    date_today,
+    config_dict,
+    taxonomy_filters,
+    kingdoms,
+    ec_filters,
+):
     """Retrieve the GenBank accessions for all proteins for which a sequence will be retrieved.
 
     :param args: cmd-line argument parser
     :param session: open SQLite db session
+    :param date_today: str, date script was invoked
     :param config_dict: dict, defines CAZy classes and families to get sequences for
     :param taxonomy_filters: set of genera, species and strains to retrieve sequences for
     :param kingdoms: set of taxonomy Kingdoms to retrieve sequences for
@@ -151,10 +163,19 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
     logger = logging.getLogger(__name__)
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
-        genbank_query_class, genbank_query_family = get_cazy_class_fam_genbank_records(
-            session,
-            config_dict,
-        )
+
+        if args.update:
+            genbank_query_class, genbank_query_family = get_cazy_class_fam_genbank_records_for_update(
+                session,
+                config_dict,
+                date_today
+            )
+        
+        else:
+            genbank_query_class, genbank_query_family = get_cazy_class_fam_genbank_records(
+                session,
+                config_dict,
+            )
 
         class_genbank_accessions = parse_genbank_query(
             genbank_query_class,
@@ -182,14 +203,14 @@ def get_genbank_accessions(args, session, config_dict, taxonomy_filters, kingdom
                     "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
                     "Do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_all_prim_genbank_acc(session)
+                genbank_query = query_sql_db.get_prim_genbank_acc_for_update(session, date_today)
 
             else:
                 logger.warning(
-                    "Retrieving sequences for all PRIMARY GenBank accessions that\n"
-                    "do not have a sequence in the db"
+                    "Retrieving sequences for ALL GenBank accessions that\n"
+                    "do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_all_genbank_acc(session)
+                genbank_query = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
             if args.primary:
