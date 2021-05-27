@@ -47,17 +47,8 @@ from datetime import datetime
 from tqdm import tqdm
 
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
-from scraper.sql.sql_orm import (
-    Cazyme,
-    CazyFamily,
-    Cazymes_Genbanks,
-    Genbank,
-    Kingdom,
-    Taxonomy,
-    get_db_session,
-)
-from scraper.utilities import config_logger, file_io, parse_configuration
-from scraper.utilities.parsers import build_genbank_sequences_parser
+from scraper.sql.sql_orm import get_db_session
+from scraper.utilities import file_io, parse_configuration
 
 
 def sequences_for_proteins_from_db(date_today, args):
