@@ -47,17 +47,18 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbimakeblastdbCommandline
 
 
-def build_blast_db(args):
+def build_blast_db(args, time_stamp):
     """Build BLAST database of sequences retrieved from GenBank.
 
     :param args: cmd-line arguments parser
+    :param time_stamp: str, date and time script was invoked
 
     Return nothing.
     """
     logger = logging.getLogger(__name__)
 
     fasta_name = args.blastdb
-    fasta_name = fasta_name / "blast_db.fasta"
+    fasta_name = fasta_name / f"blast_db_{time_stamp}.fasta"
 
     logger.warning(f"Building local BLAST database containing proteins in:\n{fasta_name}")
 
