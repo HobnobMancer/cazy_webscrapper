@@ -343,7 +343,7 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
         total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
     ):
         try:
-            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today, args)
+            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
             genbank_query_to_update += genbank_to_update
 
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
@@ -360,11 +360,7 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
             for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
 
                 try:
-                    genbank_to_update = query_entrez.check_ncbi_seq_data(
-                        [accession],
-                        date_today,
-                        args,
-                    )
+                    genbank_to_update = query_entrez.check_ncbi_seq_data([accession], date_today)
                     genbank_query_to_update += genbank_to_update
 
                 except RuntimeError as err:
@@ -416,7 +412,7 @@ def get_all_genbank_acc_for_update(session, date_today, args):
         total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
     ):
         try:
-            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today, args)
+            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
             genbank_query_to_update += genbank_to_update
 
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
@@ -433,11 +429,7 @@ def get_all_genbank_acc_for_update(session, date_today, args):
             for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
 
                 try:
-                    genbank_to_update = query_entrez.check_ncbi_seq_data(
-                        [accession],
-                        date_today,
-                        args,
-                    )
+                    genbank_to_update = query_entrez.check_ncbi_seq_data([accession], date_today)
                     genbank_query_to_update += genbank_to_update
 
                 except RuntimeError as err:
