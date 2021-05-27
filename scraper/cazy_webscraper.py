@@ -134,25 +134,24 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             kingdoms,
             start_time,
         )
+    
+    elif args.dict is not None:
+        session = {}
 
     else:
         # build database and return open database session
         if args.database is not None:  # open session for existing local database
-            if args.database == "dict":  # build dictionary of {genbank_accession: CAZy families}
-                session = {}
-
-            else:
-                if os.path.isfile(args.database) is False:
-                    logger.error(
-                        "Could not find local CAZy database. Check path is correct.\n"
-                        "Terminating programme."
-                    )
-                    sys.exit(1)
-                try:
-                    session = sql_orm.get_db_session(args)
-                except Exception:
-                    logger.error("Failed to build SQL database. Terminating program", exc_info=True)
-                    sys.exit(1)
+            if os.path.isfile(args.database) is False:
+                logger.error(
+                    "Could not find local CAZy database. Check path is correct.\n"
+                    "Terminating programme."
+                )
+                sys.exit(1)
+            try:
+                session = sql_orm.get_db_session(args)
+            except Exception:
+                logger.error("Failed to build SQL database. Terminating program", exc_info=True)
+                sys.exit(1)
 
         else:  # create a new empty database to populate
             try:
@@ -178,31 +177,31 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             args,
         )
 
-        # Check if scraping from local CAZy files
-        if args.scrape_files is not None:
-            parse_local_pages.parse_local_pages(
-                args,
-                cazy_home,
-                start_time,
-                time_stamp,
-                session,
-                taxonomy_filters,
-                ec_filters,
-            )
+    # Check if scraping from local CAZy files
+    if args.scrape_files is not None:
+        parse_local_pages.parse_local_pages(
+            args,
+            cazy_home,
+            start_time,
+            time_stamp,
+            session,
+            taxonomy_filters,
+            ec_filters,
+        )
 
-        else:
-            get_cazy_data(
-                cazy_home,
-                excluded_classes,
-                config_dict,
-                cazy_dict,
-                taxonomy_filters,
-                kingdoms,
-                ec_filters,
-                time_stamp,
-                session,
-                args,
-            )
+    else:
+        get_cazy_data(
+            cazy_home,
+            excluded_classes,
+            config_dict,
+            cazy_dict,
+            taxonomy_filters,
+            kingdoms,
+            ec_filters,
+            time_stamp,
+            session,
+            args,
+        )
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = pd.to_datetime(end_time)
