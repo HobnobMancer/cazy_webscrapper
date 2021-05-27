@@ -111,7 +111,7 @@ def sequences_for_proteins_from_db(date_today, args):
         except ValueError:
             pass
         try:
-            query_entrez.get_sequences_for_db(accession_list, date_today, args)
+            query_entrez.get_sequences_add_to_db(accession_list, date_today, args)
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
             logger.warning(
                 "RuntimeError raised for accession list. Will query accessions individualy after.\n"
@@ -125,7 +125,7 @@ def sequences_for_proteins_from_db(date_today, args):
         ):
             for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
                 try:
-                    query_entrez.get_sequences_for_db([accession], date_today, args)
+                    query_entrez.get_sequences_add_to_db([accession], date_today, args)
                 except RuntimeError as err:
                     logger.warning(
                         f"Queried NCBI for {accession} raised the following RuntimeError:\n"
