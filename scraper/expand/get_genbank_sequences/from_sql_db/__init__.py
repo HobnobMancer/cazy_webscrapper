@@ -46,6 +46,7 @@ import sys
 from tqdm import tqdm
 
 from scraper.expand import get_genbank_sequences
+from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
 from scraper.utilities import file_io, parse_configuration
@@ -101,9 +102,9 @@ def sequences_for_proteins_from_db(date_today, args):
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
-        get_genbank_sequences.get_accession_chunks(protein_list, args.epost),
+        get_genbank_sequences.get_accession_chunks(genbank_accessions, args.epost),
         desc="Batch retrieving sequences from NCBI",
-        total=(math.ceil(len(protein_list) / args.epost)),
+        total=(math.ceil(len(genbank_accessions) / args.epost)),
     ):
         try:
             accession_list.remove("NA")
@@ -113,11 +114,9 @@ def sequences_for_proteins_from_db(date_today, args):
             query_entrez.get_sequences_for_dict(accession_list, date_today, args)
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
             logger.warning(
-                "RuntimeError raised for accession list. Will query accessions individualy after"
+                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
+                f"The following error was raised:\n{err}"
             )
-            with open("legihton_error.txt", "a") as fh:
-                fh.write(f"{err}\n{str(accession_list)}")
-            accessions_lists_for_individual_queries.append(accession_list)
 
     if len(accessions_lists_for_individual_queries) != 0:
         for accession_list in tqdm(
