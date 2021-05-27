@@ -43,10 +43,89 @@ import logging
 import re
 import time
 
+from datetime import datetime
+
 from Bio import Entrez, SeqIO
 
 from scraper.sql.sql_orm import Genbank
 from scraper.utilities import file_io
+
+
+def check_ncbi_seq_data(genbank_records):
+    """Query NCBI to see if sequence has been updated since the last retrieval.
+
+    :param genbank_records: list of GenBank records from the local database
+
+    Return list of GenBank records whose sequence needs updating.
+    """
+    logger = logging.getLogger(__name__)
+
+    genbank_records_to_update = []
+
+    accessions_dict = {}
+    accessions_list = []
+
+    for record in genbank_records:
+        accessions_dict[record.genbank_accession] = [record.seq_update_date, record]
+        accessions_list.append(record)
+
+    accessions_list = ",".join(accessions_list)
+
+    epost_result = Entrez.read(
+        entrez_retry(
+            Entrez.epost, "Protein", id=accessions_list, retmode="text",
+        )
+    )
+
+    # retrieve the web environment and query key from the Entrez post
+    epost_webenv = epost_result["WebEnv"]
+    epost_query_key = epost_result["QueryKey"]
+
+    # retrieve summary docs to check the sequence 'UpdateDates' in NCBI
+    with entrez_retry(
+        Entrez.efetch,
+        db="Protein",
+        query_key=epost_query_key,
+        WebEnv=epost_webenv,
+        rettype="docsum",
+        retmode="xml",
+    ) as handle:
+        summary_docs = Entrez.read(handle)
+
+    for doc in summary_docs:
+        try:
+            temp_accession = doc["AccessionVersion"]  # accession of the current working protein
+        except KeyError:
+            logger.warning(
+                f"Retrieved protein with accession {temp_accession} but this accession is not in "
+                "the local database.\nNot retrieving a sequence for this accession."
+            )
+            continue
+        try:
+            previous_retrieval_data = accessions_dict[temp_accession][0]
+        except KeyError:
+            f"{temp_accession} not in database but retrieved from NCBI for accession in the "
+            f"database\nWill not retrieve a sequence for {temp_accession}"
+        
+        previous_retrieval_data = previous_retrieval_data.split("/")  # Y=[0], M=[1], D=[]
+
+        ncbi_seq_date = doc["UpdateDate"]
+        ncbi_seq_date = ncbi_seq_date.split("/")  # Y=[0], M=[1], D=[]
+
+        if datetime.date(
+            previous_retrieval_data[0],
+            previous_retrieval_data[1],
+            previous_retrieval_data[2],
+        ) < datetime.data(
+            ncbi_seq_date[0],
+            ncbi_seq_date[1],
+            ncbi_seq_date[2],
+        ):
+            # the sequence at NCBI has been updated since the seq was retrieved, need to update seq
+            genbank_records_to_update.append(accessions_dict[temp_accession][1])
+
+    return genbank_records_to_update
+    
 
 
 def get_sequences_for_dict(accessions, date_today, args):
