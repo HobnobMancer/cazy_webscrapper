@@ -45,6 +45,7 @@ import time
 
 from Bio import Entrez, SeqIO
 
+from scraper.sql.sql_orm import Genbank
 from scraper.utilities import file_io
 
 
@@ -234,7 +235,9 @@ def get_sequences_add_to_db(accessions, date_today, session, args):
     accessions_string = ",".join(accessions)
     epost_result = Entrez.read(
         entrez_retry(
-            Entrez.epost, "Protein", id=accessions_string,
+            Entrez.epost,
+            "Protein",
+            id=accessions_string,
         )
     )
     # retrieve the web environment and query key from the Entrez post
@@ -252,29 +255,26 @@ def get_sequences_add_to_db(accessions, date_today, session, args):
     ) as seq_handle:
         for record in SeqIO.parse(seq_handle, "fasta"):
             # retrieve the accession of the record
-            temp_accession = record.id  # accession of the current working protein record
+            temp_accession = record.id
 
-            if temp_accession.find("|") != -1:  # sometimes multiple items are listed
-                success = False   # will be true if finds protein accession
-                temp_accession = temp_accession.split("|")
-                for item in temp_accession:
-                    # check if a accession number
-                    try:
-                        re.match(
-                            (
-                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
-                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
-                            ),
-                            item,
-                        ).group()
-                        temp_accession = item
-                        success = True
-                        break
-                    except AttributeError:  # raised if not an accession
-                        continue
+            success = False   # will be true if finds protein accession
 
-            else:
-                success = True  # have protein accession number
+            temp_accession = temp_accession.split("|")
+
+            for item in temp_accession:
+                try:  # check if item is an accession number
+                    re.match(
+                        (
+                            r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
+                            r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                        ),
+                        item,
+                    ).group()
+                    temp_accession = item
+                    success = True
+                    break
+                except AttributeError:  # raised if not an accession
+                    continue
 
             if success is False:
                 logger.error(
