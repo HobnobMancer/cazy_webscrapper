@@ -46,6 +46,7 @@ from datetime import datetime
 
 from tqdm import tqdm
 
+from scraper.expand import get_genbank_sequences
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
 from scraper.utilities import file_io, parse_configuration
@@ -93,6 +94,46 @@ def sequences_for_proteins_from_db(date_today, args):
         kingdoms,
         ec_filters,
     )
+
+    # break up protein_list into multiple, smaller lists for batch querying Entrez
+    # batches of greater than 200 can be rejected by Entrez during busy periods
+    # args.epost=size of chunks
+
+    accessions_lists_for_individual_queries = []
+
+    for accession_list in tqdm(
+        get_genbank_sequences.get_accession_chunks(protein_list, args.epost),
+        desc="Batch retrieving sequences from NCBI",
+        total=(math.ceil(len(protein_list) / args.epost)),
+    ):
+        try:
+            accession_list.remove("NA")
+        except ValueError:
+            pass
+        try:
+            query_entrez.get_sequences_for_dict(accession_list, date_today, args)
+        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+            logger.warning(
+                "RuntimeError raised for accession list. Will query accessions individualy after"
+            )
+            with open("legihton_error.txt", "a") as fh:
+                fh.write(f"{err}\n{str(accession_list)}")
+            accessions_lists_for_individual_queries.append(accession_list)
+
+    if len(accessions_lists_for_individual_queries) != 0:
+        for accession_list in tqdm(
+            accessions_lists_for_individual_queries,
+            desc="Performing individual queries to parse GenBank accessions without records",
+        ):
+            for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
+                try:
+                    query_entrez.get_sequences_for_dict([accession], date_today, args)
+                except RuntimeError as err:
+                    logger.warning(
+                        f"Querying NCBI for {accession} raised the following RuntimeError:\n"
+                        f"{err}"
+                    )
+    return
 
     return
 
@@ -289,70 +330,3 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
             filtered_genbank_accessions.append(genbank_accessions[i])
 
     return filtered_genbank_accessions
-    
-
-def get_accessions_for_new_sequences(accessions):
-    """Get the GenBank accessions of sequences to be added to the local database.
-
-    For records currently with no protein sequence, the retrieved protein sequence will be added
-    to the record. For records with a sequence, the 'UpdateDate' for the sequence from NCBI will
-    be compared against the  'seq_update_date' in the local database. The 'seq_update_date' is the
-    'UpdateDate' previosuly retrieved from NCBI. If the NCBI sequence is newer,
-    the local database will be updated with the new sequence.
-
-    :param accessions: dict, {GenBank accessions (str):sequence retrieval data (str)}
-    :param session: open SQL database session
-
-    Return nothing.
-    """
-    logger = logging.getLogger(__name__)
-
-    accessions_list = list(accessions.keys())
-    accessions_string = ",".join(accessions_list)
-    # perform batch query of Entrez
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost, "Protein", id=accessions_string, retmode="text",
-        )
-    )
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
-
-    # retrieve summary docs to check the sequence 'UpdateDates' in NCBI
-    with entrez_retry(
-        Entrez.efetch,
-        db="Protein",
-        query_key=epost_query_key,
-        WebEnv=epost_webenv,
-        rettype="docsum",
-        retmode="xml",
-    ) as handle:
-        summary_docs = Entrez.read(handle)
-
-    for doc in summary_docs:
-        try:
-            temp_accession = doc["AccessionVersion"]  # accession of the current working protein
-        except KeyError:
-            logger.warning(
-                f"Retrieved protein with accession {temp_accession} but this accession is not in "
-                "the local database.\n"
-                "Not retrieving a sequence for this accession."
-            )
-            continue
-        previous_data = accessions[temp_accession]
-        if previous_data is not None:
-            # sequence retrieved previosuly, thus check if the NCBI seq has been updated since
-            previous_data = previous_data.split("/")  # Y=[0], M=[1], D=[]
-            update_date = doc["UpdateDate"]
-            update_date = update_date.split("/")  # Y=[0], M=[1], D=[]
-            if datetime.date(
-                previous_data[0], previous_data[1], previous_data[2],
-            ) < datetime.data(
-                update_date[0], update_date[1], update_date[2],
-            ) is False:
-                # the sequence at NCBI has not been updated since the seq was retrieved
-                # thus no need to retrieve it again
-                accessions_list.remove(temp_accession)
-
-    return accessions_list
