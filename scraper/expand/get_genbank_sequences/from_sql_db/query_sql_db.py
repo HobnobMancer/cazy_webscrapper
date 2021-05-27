@@ -300,12 +300,12 @@ def get_all_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
     return genbank_query_class, genbank_query_family
 
 
-def get_all_prim_genbank_acc(session):
+def get_prim_genbank_acc_for_update(session):
     """Retrieve all PRIMARY GenBank accessions in the database.
 
     :param session: open SQL database session
 
-    Return database query result.
+    Return two lists of db queries, those with sequences and those without
     """
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
@@ -314,15 +314,25 @@ def get_all_prim_genbank_acc(session):
         join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
         filter(Cazymes_Genbanks.primary == True).\
         all()
-    return genbank_query
+
+    genbank_query_no_seq = []
+    genbank_query_with_seq = []
+
+    for result in genbank_query:
+        if result.sequence is None:
+            genbank_query_no_seq.append(result)
+        else:
+            genbank_query_with_seq.append(result)
+
+    return genbank_query_no_seq, genbank_query_with_seq
 
 
-def get_all_genbank_acc(session):
+def get_all_genbank_acc_for_update(session):
     """Retrieve all GenBank accessions in the database.
 
     :param session: open SQL database session
 
-    Return database query result.
+    Return two lists of db queries, those with sequences and those without
     """
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
@@ -330,7 +340,17 @@ def get_all_genbank_acc(session):
         join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
         join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
         all()
-    return genbank_query
+
+    genbank_query_no_seq = []
+    genbank_query_with_seq = []
+
+    for result in genbank_query:
+        if result.sequence is None:
+            genbank_query_no_seq.append(result)
+        else:
+            genbank_query_with_seq.append(result)
+
+    return genbank_query_no_seq, genbank_query_with_seq
 
     
 def get_prim_genbank_accessions_with_no_seq(session):
