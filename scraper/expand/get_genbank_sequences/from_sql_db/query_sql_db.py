@@ -39,6 +39,7 @@
 """Script contains queries to a local CAZyme SQL database"""
 
 
+from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from tqdm import tqdm
 
 from scraper.sql.sql_orm import (
@@ -300,12 +301,16 @@ def get_all_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
     return genbank_query_class, genbank_query_family
 
 
-def get_prim_genbank_acc_for_update(session):
+def get_prim_genbank_acc_for_update(session, date_today, args):
     """Retrieve all PRIMARY GenBank accessions in the database.
 
-    :param session: open SQL database session
 
-    Return two lists of db queries, those with sequences and those without
+    :param session: open SQL database session
+    :param date_today: str, date script was invoked
+    :param args: cmd-line args parser
+
+    Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
+    been update since the sequence was last retrieved and added to the local CAZyme db.
     """
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
@@ -318,22 +323,69 @@ def get_prim_genbank_acc_for_update(session):
     genbank_query_no_seq = []
     genbank_query_with_seq = []
 
+    # separate out returned records that do and do not have sequences
     for result in genbank_query:
         if result.sequence is None:
             genbank_query_no_seq.append(result)
         else:
             genbank_query_with_seq.append(result)
 
-    return genbank_query_no_seq, genbank_query_with_seq
+    genbank_query_to_update = []
+    accessions_lists_for_individual_queries = []
+
+    for accession_list in tqdm(
+        get_genbank_sequences.get_accession_chunks(genbank_query_with_seq, args.epost),
+        desc="Batch retrieving NCBI to check if to update seq",
+        total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
+    ):
+        try:
+            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today, args)
+            genbank_query_to_update += genbank_to_update
+
+        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+            logger.warning(
+                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
+                f"The following error was raised:\n{err}"
+            )
+
+    if len(accessions_lists_for_individual_queries) != 0:
+        for accession_list in tqdm(
+            accessions_lists_for_individual_queries,
+            desc="Performing individual queries for records that previously raised errors",
+        ):
+            for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
+
+                try:
+                    genbank_to_update = query_entrez.check_ncbi_seq_data(
+                        [accession],
+                        date_today,
+                        args,
+                    )
+                    genbank_query_to_update += genbank_to_update
+
+                except RuntimeError as err:
+                    logger.warning(
+                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
+                        f"{err}"
+                    )
+
+    genbank_query = genbank_query_no_seq + genbank_query_to_update
+
+    return genbank_query
 
 
-def get_all_genbank_acc_for_update(session):
+def get_all_genbank_acc_for_update(session, date_today, args):
     """Retrieve all GenBank accessions in the database.
 
     :param session: open SQL database session
+    :param date_today: str, date script was invoked
+    :param args: cmd-line args parser
 
-    Return two lists of db queries, those with sequences and those without
+    Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
+    been update since the sequence was last retrieved and added to the local CAZyme db.
     """
+    logger = logging.get_logger(__name__)
+
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
         join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
@@ -344,13 +396,55 @@ def get_all_genbank_acc_for_update(session):
     genbank_query_no_seq = []
     genbank_query_with_seq = []
 
+    # separate out returned records that do and do not have sequences
     for result in genbank_query:
         if result.sequence is None:
             genbank_query_no_seq.append(result)
         else:
             genbank_query_with_seq.append(result)
 
-    return genbank_query_no_seq, genbank_query_with_seq
+    genbank_query_to_update = []
+    accessions_lists_for_individual_queries = []
+
+    for accession_list in tqdm(
+        get_genbank_sequences.get_accession_chunks(genbank_query_with_seq, args.epost),
+        desc="Batch retrieving NCBI to check if to update seq",
+        total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
+    ):
+        try:
+            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today, args)
+            genbank_query_to_update += genbank_to_update
+
+        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+            logger.warning(
+                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
+                f"The following error was raised:\n{err}"
+            )
+
+    if len(accessions_lists_for_individual_queries) != 0:
+        for accession_list in tqdm(
+            accessions_lists_for_individual_queries,
+            desc="Performing individual queries for records that previously raised errors",
+        ):
+            for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
+
+                try:
+                    genbank_to_update = query_entrez.check_ncbi_seq_data(
+                        [accession],
+                        date_today,
+                        args,
+                    )
+                    genbank_query_to_update += genbank_to_update
+
+                except RuntimeError as err:
+                    logger.warning(
+                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
+                        f"{err}"
+                    )
+
+    genbank_query = genbank_query_no_seq + genbank_query_to_update
+
+    return genbank_query
 
     
 def get_prim_genbank_accessions_with_no_seq(session):
