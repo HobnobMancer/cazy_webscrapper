@@ -37,15 +37,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Module for retrieving protein sequences from GenBank"""
-
-
-def get_accession_chunks(lst, chunk_length):
-    """Separate the long list into separate chunks.
-
-    :param lst: list to be separated into smaller lists (or chunks)
-    :param chunk_length: int, the length of the lists the longer list is to be split up into
-
-    Return a generator object containing lists.
-    """
-    for i in range(0, len(lst), chunk_length):
-        yield lst[i:i + chunk_length]
