@@ -65,7 +65,6 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     start_time = pd.to_datetime(start_time)
     date_today = datetime.now().strftime("%Y/%m/%d")  # used as seq_update_date in the db
-    time_stamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     # parse cmd-line arguments
     if argv is None:
