@@ -316,6 +316,8 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
     Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
     been update since the sequence was last retrieved and added to the local CAZyme db.
     """
+    logger = logging.getLogger(__name__)
+
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
         join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
@@ -495,7 +497,7 @@ def query_ec_number(session, genbank_accession):
 
     record_ecs = []
     for record in ec_query:
-        if (record[-1].ec_number) startswith "EC":
+        if (record[-1].ec_number).startswith("EC"):
             record_ecs.append(record[-1].ec_number)
         else:
             record_ecs.append(f"EC{record[-1].ec_number}")
