@@ -307,9 +307,19 @@ def get_pdb_accessions(session):
     return pdb_query
 
 
+def download_pdb_structures(pdb_accession, args):
+    """Download protein structure from the RSCB PDB database
 
+    :param pdb_accession: str, accession of record in the PDB database
+    :param args: cmd-line args parser
 
+    Return nothing.
+    """
+    pdbl = PDBList()
+    pdbl.retrieve_pdb_file(f"{pdb_accession}", file_format=args.pdb, pdir=args.outdir)
+    time.sleep(2)  # to prevent bombarding the system
 
+    return
 
 
 if __name__ == "__main__":
