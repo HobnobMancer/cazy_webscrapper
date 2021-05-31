@@ -45,7 +45,7 @@ import sys
 
 from tqdm import tqdm
 
-from scraper.expand import get_genbank_sequences
+from scraper.expand import get_accession_chunks
 from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
@@ -102,7 +102,7 @@ def sequences_for_proteins_from_db(date_today, args):
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
-        get_genbank_sequences.get_accession_chunks(genbank_accessions, args.epost),
+        get_accession_chunks(genbank_accessions, args.epost),
         desc="Batch retrieving sequences from NCBI",
         total=(math.ceil(len(genbank_accessions) / args.epost)),
     ):
