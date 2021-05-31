@@ -344,6 +344,9 @@ def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, s
     filtered_genbank_accessions = []
     for i in tqdm(range(len(genbank_accessions), desc="Applying EC number filter")):
         ec_annotations = query_sql_db.query_sql_db.query_ec_number(session, genbank_accessions[i])
+
+        # check if any of the EC number annotations for the protein (identified by its genbank 
+        # accession) are included in the EC numbers specificed by the user
         if (set(ec_annotations) and set(ec_filters)):
             filtered_genbank_accessions.append(genbank_accessions[i])
 
