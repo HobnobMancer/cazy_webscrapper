@@ -122,8 +122,10 @@ def write_fasta_for_db(record, args):
 
     Return nothing.
     """
+    database_dir_name = str(args.blastdb).split("/")[-1]
+
     db_fasta_name = args.blastdb
-    db_fasta_name = db_fasta_name / "blast_db.fasta"
+    db_fasta_name = db_fasta_name / f"blast_db_{database_dir_name}.fasta"
 
     with open(db_fasta_name, "a") as fh:
         SeqIO.write(record, fh, "fasta")
