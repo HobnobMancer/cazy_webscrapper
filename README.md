@@ -182,6 +182,14 @@ IF multiple UniProt accessions are listed, all those written in bold are identif
 
 It is important to note that not all PDB accessions listed in CAZy are also represent in PDB. Therefore, not all PDB accessions retrieved from CAZy can be used to retrieve a protein structure file form PDB. For example, the PDB accession 'BBB[nd]' was previously listed in CAZy but did not represent a record in PDB.
 
+`cazy_webscraper` uses the `BioPython` `PDB` module to retrieve structure files from PDB. 
+With issues with the PDB module please contact the `BioPython` developers.
+Please give credit for both `cazy_webscraper` and `BioPython` `PDB` in your work. 
+The respective references/citations can be found in the documentation of both programs.
+
+`cazy_webscraper` nor `BioPython.PDB` are responsible for guarenteeing the PDB accessions 
+retrieved from CAZy are valid identifiers in PDB.""
+
 
 ## Configuration
 
