@@ -36,13 +36,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Submodule for retieving sequences for proteins in dict (JSON file)"""
+"""Submodule for retieving structure files for proteins in dict (JSON file)"""
 
 
 import logging
-import json
 import math
-import sys
 
 from tqdm import tqdm
 
@@ -51,7 +49,7 @@ from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from scraper.utilities import file_io, parse_configuration
 
 
-def sequences_for_proteins_from_dict(date_today, args):
+def structures_for_proteins_from_dict(date_today, args):
     """Coordinate retrievel of protein sequences for proteins in a CAZy dict (JSON file).
     
     :param date_today: str, date script was invoked, used for naming files
@@ -61,10 +59,13 @@ def sequences_for_proteins_from_dict(date_today, args):
     """
     logger = logging.getLogger(__name__)
 
-    file_io.make_output_directory(args.fasta, args.force, args.nodelete)
-
-    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
-        file_io.make_output_directory(args.blastdb, args.force, args.nodelete)
+    # create output directory
+    if args.outdir is None:
+        # save structure files to the cwd
+        outdir = os.getcwd()
+    else:
+        outdir = args.outdir
+        file_io.make_output_directory(outdir, args.force, args.nodelete)
 
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
     parse_configuration_path = parse_configuration.__file__
@@ -84,17 +85,15 @@ def sequences_for_proteins_from_dict(date_today, args):
     except ValueError:
         pass
     
-    logger.warning(f"Retrieving sequences for {len(protein_list)} proteins")
+    logger.warning(f"Retrieving structures for {len(protein_list)} proteins")
 
-    # break up protein_list into multiple, smaller lists for batch querying Entrez
-    # batches of greater than 200 can be rejected by Entrez during busy periods
-    # args.epost=size of chunks
+    # break up protein_list into multiple, smaller lists to reduce burden on PDB
 
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
         get_genbank_sequences.get_accession_chunks(protein_list, args.epost),
-        desc="Batch retrieving sequences from NCBI",
+        desc="Batch retrieving structures from PDB",
         total=(math.ceil(len(protein_list) / args.epost)),
     ):
         try:
