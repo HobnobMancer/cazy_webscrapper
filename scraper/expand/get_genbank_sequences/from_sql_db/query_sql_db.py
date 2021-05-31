@@ -493,6 +493,11 @@ def query_ec_number(session, genbank_accession):
         filter(Genbank.genbank_accession == genbank_accession).\
         all()
 
-    record_ecs = [f"EC{result[-1].ec_number}" for result in ec_query]
+    record_ecs = []
+    for record in ec_query:
+        if (record[-1].ec_number) startswith "EC":
+            record_ecs.append(record[-1].ec_number)
+        else:
+            record_ecs.append(f"EC{record[-1].ec_number}")
 
     return record_ecs
