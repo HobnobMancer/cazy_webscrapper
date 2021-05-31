@@ -76,16 +76,14 @@ def sequences_for_proteins_from_dict(date_today, args):
     # retrieve dict of CAZy family classifications of proteins
     cazy_dict = get_cazy_dict(args)
 
-    if (len(config_dict["classes"]) == 0) and (len(config_dict["families"]) == 0):
-        # retrieve sequences for all proteins in the cazy_dict
-        protein_list = get_qualifying_proteins(cazy_dict, config_dict)
-        try:
-            protein_list.remove("NA")  # incase 'NA' was added when scraping CAZy
-        except ValueError:
-            pass
+    # retrieve sequences for proteins in the cazy_dict matching user specified critera
+    protein_list = get_qualifying_proteins(cazy_dict, config_dict)
+
+    try:
+        protein_list.remove("NA")  # incase 'NA' was added when scraping CAZy
+    except ValueError:
+        pass
     
-    else:  # retrieve sequences for only the proteins matching criteria in the config_data
-        protein_list = get_qualifying_proteins(cazy_dict, config_dict)
     
     logger.warning(f"Retrieving sequences for {len(protein_list)} proteins")
 
