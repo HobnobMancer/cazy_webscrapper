@@ -47,23 +47,38 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbimakeblastdbCommandline
 
 
-def build_blast_db(args, time_stamp):
+def build_blast_db(args):
     """Build BLAST database of sequences retrieved from GenBank.
 
     :param args: cmd-line arguments parser
-    :param time_stamp: str, date and time script was invoked
 
     Return nothing.
     """
     logger = logging.getLogger(__name__)
 
-    fasta_name = args.blastdb
-    fasta_name = fasta_name / f"blast_db_{time_stamp}.fasta"
+    blast_database_dir_name = str(args.blastdb).split("/")[-1]
 
-    logger.warning(f"Building local BLAST database containing proteins in:\n{fasta_name}")
+    db_fasta_name = args.blastdb
+    db_fasta_name = db_fasta_name / f"blast_db_{blast_database_dir_name}.fasta"
+
+    logger.warning(f"Building local BLAST database containing proteins in:\n{db_fasta_name}")
 
     # build the command
-    cmd_makedb = NcbimakeblastdbCommandline(cmd='makeblastdb', dbtype='prot', input_file=fasta_name)
+    if args.blastdb_name is None:
+        cmd_makedb = NcbimakeblastdbCommandline(
+            cmd='makeblastdb',
+            dbtype='prot',
+            input_file=db_fasta_name,
+        )
+    
+    else:
+        cmd_makedb = NcbimakeblastdbCommandline(
+            cmd='makeblastdb',
+            dbtype='prot',
+            input_file=db_fasta_name,
+            title=args.blastdb_name,
+        )
+
     # invoke the command
     stdout, stderr = cmd_makedb()
 
