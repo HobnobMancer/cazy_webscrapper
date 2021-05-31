@@ -516,6 +516,14 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
 
     # Add optional arguments to parser
 
+    # Add option to specify batch limit when batch quering NCBI
+    parser.add_argument(
+        "--batch_limit",
+        type=int,
+        default=200,
+        help="Number of PDB accessions parsed to Biopyton.PDB.download_pdb_files at once"
+    )
+
     # Add option to specify path to configuration file
     parser.add_argument(
         "-c",
@@ -600,6 +608,15 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         type=Path,
         metavar="output directory path",
         help="Path to output directory to which downloaded structures are retrieved",
+    )
+
+    # specify if to overwrite a local structure file
+    parser.add_argument(
+        "--overwrite",
+        dest="overwrite",
+        action="store_true",
+        default=False,
+        help="Enable overwriting local structure files if already present",
     )
 
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from

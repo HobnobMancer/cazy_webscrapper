@@ -51,12 +51,12 @@ import time
 import pandas as pd
 
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
 
 from Bio.PDB import PDBList
 from tqdm import tqdm
 
+from scraper.expand import get_accession_chunks
 from scraper.expand.get_pdb_structures import from_dict, from_sql_db
 from scraper.sql.sql_orm import (
     Cazyme,
@@ -99,6 +99,8 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     # get list of all PDB accessions to retrieve structure files for
     pdb_accessions = get_pdb_accessions(args, session)
+
+    download_pdb_structures(pdb_accessions, args)
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     end_time = pd.to_datetime(start_time)
@@ -307,17 +309,35 @@ def get_pdb_accessions(session):
     return pdb_query
 
 
-def download_pdb_structures(pdb_accession, args):
+def download_pdb_structures(pdb_accessions, args):
     """Download protein structure from the RSCB PDB database
 
-    :param pdb_accession: str, accession of record in the PDB database
+    :param pdb_accession: list of PDB accessions
     :param args: cmd-line args parser
 
     Return nothing.
     """
     pdbl = PDBList()
-    pdbl.retrieve_pdb_file(f"{pdb_accession}", file_format=args.pdb, pdir=args.outdir)
-    time.sleep(2)  # to prevent bombarding the system
+
+    logger = logging.getLogger(__name__)
+    logger.warning("Starting downloading of structure files from PDB")
+
+    if args.outdir is None:
+        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
+            pdbl.download_pdb_files(
+                accession_list,
+                file_format=args.pdb,
+                overwrite=args.overwrite,
+            )
+
+    else:
+        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
+            pdbl.download_pdb_files(
+                accession_list,
+                file_format=args.pdb,
+                overwrite=args.overwrite,
+                pdir=args.outdir,
+            )
 
     return
 
