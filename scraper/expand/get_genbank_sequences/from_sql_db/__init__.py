@@ -95,9 +95,6 @@ def sequences_for_proteins_from_db(date_today, args):
         ec_filters,
     )
 
-    if args.update:  # check through protein sequences which need to updated and which don't
-        genbank_accessions
-
     # break up protein_list into multiple, smaller lists for batch querying Entrez
     # batches of greater than 200 can be rejected by Entrez during busy periods
     # args.epost=size of chunks
