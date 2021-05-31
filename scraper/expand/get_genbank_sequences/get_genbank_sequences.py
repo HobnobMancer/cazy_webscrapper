@@ -126,7 +126,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         from_dict.sequences_for_proteins_from_dict(date_today, args)
     
     if args.blastdb is not None:  # build a local BLAST database
-        blast_db.build_blast_db(args, time_stamp)
+        blast_db.build_blast_db(args)
     
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     end_time = pd.to_datetime(start_time)
