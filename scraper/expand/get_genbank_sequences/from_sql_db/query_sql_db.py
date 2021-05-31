@@ -493,6 +493,6 @@ def query_ec_number(session, genbank_accession):
         filter(Genbank.genbank_accession == genbank_accession).\
         all()
 
-    record_ecs = [result[-1] for result in ec_query]
+    record_ecs = [f"EC{result[-1].ec_number}" for result in ec_query]
 
     return record_ecs
