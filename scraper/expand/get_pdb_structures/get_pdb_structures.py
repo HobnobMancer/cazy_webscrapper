@@ -57,7 +57,6 @@ from Bio.PDB import PDBList
 from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
-from scraper.expand.get_pdb_structures import from_dict, from_sql_db
 from scraper.sql.sql_orm import (
     Cazyme,
     CazyFamily,
