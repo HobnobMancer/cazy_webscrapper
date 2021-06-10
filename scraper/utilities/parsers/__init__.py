@@ -539,7 +539,14 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--classes",
         type=str,
         default=None,
-        help="Classes from which all families are to be scraped. Separate classes by ','"
+        help="Classes from which all structures will be retrieved. Separate classes by ','"
+    )
+
+    parser.add_argument(
+        "--ec",
+        type=str,
+        default=None,
+        help="EC number annotations to restrict the retrieval fo structures to. Separate families by commas 'GH1,GH2'"
     )
 
     # enable force writing in an existing directory
@@ -557,7 +564,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--families",
         type=str,
         default=None,
-        help="Families to scrape. Separate families by commas 'GH1,GH2'"
+        help="Families to retrieve structures for. Separate families by commas 'GH1,GH2'"
     )
 
     # Add option to restrict the scrape to specific kingdoms
@@ -576,7 +583,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--genera",
         type=str,
         default=None,
-        help="Genera to restrict the scrape to"
+        help="Genera to restrict the retrieval structure files to"
     )
 
     # Add log file name option
@@ -625,7 +632,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--species",
         type=str,
         default=None,
-        help="Species (written as Genus Species) to restrict the scrape to"
+        help="Species (written as Genus Species) to restrict the retrieval of structure files to"
     )
 
     # Add option to restrict scraping to specific strains of organisms
@@ -634,7 +641,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         type=str,
         default=None,
         help=(
-            "Specific strains of organisms to restrict the scrape to "
+            "Specific strains of organisms to restrict the retrieval of structure files to "
             "(written as Genus Species Strain)"
         ),
     )
