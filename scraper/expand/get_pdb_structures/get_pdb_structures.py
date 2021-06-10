@@ -46,7 +46,6 @@
 import logging
 import os
 import sys
-import time
 
 import pandas as pd
 
@@ -96,7 +95,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     # else write files to the CWD
 
     # get list of all PDB accessions to retrieve structure files for
-    pdb_accessions = get_pdb_accessions(args, session)
+    pdb_accessions = get_pdb_accessions(args=args, session=session)
 
     download_pdb_structures(pdb_accessions, args)
 
@@ -174,7 +173,7 @@ def get_pdb_accessions(args, session):
     )
 
     if config_dict is None:
-        pdb_query_results = get_pdb_accessions(session)
+        pdb_query_results = get_all_pdb_accessions(session)
 
     else:
         pdb_query_results = get_pdb_acc_from_clss_fams(session, config_dict)
@@ -290,7 +289,7 @@ def get_pdb_acc_from_clss_fams(session, config_dict):
     return pdb_query_results
 
 
-def get_pdb_accessions(session):
+def get_all_pdb_accessions(session):
     """Retrieve ALL PDB accessions in the database.
 
     :param session: open SQL database session
