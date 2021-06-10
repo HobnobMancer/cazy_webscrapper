@@ -75,7 +75,6 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     """Set up programme and initate run."""
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     start_time = pd.to_datetime(start_time)
-    date_today = datetime.now().strftime("%Y/%m/%d")  # used as seq_update_date in the db
 
     # parse cmd-line arguments
     if argv is None:
@@ -324,20 +323,22 @@ def download_pdb_structures(pdb_accessions, args):
 
     if args.outdir is None:
         for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
-            pdbl.download_pdb_files(
-                accession_list,
-                file_format=args.pdb,
-                overwrite=args.overwrite,
-            )
+            for file_type in ((args.pdb).split(",")):
+                pdbl.download_pdb_files(
+                    accession_list,
+                    file_format=file_type,
+                    overwrite=args.overwrite,
+                )
 
     else:
         for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
-            pdbl.download_pdb_files(
-                accession_list,
-                file_format=args.pdb,
-                overwrite=args.overwrite,
-                pdir=args.outdir,
-            )
+            for file_type in ((args.pdb).split(",")):
+                pdbl.download_pdb_files(
+                    accession_list,
+                    file_format=file_type,
+                    overwrite=args.overwrite,
+                    pdir=args.outdir,
+                )
 
     return
 
