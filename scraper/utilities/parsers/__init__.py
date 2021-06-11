@@ -482,12 +482,22 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
 
     # Add optional arguments to parser
 
+    parser.add_argument(
+        "--batch_limit",
+        type=int,
+        default=50,
+        help=(
+            "Number of accessions passed to BioPython.PDB for retrieving structures at a time. "
+            "Default:50"
+        ),
+    )
+
     # Add option to use own CAZy class synoymn dict
     parser.add_argument(
         "--cazy_synonyms",
         type=Path,
         default=None,
-        help="Path to JSON file containing CAZy class synoymn names",
+        help="Path to JSON file containing CAZy class synoymn names. Default: None",
     )
 
     # Add option to specify path to configuration file
@@ -497,7 +507,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         type=Path,
         metavar="config file",
         default=None,
-        help="Path to configuration file. Default: None, scrapes entire database",
+        help="Path to configuration file. Default: None, scrapes entire database. Default: None",
     )
 
     # Add option to define classes to retrieve protein sequences for
@@ -505,7 +515,10 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--classes",
         type=str,
         default=None,
-        help="Classes from which all families are to be scraped. Separate classes by ','"
+        help=(
+            "Classes from which all families are to be scraped. Separate classes by ','. "
+            "Default: None"
+        ),
     )
 
     parser.add_argument(
@@ -514,7 +527,8 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "EC numbers that a CAZyme must be annotated with at least one to "
-            "retrieve the structure file"
+            "retrieve the structure file.\n"
+            "Default: None"
         ),
     )
 
@@ -525,7 +539,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         dest="force",
         action="store_true",
         default=False,
-        help="Force file over writting",
+        help="Force file over writting. Default: False",
     )
 
     # Add option to specify families to retrieve protein sequences for
@@ -533,7 +547,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--families",
         type=str,
         default=None,
-        help="Families to scrape. Separate families by commas 'GH1,GH2'"
+        help="Families to scrape. Separate families by commas 'GH1,GH2'. Default: None"
     )
 
     # Add option to restrict the scrape to specific kingdoms
@@ -543,7 +557,8 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Kingdoms to scrape. Separate by a single comma.\n"
-            "Options= archaea, bacteria, eukaryota, viruses, unclassified (not case sensitive)"
+            "Options= archaea, bacteria, eukaryota, viruses, unclassified (not case sensitive)\n"
+            "Default: None"
         ),
     )
 
@@ -552,7 +567,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--genera",
         type=str,
         default=None,
-        help="Genera to restrict the scrape to"
+        help="Genera to restrict the scrape to. Default: None"
     )
 
     # Add log file name option
@@ -563,7 +578,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         type=Path,
         metavar="log file name",
         default=None,
-        help="Defines log file name and/or path",
+        help="Defines log file name and/or path. Default: None",
     )
 
     # Add option to prevent over writing of existing files
@@ -574,7 +589,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         dest="nodelete",
         action="store_true",
         default=False,
-        help="enable/disable deletion of exisiting files",
+        help="enable/disable deletion of exisiting files. Default: False",
     )
 
     # enable specifying an output directory
@@ -583,7 +598,10 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--outdir",
         type=Path,
         metavar="output directory path",
-        help="Path to output directory to which downloaded structures are retrieved",
+        help=(
+            "Path to output directory to which downloaded structures are retrieved. "
+            "Default: STDOUT"
+        ),
     )
 
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
@@ -592,7 +610,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--species",
         type=str,
         default=None,
-        help="Species (written as Genus Species) to restrict the scrape to"
+        help="Species (written as Genus Species) to restrict the scrape to. Default: None"
     )
 
     # Add option to restrict scraping to specific strains of organisms
@@ -602,7 +620,8 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Specific strains of organisms to restrict the scrape to "
-            "(written as Genus Species Strain)"
+            "(written as Genus Species Strain)\n"
+            "Default: None"
         ),
     )
 
@@ -613,7 +632,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         dest="verbose",
         action="store_true",
         default=False,
-        help="Set logger level to 'INFO'",
+        help="Set logger level to 'INFO'. Default: False",
     )
 
     if argv is None:
