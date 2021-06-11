@@ -702,38 +702,6 @@ def test_convert_lists():
     parse_configuration.convert_lists_to_none(config_dict)
 
 
-# test get_configuration() - retrieves configuraiton for the expand module
-
-
-def test_get_configuraiton_0(cazy_dictionary, monkeypatch):
-    """Tests getting configuration for the expand module when NO tax filters are given."""
-
-    def mock_parse_config(*args, **kwargs):
-        return None, None, cazy_dictionary, {}, set(), set()
-
-    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
-
-    parse_configuration.get_configuration("args")
-
-
-def test_get_configuraiton_1(cazy_dictionary, monkeypatch):
-    """Tests getting configuration for the expand module when ARE tax filters are given."""
-
-    def mock_parse_config(*args, **kwargs):
-        return(
-            None,
-            None,
-            cazy_dictionary,
-            {"genera": ["Trichoderma", "Aspergillus"]},
-            set(['viruses']),
-            set(["EC1.2.3.4"])
-        )
-
-    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
-
-    parse_configuration.get_configuration("args")
-
-
 # test creating logger warning message when enabled streamlined scraping
 
 
@@ -741,3 +709,42 @@ def test_creating_streamlined_warning_message():
     """Test creating logger warning message when enabled streamlined scraping."""
     args = {"args": Namespace(streamline="genbank,ec,uniprot,pdb")}
     parse_configuration.create_streamline_scraping_warning(args["args"])
+
+
+# test parse_configuration_for_cazy_database()
+
+
+def test_expand_config_no_filters(monkeypatch):
+    """Test parse_configuration_for_cazy_database"""
+
+    def mock_parse_config(*args, **kwargs):
+        return (
+            None,
+            None,
+            None,
+            {},
+            "all",
+            [],
+        )
+    
+    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
+
+    parse_configuration.parse_configuration_for_cazy_database('args')
+
+
+def test_parse_expand_config(monkeypatch):
+    """Test parse_configuration_for_cazy_database"""
+
+    def mock_parse_config(*args, **kwargs):
+        return (
+            None,
+            None,
+            None,
+            {'genera': 'Aspergillus', "species": None},
+            ['bacteria', 'archea'],
+            ['1.2.3.4', '2.3.1.21'],
+        )
+    
+    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
+
+    parse_configuration.parse_configuration_for_cazy_database('args')
