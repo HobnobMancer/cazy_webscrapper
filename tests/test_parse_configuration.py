@@ -480,13 +480,13 @@ def test_get_kingdoms_all_wrong(raw_config_dict):
 def test_get_kingdoms_keyerror(args_config_cmd):
     """Test get_kingdoms when 'kingdoms' is not in config file."""
     raw_config_dict = {'classes': None}
-    parse_configuration.get_kingdoms(args_config_cmd, raw_config_dict)
+    parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
 
 
 def test_get_kingdoms_none(args_config_cmd):
     """Test get_kingdoms when none are listed in the config file."""
     raw_config_dict = {'classes': None, "kingdoms": None}
-    parse_configuration.get_kingdoms(args_config_cmd, raw_config_dict)
+    parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
 
 
 # test get_cazy_dict_std_names()
