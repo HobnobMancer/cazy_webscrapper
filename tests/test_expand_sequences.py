@@ -88,6 +88,23 @@ def args_both_not_none():
     return argsdict
 
 
+@pytest.fixture
+def args_false_db():
+    argsdict = {
+        "args": Namespace(
+            email="dummyemail@domain.sec",
+            database="db",
+            dict=None,
+            fasta=os.getcwd(),
+            blast_db="Not None",
+            verbose=False,
+            log=None,
+        )
+    }
+    return argsdict
+
+
+
 # test main()
 
 
@@ -134,6 +151,34 @@ def test_gbk_seq_main_both_non_none(args_both_not_none, monkeypatch):
     
     def mock_parser(*args, **kwargs):
         return args_both_not_none['args']
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_genbank_sequences_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        get_genbank_sequences.main()
+    assert pytest_wrapped_e.type == SystemExit
+
+
+def test_gbk_seq_main_db_false(args_false_db, monkeypatch):
+    """Test main() when args database is not none but the path does not exist."""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_genbank_sequences.py",
+            usage=None,
+            description="Retrieve protein sequnces from GenBank",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+    
+    def mock_parser(*args, **kwargs):
+        return args_false_db['args']
 
     def mock_config_logger(*args, **kwargs):
         return
