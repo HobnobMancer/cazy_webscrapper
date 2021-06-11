@@ -84,6 +84,27 @@ def args_parser(db_path, output_dir):
 
 
 @pytest.fixture
+def args_parser_invalid(db_path):
+    args = {"args": Namespace(
+        database=db_path,
+        pdb="pdaab,xmaal",
+        contig=None,
+        classes=None,
+        force=True,
+        families=None,
+        kingdoms=None,
+        genera=None,
+        log=None,
+        nodelete=False,
+        outdir=output_dir,
+        species=None,
+        strains=None,
+        verbose=None,
+    )}
+    return args
+
+
+@pytest.fixture
 def args_no_db():
     args = {"args": Namespace(
         database="Fake_path"
@@ -160,6 +181,51 @@ def test_main_args(args_parser, monkeypatch):
     monkeypatch.setattr(get_pdb_structures, "download_pdb_structures", mock_download)
     
     get_pdb_structures.main()
+
+
+def test_main_invalid_file_type(args_parser_invalid, monkeypatch):
+    """Test main() when an invalid file type is passed to the program."""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_pdb_structures",
+            usage=None,
+            description="Retrieve structures for CAZymes",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    def mock_parser(*args, **kwargs):
+        return args_parser_invalid["args"]
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_get_sess(*args, **kwargs):
+        return
+
+    def mock_making_output_dir(*args, **kwargs):
+        return
+    
+    def mock_pdb_acc(*args, **kwargs):
+        acc1 = {'acc': Namespace(pdb_accession="accession1")}
+        return [acc1['acc']]
+    
+    def mock_download(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_pdb_structures_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(get_pdb_structures, "get_database_session", mock_get_sess)
+    monkeypatch.setattr(file_io, "make_output_directory", mock_making_output_dir)
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_accessions", mock_pdb_acc)
+    monkeypatch.setattr(get_pdb_structures, "download_pdb_structures", mock_download)
+    
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        get_pdb_structures.main()
+    assert pytest_wrapped_e.type == SystemExit
 
 
 @pytest.mark.skip(reason="Issue mocking parsing args, test to be fixed")
