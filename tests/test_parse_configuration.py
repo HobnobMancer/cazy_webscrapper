@@ -659,6 +659,29 @@ def test_get_no_excluded_classes(cazy_dictionary):
         cazy_dictionary,
     )
 
+
+def test_get_excluded_classes(cazy_dictionary):
+    """Test get_excluded_classes when excluded classes are retrieved."""
+    std_classes = list(cazy_dictionary.keys())
+    config_dict = {
+        "classes": [
+            'Carbohydrate Esterases (CEs)',
+            'Auxiliary Activities (AAs)',
+            'GlycosylTransferases (GTs)',
+        ],
+        "Glycoside Hydrolases (GHs)": [
+            "GH1",
+            "GH2",
+        ],
+    }
+
+    parse_configuration.get_excluded_classes(
+        std_classes,
+        config_dict,
+        cazy_dictionary,
+    )
+
+
 # test get_configuration() - retrieves configuraiton for the expand module
 
 
