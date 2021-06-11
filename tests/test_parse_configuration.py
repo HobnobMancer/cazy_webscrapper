@@ -767,7 +767,7 @@ def test_parse_expand_config_dict(args_config_file, raw_config_dict, monkeypatch
     """Test parse_configuration_for_cazy_dict()"""
 
     def mock_std_names(*args, **kwargs):
-        return ['classes']
+        return raw_config_dict, ['classes']
     
     def mock_get_config(*args, **kwargs):
         return raw_config_dict
