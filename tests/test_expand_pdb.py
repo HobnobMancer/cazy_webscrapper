@@ -240,7 +240,7 @@ def test_no_config(args_parser, monkeypatch):
         "parse_configuration_for_cazy_database",
         mock_parse_config,
     )
-    monkeypatch.setarrt(get_pdb_structures, "get_all_pdb_accessions", mock_db_query)
+    monkeypatch.setattr(get_pdb_structures, "get_all_pdb_accessions", mock_db_query)
 
     get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
 
@@ -265,7 +265,7 @@ def test_get_accessions_config_tax_only(args_parser, monkeypatch):
         "parse_configuration_for_cazy_database",
         mock_parse_config,
     )
-    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
 
     get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
 
@@ -290,7 +290,7 @@ def test_get_accessions_config_kngdm_only(args_parser, monkeypatch):
         "parse_configuration_for_cazy_database",
         mock_parse_config,
     )
-    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
 
     get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
 
@@ -315,7 +315,7 @@ def test_get_accessions_config_ec_only(args_parser, monkeypatch):
         "parse_configuration_for_cazy_database",
         mock_parse_config,
     )
-    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
 
     get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
 
