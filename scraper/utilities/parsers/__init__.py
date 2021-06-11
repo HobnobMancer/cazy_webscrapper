@@ -482,6 +482,14 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
 
     # Add optional arguments to parser
 
+    # Add option to use own CAZy class synoymn dict
+    parser.add_argument(
+        "--cazy_synonyms",
+        type=Path,
+        default=None,
+        help="Path to JSON file containing CAZy class synoymn names",
+    )
+
     # Add option to specify path to configuration file
     parser.add_argument(
         "-c",
