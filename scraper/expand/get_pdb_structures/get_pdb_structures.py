@@ -422,7 +422,7 @@ def download_pdb_structures(pdb_accessions, args):
     logger.warning("Starting downloading of structure files from PDB")
 
     # remove chain annotations from pdb accession
-    formated_pdb_accessions = [acc.split("[")[0] for acc in pdb_accessions]
+    formated_pdb_accessions = [(acc.split("[")[0]) for acc in pdb_accessions]
 
     if args.outdir is None:
         logger.warning("Downloading to current working directory")
