@@ -52,7 +52,8 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Optional
 
-from Bio.PDB import PDBList
+import Bio.PDB
+
 from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
@@ -96,6 +97,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     # get list of all PDB accessions to retrieve structure files for
     pdb_accessions = get_pdb_accessions(args=args, session=session)
+    pdb_accessions = [acc.pdb_accession for acc in pdb_accessions]
 
     download_pdb_structures(pdb_accessions, args)
 
@@ -314,25 +316,27 @@ def download_pdb_structures(pdb_accessions, args):
 
     Return nothing.
     """
-    pdbl = PDBList()
+    pdbl = Bio.PDB.PDBList()
 
     logger = logging.getLogger(__name__)
     logger.warning("Starting downloading of structure files from PDB")
 
     if args.outdir is None:
+        logger.warning("Downloading to current working directory")
         for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
             for file_type in ((args.pdb).split(",")):
                 pdbl.download_pdb_files(
-                    accession_list,
+                    pdb_codes=accession_list,
                     file_format=file_type,
                     overwrite=args.overwrite,
                 )
 
     else:
+        logger.warning(f"Downloading structures to {args.outdir}")
         for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
             for file_type in ((args.pdb).split(",")):
                 pdbl.download_pdb_files(
-                    accession_list,
+                    pdb_codes=accession_list,
                     file_format=file_type,
                     overwrite=args.overwrite,
                     pdir=args.outdir,
