@@ -78,10 +78,9 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     # parse cmd-line arguments
     if argv is None:
         parser = build_pdb_structures_parser()
-        args = parser.parse_args()
     else:
         parser = build_pdb_structures_parser(argv)
-        args = parser.parse_args()
+    args = parser.parse_args()
 
     # build logger
     if logger is None:
