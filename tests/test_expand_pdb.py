@@ -234,7 +234,7 @@ def test_no_config(args_parser, monkeypatch):
         return None, None, None, None
     
     def mock_db_query(*args, **kwargs):
-        [['item','acc'], ['item1','acc'], ['item','acc']]
+        return [['item','acc'], ['item1','acc'], ['item','acc']]
     
     monkeypatch.setattr(
         parse_configuration,
@@ -256,7 +256,7 @@ def test_get_accessions_config_tax_only(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return  [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -281,7 +281,7 @@ def test_get_accessions_config_kngdm_only(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -306,7 +306,7 @@ def test_get_accessions_config_ec_only(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -331,7 +331,7 @@ def test_get_accession_config_tax_kngdm(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -356,7 +356,7 @@ def test_get_accession_config_tax_ec(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -381,7 +381,7 @@ def test_get_accession_config_kngdm_ec(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
@@ -406,7 +406,7 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingoms='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        [
+        return [
             ['NA','acc'],
             ['item1', genus, kingdom, ecs],
         ]
