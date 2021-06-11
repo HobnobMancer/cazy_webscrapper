@@ -186,7 +186,7 @@ def test_get_sesh_error(args_parser, monkeypatch):
     """Test get_database_session when an error arises when opening the session."""
     
     def mock_raise_error(*args, **kawrgs):
-        raise ValueError
+        return ValueError
 
     monkeypatch.setattr(sql_orm, "get_db_session", mock_raise_error)
 
