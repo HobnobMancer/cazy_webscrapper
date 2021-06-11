@@ -435,3 +435,12 @@ def test_get_pdb_acc_from_clss_fams(db_session):
     config_dict = {"classes": ["PL28"], "families": ["PL28"]}
 
     get_pdb_structures.get_pdb_acc_from_clss_fams(db_session, config_dict)
+
+
+# test get_all_pdb_accessions()
+
+
+def test_get_all_pdb_accessions(db_session):
+    """Test get_all_pdb_accessions"""
+
+    get_pdb_structures.get_all_pdb_accessions(db_session)
