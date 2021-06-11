@@ -268,7 +268,6 @@ def get_pdb_accessions(args, session):
                     pdb_accessions.append(result[0])
                     continue
 
-
     # apply taxonomy, kingdom and EC number filters
     else:
         for result in pdb_query_results:
