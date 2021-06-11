@@ -682,6 +682,26 @@ def test_get_excluded_classes(cazy_dictionary):
     )
 
 
+# test convert_lists_to_none()
+
+
+def test_convert_lists():
+    """Test convert_lists_to_none"""
+    config_dict = {
+        "classes": [
+            'Carbohydrate Esterases (CEs)',
+            'Auxiliary Activities (AAs)',
+        ],
+        "Glycoside Hydrolases (GHs)": [
+            "GH1",
+            "GH2",
+        ],
+        'GlycosylTransferases (GTs)': [],
+    }
+
+    parse_configuration.convert_lists_to_none(config_dict)
+
+
 # test get_configuration() - retrieves configuraiton for the expand module
 
 
