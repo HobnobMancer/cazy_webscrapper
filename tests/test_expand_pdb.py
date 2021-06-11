@@ -132,7 +132,7 @@ def test_main_args(args_parser, monkeypatch):
     get_pdb_structures.main()
 
 
-def test_main_argv(args_parser, monkeypatch):
+def test_main_argv(db_path, args_parser, monkeypatch):
     """Test main() when args is not None."""
 
     def mock_building_parser(*args, **kwargs):
@@ -142,12 +142,27 @@ def test_main_argv(args_parser, monkeypatch):
             description="Retrieve structures for CAZymes",
             conflict_handler="error",
             add_help=True,
-            parser_args=True,
         )
         return parser_args
 
     def mock_parser(*args, **kwargs):
-        return args_parser["args"]
+        parser = Namespace(
+            database=db_path,
+            pdb="pdb,xml",
+            contig=None,
+            classes=None,
+            force=True,
+            families=None,
+            kingdoms=None,
+            genera=None,
+            log=None,
+            nodelete=False,
+            outdir=output_dir,
+            species=None,
+            strains=None,
+            verbose=None,
+        )
+        return parser
 
     def mock_config_logger(*args, **kwargs):
         return
@@ -228,3 +243,79 @@ def test_no_config(args_parser, monkeypatch):
     monkeypatch.setarrt(get_pdb_structures, "get_all_pdb_accessions", mock_db_query)
 
     get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
+
+
+def test_get_accessions_config_tax_only(args_parser, monkeypatch):
+    """Test get_pdb_accessions when configuration is given, only apply tax filter."""
+
+    def mock_parse_config(*args, **kwargs):
+        return {"classes": ["GH"], "families": ["PL28"]}, {"Aspergillus"}, None, None
+    
+    def mock_db_query(*args, **kwargs):
+        genus = Namespace(genus='Aspergillus', species='Fumigatus')
+        kingdom = Namespace(kingoms='Bacteria')
+        ecs = Namespace(ec_number='1.2.3.4')
+        [
+            ['NA','acc'],
+            ['item1', genus, kingdom, ecs],
+        ]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+
+    get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
+
+
+def test_get_accessions_config_kngdm_only(args_parser, monkeypatch):
+    """Test get_pdb_accessions when configuration is given, only apply kingdom filter."""
+
+    def mock_parse_config(*args, **kwargs):
+        return {"classes": ["GH"], "families": ["PL28"]}, None, {'Bacteria'}, None
+    
+    def mock_db_query(*args, **kwargs):
+        genus = Namespace(genus='Aspergillus', species='Fumigatus')
+        kingdom = Namespace(kingoms='Bacteria')
+        ecs = Namespace(ec_number='1.2.3.4')
+        [
+            ['NA','acc'],
+            ['item1', genus, kingdom, ecs],
+        ]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+
+    get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
+
+
+def test_get_accessions_config_ec_only(args_parser, monkeypatch):
+    """Test get_pdb_accessions when configuration is given, only apply EC number filter."""
+
+    def mock_parse_config(*args, **kwargs):
+        return {"classes": ["GH"], "families": ["PL28"]}, None, None, {'1.2.3.4'}
+    
+    def mock_db_query(*args, **kwargs):
+        genus = Namespace(genus='Aspergillus', species='Fumigatus')
+        kingdom = Namespace(kingoms='Bacteria')
+        ecs = Namespace(ec_number='1.2.3.4')
+        [
+            ['NA','acc'],
+            ['item1', genus, kingdom, ecs],
+        ]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setarrt(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+
+    get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
+
