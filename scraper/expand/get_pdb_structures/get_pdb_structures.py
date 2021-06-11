@@ -427,7 +427,7 @@ def download_pdb_structures(pdb_accessions, args):
     if args.outdir is None:
         logger.warning("Downloading to current working directory")
         for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
-            for file_type in ((args.pdb).split(",")):
+            for file_type in tqdm((args.pdb).split(","), desc="Downloading"):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
                     file_format=file_type,
@@ -437,7 +437,7 @@ def download_pdb_structures(pdb_accessions, args):
     else:
         logger.warning(f"Downloading structures to {args.outdir}")
         for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
-            for file_type in ((args.pdb).split(",")):
+            for file_type in tqdm((args.pdb).split(","), desc="Downloading"):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
                     file_format=file_type,
