@@ -42,9 +42,9 @@ Use `cazy_webscraper` to create a local SQL database, then using SQL perform com
 
 ## Referencing
 
-If you use `cazy_webscraper` in your work *please* do cite our work (including the provided DOI), as well as citing the specific version you use. This is not only helpful for us as developers to get out work out into the world, but it is also **essential for the reproducibility and integrity of scientific research**.  
+Good academic practise requires the citing of other researchers works. If you use `cazy_webscraper` in your work *please* cite our work (including the provided DOI), as well as citing the specific version you use. This is not only helpful for us as developers to get our work out into the world, but it is also **essential for the reproducibility and integrity of scientific research**.  
 
-**Citation:** Hobbs, Emma E. M.; Pritchard, Leighton; Chapman, Sean; Gloster, Tracey M. (2021): cazy_webscraper Microbiology Society Annual Conference 2021 poster. figshare. Poster. https://doi.org/10.6084/m9.figshare.14370860.v7 
+> Hobbs, Emma E. M.; Pritchard, Leighton; Chapman, Sean; Gloster, Tracey M. (2021): cazy_webscraper Microbiology Society Annual Conference 2021 poster. figshare. Poster. https://doi.org/10.6084/m9.figshare.14370860.v7 
 
 ## Our last developments before releasing version 1!
 
@@ -101,7 +101,7 @@ If Conda is not installed, please see the Conda website for installation [instru
 
 Install `cazy_webscraper` via `bioconda` installs the full cazy_webscraper and all dependencies.
 
-**To invoke `cazy_webscraper` call the program from the command-line using `cazy_webscraper.py`.**
+**To invoke `cazy_webscraper` call the program from the command-line using `cazy_webscraper`.**
 
 ### Installing via `pip` (Quick and easy installation)
 
@@ -111,7 +111,7 @@ An easy way to install `cazy_webscraper` is to install it via [PyPi](https://pyp
 pip3 install cazy_webscraper
 ``
 
-**To invoke `cazy_webscraper` call the program from the command-line using `cazy_webscraper.py`.**
+**To invoke `cazy_webscraper` call the program from the command-line using `cazy_webscraper`.**
 
 ### Installing from source
 
@@ -173,11 +173,11 @@ Often multiple GenBank accession numbers are listed for a given CAZyme within CA
 When multiple GenBank accessions are listed, the accession written in bold is listed as the **primary GenBank accession** and all other listed GenBank accessions are listed as **non-primary GenBank accessions**. For the instances when there are multiple GenBank accessions written in bold, only the first listed bold GenBank accession is listed as the **primary GenBank accession**. The remaining GenBank accessions written in bold are flagged up to the user and are listed as **non-primary GenBank accessions**. This method is to enable identifying each unique CAZyme from CAZy by a single unique **primary GenBank accession**.
 
 
-**Primary and non-primary UniProt accessions**
+**Primary and non-primary UniProt accessions:**  
 IF multiple UniProt accessions are listed, all those written in bold are identified by CAZy and `cazy_webscraper` as the 'best' model. Consequently, all UniProt accessions listed in bold are defined as **primary UniProt accessions**, and all UniProt accessions not written in bold are listed as **non-primary UniProt accessions**. In cases when only a single UniProt accession, this lone accession is defined as the **primary UniProt accession** for the respective CAZyme.
 
 
-**PDB accessions**
+**PDB accessions:**  
 *All* PDB accessions stored in CAZy are retrieved, and are *not* differentitated between primary and non-primary accessions.
 
 It is important to note that not all PDB accessions listed in CAZy are also represent in PDB. Therefore, not all PDB accessions retrieved from CAZy can be used to retrieve a protein structure file form PDB. For example, the PDB accession 'BBB[nd]' was previously listed in CAZy but did not represent a record in PDB.
@@ -254,8 +254,9 @@ To specify taxonomy filters (Kingdoms, genera, species and strains), list the re
 
 The `expand` module in `cazy_webscraper` manages the retrieval of CAZyme protein sequences from GenBank and protein structure files from PDB.
 The `expand` module is invoked to act upon a local CAZy database, not invoked while scraping CAZy.
-
-**Protein Sequences**
+  
+  
+### **Protein Sequences**  
 `get_genbank_sequences.py` retrieves protein sequences of CAZymes from GenBank.
 
 To invoke the script use the following command:  
@@ -276,10 +277,12 @@ Optional arguments are: _The format to pass arguments to the script is the same 
 - `-u` `--update` Default False. Enables overwriting sequences in the database only if the sequence in GenBank has been updated since the sequence was added to the local database. It still retrieves protein sequences for proteins that do not have a sequence stored in the local database.
 - `-w` `--write` Write out the protein sequences to FASTA file, one protein per FASTA file
 - `-v` `--verbose` Default False. Enables verbose logging, changing the logger level from `WARNING` to `INFO`.
-
-**Protein Structures**
-`expand.get_pdb_structures.py` retrieves protein structure files from PDB. The downloading of the structure files is handled by the `Biopython` `PDB` module, further information on the module can be found [here](https://biopython.org/docs/1.75/api/Bio.PDB.html).
-
+  
+  
+### **Protein Structures**  
+`expand.get_pdb_structures.py` retrieves protein structure files from PDB. The downloading of the structure files is handled by the `Biopython` `PDB` module, further information on the module can be found [here](https://biopython.org/docs/1.75/api/Bio.PDB.html). **Please also cite ``Biopython.PDB`` in your work**  
+> Thomas Hamelryck and Bernard Manderick: 11PDB parser and structure class implemented in Python”. Bioinformatics, 19 (17): 2308–2310 (2003) doi: 10.1093/bioinformatics/btg299
+  
 `cazy_webscraper.py` retrieves the PDB accessions for all CAZymes matching the user specified critiera, then passes the PDB accessions to `Biopython.PDB`, which retrieves the structure files from PDB and writes them to a local directory.
 
 To retrieve the structure file for every PDB accession listed in your local CAZyme database (which is the 
@@ -295,11 +298,11 @@ The path to the local CAZyme database needs to point specifically at the databas
 
 The accepted file formats are (*these are determined by `Biopython.PDB`, and the following is taken from 
 the `Biopython.PDB` [documentation](https://biopython.org/docs/1.75/api/Bio.PDB.PDBList.html):
-•	`mmCif` (default, PDBx/mmCif file),
-•	`pdb` (format PDB),
-•	`xml` (PDBML/XML format),
-•	`mmtf` (highly compressed),
-•	`bundle` (PDB formatted archive for large structure}
+- `mmCif` (default, PDBx/mmCif file),
+- `pdb` (format PDB),
+- `xml` (PDBML/XML format),
+- `mmtf` (highly compressed),
+- `bundle` (PDB formatted archive for large structure}
 
 **Optional arguments:**
 
