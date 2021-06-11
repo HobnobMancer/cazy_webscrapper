@@ -51,7 +51,7 @@ import pytest
 from argparse import Namespace, ArgumentParser
 
 from scraper import utilities
-from scraper.expand.get_genbank_sequences import get_genbank_sequences, from_sql_db
+from scraper.expand.get_genbank_sequences import get_genbank_sequences, from_dict, from_sql_db
 from scraper.expand.get_genbank_sequences.ncbi import blast_db
 from scraper.utilities import file_io, parse_configuration, parsers
 
@@ -111,6 +111,38 @@ def args_db(db_path):
             email="dummyemail@domain.sec",
             database=db_path,
             dict=None,
+            fasta=os.getcwd(),
+            blastdb="Not None",
+            verbose=False,
+            log=None,
+        )
+    }
+    return argsdict
+
+
+@pytest.fixture
+def args_false_dict():
+    argsdict = {
+        "args": Namespace(
+            email="dummyemail@domain.sec",
+            database=None,
+            dict="dict",
+            fasta=os.getcwd(),
+            blast_db="Not None",
+            verbose=False,
+            log=None,
+        )
+    }
+    return argsdict
+
+
+@pytest.fixture
+def args_dict(db_path):
+    argsdict = {
+        "args": Namespace(
+            email="dummyemail@domain.sec",
+            database=None,
+            dict=db_path,
             fasta=os.getcwd(),
             blastdb="Not None",
             verbose=False,
@@ -230,6 +262,62 @@ def test_gbk_seq_main_db(args_db, monkeypatch):
     monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
     monkeypatch.setattr(utilities, "config_logger", mock_none)
     monkeypatch.setattr(from_sql_db, "sequences_for_proteins_from_db", mock_none)
+    monkeypatch.setattr(blast_db, "build_blast_db", mock_none)
+
+    get_genbank_sequences.main()
+
+
+def test_gbk_seq_main_dict_false(args_false_dict, monkeypatch):
+    """Test main() when args dict is not none but the path does not exist."""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_genbank_sequences.py",
+            usage=None,
+            description="Retrieve protein sequnces from GenBank",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+    
+    def mock_parser(*args, **kwargs):
+        return args_false_dict['args']
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_genbank_sequences_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        get_genbank_sequences.main()
+    assert pytest_wrapped_e.type == SystemExit
+
+
+def test_gbk_seq_main_dict(args_dict, monkeypatch):
+    """Test main() when args dict is not none."""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_genbank_sequences.py",
+            usage=None,
+            description="Retrieve protein sequnces from GenBank",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+    
+    def mock_parser(*args, **kwargs):
+        return args_dict['args']
+
+    def mock_none(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_genbank_sequences_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_none)
+    monkeypatch.setattr(from_dict, "sequences_for_proteins_from_dict", mock_none)
     monkeypatch.setattr(blast_db, "build_blast_db", mock_none)
 
     get_genbank_sequences.main()
