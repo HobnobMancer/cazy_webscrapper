@@ -81,6 +81,7 @@ def args_parser(db_path, output_dir):
     return args
 
 
+@pytest.fixture
 def args_no_db():
     args = {"args": Namespace(
         database="Fake_path"
@@ -114,7 +115,8 @@ def test_main_args(args_parser, monkeypatch):
         return
     
     def mock_pdb_acc(*args, **kwargs):
-        return [1,2,3,4,5,6]
+        acc1 = {'acc': Namespace(pdb_accession="accession1")}
+        return [acc1['acc']]
     
     def mock_download(*args, **kwargs):
         return
@@ -156,7 +158,8 @@ def test_main_argv(args_parser, monkeypatch):
         return
     
     def mock_pdb_acc(*args, **kwargs):
-        return [1,2,3,4,5,6]
+        acc1 = {'acc': Namespace(pdb_accession="accession1")}
+        return [acc1['acc']]
     
     def mock_download(*args, **kwargs):
         return
