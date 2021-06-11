@@ -86,6 +86,9 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     if logger is None:
         logger = logging.getLogger(__name__)
         config_logger(args)
+    
+    # validate PDB file choices
+    validate_pdb_file_types(args)
 
     session = get_database_session(args)
 
@@ -122,6 +125,36 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         f"Scrape finished at {end_time}\n"
         f"Total run time: {total_time}\n"
     )
+
+
+def validate_pdb_file_types(args):
+    """Check valid file types for PDB were specified by the user.
+
+    :param args: cmd-line args parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+
+    valid_choices = ['mmCif', 'pdb', 'xml', 'mmtf', 'bundle']
+
+    invalid_choices = []
+
+    user_choices = (args.pdb).split(",")
+
+    for choice in user_choices:
+        if choice not in valid_choices:
+            invalid_choices.append(choice)
+
+    if len(invalid_choices) != 0:
+        logger.error(
+            f"Invalid file option selected: {invalid_choices}.\n"
+            f"The valid choices are: {valid_choices}.\n"
+            "Terminating program."
+        )
+        sys.exit(1)
+
+    return
 
 
 def get_database_session(args):
