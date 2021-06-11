@@ -604,6 +604,18 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         ),
     )
 
+    parser.add_argument(
+        "--overwrite",
+        dest="overwrite",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable overwriting local structural file if already present.\n"
+            "Default: False (do not overwrite local structure file, "
+            "thus do not retreive another copy of the structure file from PDB)"
+        ),
+    )
+
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
     # all strains belonging to each listed species
     parser.add_argument(
