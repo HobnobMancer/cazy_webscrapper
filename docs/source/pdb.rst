@@ -41,11 +41,11 @@ them with a single comma (with no spaces). For example: ``pdb,xml``.
 
 The accepted file formats are (*these are determined by ``Biopython.PDB``, and the following is taken from 
 the ``Biopython.PDB`` `documentation <https://biopython.org/docs/1.75/api/Bio.PDB.PDBList.html>`_):
-•	``mmCif`` (default, PDBx/mmCif file),
-•	``pdb`` (format PDB),
-•	``xml`` (PDBML/XML format),
-•	``mmtf`` (highly compressed),
-•	``bundle`` (PDB formatted archive for large structure}
+*	``mmCif`` (default, PDBx/mmCif file),
+*	``pdb`` (format PDB),
+*	``xml`` (PDBML/XML format),
+*	``mmtf`` (highly compressed),
+*	``bundle`` (PDB formatted archive for large structure}
 
 
 Output directory
