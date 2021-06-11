@@ -748,3 +748,32 @@ def test_parse_expand_config(monkeypatch):
     monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
 
     parse_configuration.parse_configuration_for_cazy_database('args')
+
+
+# test parse_configuration_for_cazy_dict()
+
+
+def test_parse_expand_config_dict_sysexit(args_no_yaml):
+    """Test parse_configuration_for_cazy_dict()"""
+
+    with pytest.raises(SystemExit) as pytest_wrapped_err:
+        parse_configuration.parse_configuration_for_cazy_dict(
+            args_no_yaml["args"],
+        )
+    assert pytest_wrapped_err.type == SystemExit
+
+
+def test_parse_expand_config_dict(args_config_file, raw_config_dict, monkeypatch):
+    """Test parse_configuration_for_cazy_dict()"""
+
+    def mock_std_names(*args, **kwargs):
+        return ['classes']
+    
+    def mock_get_config(*args, **kwargs):
+        return raw_config_dict
+    
+    monkeypatch.setattr(parse_configuration, "get_cazy_dict_std_names", mock_std_names)
+    monkeypatch.setattr(parse_configuration, "get_yaml_configuration", mock_get_config)
+    monkeypatch.setattr(parse_configuration, "get_cmd_defined_fams_classes", mock_get_config)
+
+    parse_configuration.parse_configuration_for_cazy_dict(args_config_file['args'])
