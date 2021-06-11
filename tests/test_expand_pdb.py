@@ -60,7 +60,7 @@ def output_dir(test_dir):
 
 
 @pytest.fixture
-def args(db_path, output_dir):
+def args_parser(db_path, output_dir):
     args = {"args": Namespace(
         database=db_path,
         pdb="pdb,xml",
