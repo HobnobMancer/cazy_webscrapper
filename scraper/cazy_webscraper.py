@@ -334,7 +334,7 @@ def get_cazy_data(
 
                 continue
 
-        # Not first try, scrape only the families for which a connection to CAZy previously failed
+        # Not first try, scrape only the families for which a connections to CAZy previously failed
         else:
             class_families = list(cazy_class.failed_families.keys())
 
