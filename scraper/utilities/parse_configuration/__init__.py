@@ -682,4 +682,9 @@ def parse_configuration_for_cazy_dict(args):
             if item not in config_dict[key]:  # do not add duplicates
                 config_dict[key].append(item)
 
-    return set(config_dict.values())
+    config_data = []
+    for key in config_dict:
+        for item in config_dict[key]:
+            config_data.append(item)
+
+    return set(config_data)
