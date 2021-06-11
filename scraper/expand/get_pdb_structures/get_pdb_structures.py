@@ -421,9 +421,12 @@ def download_pdb_structures(pdb_accessions, args):
     logger = logging.getLogger(__name__)
     logger.warning("Starting downloading of structure files from PDB")
 
+    # remove chain annotations from pdb accession
+    formated_pdb_accessions = [acc.split("[")[0] for acc in pdb_accessions]
+
     if args.outdir is None:
         logger.warning("Downloading to current working directory")
-        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
+        for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
             for file_type in ((args.pdb).split(",")):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
@@ -433,7 +436,7 @@ def download_pdb_structures(pdb_accessions, args):
 
     else:
         logger.warning(f"Downloading structures to {args.outdir}")
-        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
+        for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
             for file_type in ((args.pdb).split(",")):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
