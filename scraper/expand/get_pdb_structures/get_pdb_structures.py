@@ -166,7 +166,10 @@ def get_pdb_accessions(args, session):
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
     parse_configuration_path = parse_configuration.__file__
     (
-        config_dict, taxonomy_filters, kingdoms, ec_filters,
+        config_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
     ) = parse_configuration.parse_configuration_for_cazy_database(
         parse_configuration_path,
         args,
@@ -181,22 +184,15 @@ def get_pdb_accessions(args, session):
     # parse the PDB query results to retain only those that match the user's criteria
     # object order Pdb, Cazyme, Taxonomy, Kingdom, EC
 
+    pdb_accessions = []
+
+    # apply no filters
     if (taxonomy_filters is None) and (kingdoms is None) and (ec_filters is None):
         accessions = [item[0] for item in pdb_query_results]
         pdb_accessions = [x for x in accessions if "NA" != x]
 
-    else:
-        if taxonomy_filters is None:
-            taxonomy_filters = set()
-
-        if kingdoms is None:
-            kingdoms = set()
-
-        if ec_filters is None:
-            ec_filters = set()
-
-        pdb_accessions = []
-
+    # apply only taxonomy_filters
+    elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is None):
         for result in pdb_query_results:
             if result[0] == "NA":
                 continue
@@ -206,16 +202,90 @@ def get_pdb_accessions(args, session):
             if any(filter in source_organism for filter in taxonomy_filters):
                 pdb_accessions.append(result[0])
                 continue
+    
+    # apply only kingdoms filters
+    elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is None):
+         for result in pdb_query_results:
+            if result[0] == "NA":
+                continue
 
-            # check if CAZyme records meets the kingdom requirement
             if result[-2].kingdom in kingdoms:
                 pdb_accessions.append(result[0])
+                continue
+        
+    # apply only EC number filters
+    elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is not None):
+        for result in pdb_query_results:
+            if result[0] == "NA":
                 continue
 
             # check if the CAZyme record meets the EC filter requirements
             if result[-1].ec_number in ec_filters:
                 pdb_accessions.append(result[0])
                 continue
+    
+    # apply taxonomy and kingdom filters
+    elif (taxonomy_filters is not None) and (kingdoms is not None) and (ec_filters is None):
+        for result in pdb_query_results:
+            if result[0] == "NA":
+                continue
+
+            # check if CAZyme records meets the taxonomy criteria
+            source_organism = result[-3].genus + result[-3].species
+            if any(filter in source_organism for filter in taxonomy_filters):
+
+                # check if CAZyme meets kingdom criteria (it should do but worth to check)
+                if result[-2].kingdom in kingdoms:
+                    pdb_accessions.append(result[0])
+                    continue
+
+    # apply taxonomy and EC number filters
+    elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is not None):
+        for result in pdb_query_results:
+            if result[0] == "NA":
+                continue
+
+            # check if CAZyme records meets the taxonomy criteria
+            source_organism = result[-3].genus + result[-3].species
+            if any(filter in source_organism for filter in taxonomy_filters):
+
+                # check if the CAZyme record meets the EC filter requirements
+                if result[-1].ec_number in ec_filters:
+                    pdb_accessions.append(result[0])
+                    continue
+
+    # apply kingdom and EC filters
+    elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is not None):
+        for result in pdb_query_results:
+            if result[0] == "NA":
+                continue
+
+            # check kingdom requirements are met
+            if result[-2].kingdom in kingdoms:
+
+                # check if the CAZyme record meets the EC filter requirements
+                if result[-1].ec_number in ec_filters:
+                    pdb_accessions.append(result[0])
+                    continue
+
+
+    # apply taxonomy, kingdom and EC number filters
+    else:
+        for result in pdb_query_results:
+            if result[0] == "NA":
+                continue
+
+            # check if CAZyme records meets the taxonomy criteria
+            source_organism = result[-3].genus + result[-3].species
+            if any(filter in source_organism for filter in taxonomy_filters):
+
+                # check kingdom requirements are met
+                if result[-2].kingdom in kingdoms:
+
+                    # check if the CAZyme record meets the EC filter requirements
+                    if result[-1].ec_number in ec_filters:
+                        pdb_accessions.append(result[0])
+                        continue
 
     return list(set(pdb_accessions))
 
