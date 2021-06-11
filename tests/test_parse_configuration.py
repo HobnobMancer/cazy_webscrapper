@@ -454,6 +454,12 @@ def test_get_ec_filter(args_config_cmd, raw_config_dict):
     parse_configuration.get_ec_filter(args_config_cmd["args"], raw_config_dict)
 
 
+def test_get_ec_filter_keyerror(args_config_cmd):
+    """Test get_ec_filter when 'EC' key is not present."""
+    raw_config_dict = {"classes": None}
+    parse_configuration.get_ec_filter(args_config_cmd["args"], raw_config_dict)
+
+
 # test get_kingdoms
 
 
