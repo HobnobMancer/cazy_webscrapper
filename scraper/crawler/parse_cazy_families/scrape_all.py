@@ -831,7 +831,7 @@ def parse_protein_table_dict(
             # check if row contains protein data
             if ('class' not in row.attrs) and ('id' not in row.attrs):  # row contains protein data
                 new_report_dict, session = row_to_protein_in_dict(
-                    row, family.name, taxonomy_filters, ec_filters, session, args
+                    row, family.name, taxonomy_filters, ec_filters, session
                 )
 
                 if new_report_dict["error"] is not None:

@@ -837,7 +837,7 @@ def parse_protein_pages_dict(
         # Loop overal all rows and add data to the local database
         for row in cazyme_rows:
             new_report_dict, session = row_to_protein_in_dict(
-                row, family.name, taxonomy_filters, ec_filters, session, args,
+                row, family.name, taxonomy_filters, ec_filters, session
             )
 
             if new_report_dict["error"] is not None:

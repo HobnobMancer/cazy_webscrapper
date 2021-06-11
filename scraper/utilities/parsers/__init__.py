@@ -42,7 +42,6 @@
 
 
 import argparse
-import os
 import sys
 
 from pathlib import Path
@@ -94,13 +93,6 @@ def build_parser(argv: Optional[List] = None):
         metavar="local database path",
         default=None,
         help="path to an existing local CAZy SQL database",
-    )
-
-    parser.add_argument(
-        "--dict",
-        type=Path,
-        default=None,
-        help="Path to a JSON file to write out CAZy data to",
     )
 
     # Add option to limit scrape to CAZymes with specific EC numbers
@@ -187,16 +179,6 @@ def build_parser(argv: Optional[List] = None):
         metavar="output file name",
         default=sys.stdout,
         help="Output filename",
-    )
-
-    # add option to only retrieve primary accessions
-    parser.add_argument(
-        "-p",
-        "--primary",
-        dest="primary",
-        action="store_true",
-        default=False,
-        help="Enable retrieval of ONLY primary accessions",
     )
 
     # Add option to enable number of times to retry scraping
@@ -297,27 +279,17 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
 
     # Add positional/required arguments
     parser.add_argument(
-        "email",
-        type=str,
-        metavar="user email address",
-        help="User email address, requirement of NCBI-Entrez",
-    )
-
-    # these args appear optional but wither database OR dict must be given, and NOT both
-    parser.add_argument(
-        "--database",
+        "database",
         type=Path,
-        default=None,
         metavar="local CAZy database",
         help="Path to local CAZy database",
     )
 
     parser.add_argument(
-        "--dict",
-        type=Path,
-        default=None,
-        metavar="local CAZy didct",
-        help="Path to local CAZy dict (JSON file)",
+        "email",
+        type=str,
+        metavar="user email address",
+        help="User email address, requirement of NCBI-Entrez",
     )
 
     # Add optional arguments to parser
@@ -382,9 +354,14 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     # Add option to enable writing sequences to FASTA file or files, or not at all
     parser.add_argument(
         "--fasta",
-        type=Path,
-        default=Path(os.getcwd()),
-        help="Directory to write out retrieved protein sequences to FASTA files to",
+        type=str,
+        default=None,
+        help=(
+            "Enable writing out retrieved sequences to FASTA file(s).\n"
+            "Writing 'separate' produces a single FASTA file per retrieved protein sequence,\n"
+            "else, write the path to the FASTA to add retrieved protein sequences to\n"
+            "(this can be a pre-existing or non-existing FASTA file."
+        ),
     )
 
     # Add option to restrict the scrape to specific kingdoms
@@ -417,17 +394,6 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         help="Defines log file name and/or path",
     )
 
-    # Add option to prevent over writing of existing files
-    # and cause addition of files to output directory
-    parser.add_argument(
-        "-n",
-        "--nodelete",
-        dest="nodelete",
-        action="store_true",
-        default=False,
-        help="enable/disable deletion of exisiting files",
-    )
-
     # enable retrieving protein sequences for only primary GenBank accessions
     parser.add_argument(
         "-p",
@@ -436,16 +402,6 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         action="store_true",
         default=False,
         help="Enable retrieveing protein sequences for only primary GenBank accessions",
-    )
-
-    # Add option to change the number of times to try the connection to NCBI if it fails
-    parser.add_argument(
-        "-r",
-        "--retries",
-        dest="retries",
-        type=int,
-        default=10,
-        help="Number of times to retry connection to NCBI if connection fails",
     )
 
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
@@ -524,14 +480,6 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
 
     # Add optional arguments to parser
 
-    # Add option to specify batch limit when batch quering NCBI
-    parser.add_argument(
-        "--batch_limit",
-        type=int,
-        default=200,
-        help="Number of PDB accessions parsed to Biopyton.PDB.download_pdb_files at once"
-    )
-
     # Add option to specify path to configuration file
     parser.add_argument(
         "-c",
@@ -547,14 +495,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--classes",
         type=str,
         default=None,
-        help="Classes from which all structures will be retrieved. Separate classes by ','"
-    )
-
-    parser.add_argument(
-        "--ec",
-        type=str,
-        default=None,
-        help="EC number annotations to restrict the retrieval fo structures to. Separate families by commas 'GH1,GH2'"
+        help="Classes from which all families are to be scraped. Separate classes by ','"
     )
 
     # enable force writing in an existing directory
@@ -572,7 +513,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--families",
         type=str,
         default=None,
-        help="Families to retrieve structures for. Separate families by commas 'GH1,GH2'"
+        help="Families to scrape. Separate families by commas 'GH1,GH2'"
     )
 
     # Add option to restrict the scrape to specific kingdoms
@@ -591,7 +532,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         "--genera",
         type=str,
         default=None,
-        help="Genera to restrict the retrieval structure files to"
+        help="Genera to restrict the scrape to"
     )
 
     # Add log file name option
@@ -625,22 +566,13 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         help="Path to output directory to which downloaded structures are retrieved",
     )
 
-    # specify if to overwrite a local structure file
-    parser.add_argument(
-        "--overwrite",
-        dest="overwrite",
-        action="store_true",
-        default=False,
-        help="Enable overwriting local structure files if already present",
-    )
-
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
     # all strains belonging to each listed species
     parser.add_argument(
         "--species",
         type=str,
         default=None,
-        help="Species (written as Genus Species) to restrict the retrieval of structure files to"
+        help="Species (written as Genus Species) to restrict the scrape to"
     )
 
     # Add option to restrict scraping to specific strains of organisms
@@ -649,7 +581,7 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         type=str,
         default=None,
         help=(
-            "Specific strains of organisms to restrict the retrieval of structure files to "
+            "Specific strains of organisms to restrict the scrape to "
             "(written as Genus Species Strain)"
         ),
     )

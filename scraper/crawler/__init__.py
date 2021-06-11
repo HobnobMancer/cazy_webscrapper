@@ -505,7 +505,6 @@ def row_to_protein_in_dict(
     taxonomy_filters,
     ec_filters,
     session,
-    args,
 ):
     """Parses row and collates data to be added to records to dictionary of CAZymes.
 
@@ -518,7 +517,6 @@ def row_to_protein_in_dict(
     :param kingdom: str, Taxonomy Kingdom of CAZymes currently being scraped
     :param ec_filters: set of EC filters to limit scrape to
     :param session: open sqlalchemy database session
-    :param args: cmd-line args parser
 
     Returns a dictionary to store and reflect any errors that may have occurred during the parsing
     of the proteins.
@@ -628,13 +626,12 @@ def row_to_protein_in_dict(
     except KeyError:
         session[gbk_primary[0]] = [family_name]
 
-    if args.primary is False:
-        for acc in gbk_nonprimary:
-            try:
-                session[acc]
-                session[acc].append(family_name)
-            except KeyError:
-                session[acc] = [family_name]
+    for acc in gbk_nonprimary:
+        try:
+            session[acc]
+            session[acc].append(family_name)
+        except KeyError:
+            session[acc] = [family_name]
 
     return report_dict, session
 
