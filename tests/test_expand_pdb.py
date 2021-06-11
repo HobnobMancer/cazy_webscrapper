@@ -172,7 +172,7 @@ def test_main_argv(args_parser, monkeypatch):
     monkeypatch.setattr(get_pdb_structures, "get_pdb_accessions", mock_pdb_acc)
     monkeypatch.setattr(get_pdb_structures, "download_pdb_structures", mock_download)
     
-    get_pdb_structures.main(argv=args_parser["args"])
+    get_pdb_structures.main(["args"])
 
 
 def test_get_sesh_false_path(args_no_db):
