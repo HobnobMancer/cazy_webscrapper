@@ -254,7 +254,7 @@ def test_get_accessions_config_tax_only(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return  [
             ['NA','acc'],
@@ -279,7 +279,7 @@ def test_get_accessions_config_kngdm_only(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -304,7 +304,7 @@ def test_get_accessions_config_ec_only(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -329,7 +329,7 @@ def test_get_accession_config_tax_kngdm(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -354,7 +354,7 @@ def test_get_accession_config_tax_ec(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -379,7 +379,7 @@ def test_get_accession_config_kngdm_ec(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -404,7 +404,7 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
-        kingdom = Namespace(kingoms='Bacteria')
+        kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
             ['NA','acc'],
@@ -420,3 +420,5 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
 
     get_pdb_structures.get_pdb_accessions(args=args_parser["args"], session="session")
 
+
+# test get_pdb_acc_from_clss_fams()
