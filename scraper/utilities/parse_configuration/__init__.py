@@ -624,8 +624,10 @@ def get_configuration(args):
 
 def parse_configuration_for_cazy_database(file_io_path, args):
     """Get configuration for the Expand module.
+
     :param file_io_path: Path to file_io module
     :param args: cmd-line argument parser
+
     Return configuration dictionary, set of taxonomy filters and set of Taxonomy Kingdoms.
     """
     # retrieve inital parsing of configuration data
@@ -648,14 +650,16 @@ def parse_configuration_for_cazy_database(file_io_path, args):
 
     if len(taxonomy_filters) == 0:
         taxonomy_filters = None
-
     else:
         taxonomy_filters = set(taxonomy_filters)
 
     if kingdoms == "all":
-        kingdoms = ['Archaea', 'Bacteria', 'Eukaryota', 'Viruses', 'Unclassified']
-
-    kingdoms = set(kingdoms)
+        kingdoms = None
+    else:
+        kingdoms = set(kingdoms)
+    
+    if len(ec_filters) == 0:
+        ec_filters = None
 
     return config_dict, taxonomy_filters, kingdoms, ec_filters
 
