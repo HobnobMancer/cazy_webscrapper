@@ -49,6 +49,8 @@ import pytest
 
 from argparse import Namespace, ArgumentParser
 
+from Bio.PDB import PDBList
+
 from scraper import utilities
 from scraper.expand.get_pdb_structures import get_pdb_structures
 from scraper.sql import sql_orm
@@ -87,6 +89,34 @@ def args_no_db():
         database="Fake_path"
     )}
     return args
+
+
+@pytest.fixture
+def args_no_outdir():
+    args = {"args": Namespace(
+        batch_limit=4,
+        outdir=None,
+        overwrite=False,
+        pdb="pdb,xml",
+    )}
+    return args
+
+
+
+@pytest.fixture
+def args_outdir(test_dir):
+    path_ = test_dir / "test_outputs"
+    path_ = path_ / "test_outputs_expand"
+    args = {"args": Namespace(
+        batch_limit=4,
+        outdir=path_,
+        overwrite=False,
+        pdb="pdb,xml",
+    )}
+    return args
+
+
+# test main()
 
 
 def test_main_args(args_parser, monkeypatch):
@@ -400,7 +430,12 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
     """Test get_pdb_accessions when configuration is given, Tax, kingdom and EC number filters."""
 
     def mock_parse_config(*args, **kwargs):
-        return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, {'Bacteria'}, {'1.2.3.4'}
+        return (
+            {"classes": ["GH"], "families": ["PL28"]},
+            {'Aspergillus'},
+            {'Bacteria'},
+            {'1.2.3.4'},
+        )
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
@@ -427,7 +462,7 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
 def test_get_pdb_acc_from_clss_fams(db_session):
     """Test get_pdb_acc_from_clss_fams()"""
     
-    config_dict = {"classes": ["PL28"], "families": ["PL28"]}
+    config_dict = {"classes": ["PL28"], "GH": ["PL28"], "PL": None, "CE": ["CE1_3"]}
 
     get_pdb_structures.get_pdb_acc_from_clss_fams(db_session, config_dict)
 
@@ -436,6 +471,35 @@ def test_get_pdb_acc_from_clss_fams(db_session):
 
 
 def test_get_all_pdb_accessions(db_session):
-    """Test get_all_pdb_accessions()"""
+    """Test get_all_pdb_accessions"""
 
     get_pdb_structures.get_all_pdb_accessions(db_session)
+
+
+# test download_pdb_structures()
+
+
+def test_download_none(args_no_outdir, monkeypatch):
+    """Test download_pdb_structures when args.outdir is None"""
+
+    def mock_PDBList(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(PDBList, "download_pdb_files", mock_PDBList)
+
+    accession_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+
+    get_pdb_structures.download_pdb_structures(accession_list, args_no_outdir['args'])
+
+
+def test_download(args_outdir, monkeypatch):
+    """Test download_pdb_structures when args.outdir is not None"""
+
+    def mock_PDBList(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(PDBList, "download_pdb_files", mock_PDBList)
+
+    accession_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+
+    get_pdb_structures.download_pdb_structures(accession_list, args_outdir['args'])

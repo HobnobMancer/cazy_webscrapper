@@ -85,6 +85,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             "Please provide a path to a local dict (JSON file) or SQL db.\n"
             "Terminating program."
         )
+        sys.exit(1)
     
     elif (args.database is not None) and (args.dict is not None):
         logger.warning(
@@ -92,6 +93,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             "Please provide ONLY ONE to path to a local dict (JSON file) OR SQL db.\n"
             "Terminating program."
         )
+        sys.exit(1)
     
     if args.database is not None:
         # check path to the local db is valid
