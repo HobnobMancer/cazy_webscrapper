@@ -77,6 +77,12 @@ def time_stamp():
 # Define fixtures for testing SQL ORM and interface
 
 
+@pytest.fixture()
+def db_path():
+    db_path = "tests/test_inputs/unit_test_database/unit_test_2021-04-27--11-54-58.db"
+    return db_path()
+
+
 @pytest.fixture(scope="session")
 def engine():
     db_path = "tests/test_inputs/unit_test_database/unit_test_2021-04-27--11-54-58.db"
