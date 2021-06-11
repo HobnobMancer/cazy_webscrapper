@@ -473,9 +473,11 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
 
     parser.add_argument(
         "pdb",
-        choices=["mmCif", "pdb", "xml", "mmtf", "bundle"],
         type=str,
-        help="File format of downloaded structure from PDB",
+        help=(
+            "File format of downloaded structure from PDB\n"
+            "choices=['mmCif', 'pdb', 'xml', 'mmtf', 'bundle']"
+        ),
     )
 
     # Add optional arguments to parser
