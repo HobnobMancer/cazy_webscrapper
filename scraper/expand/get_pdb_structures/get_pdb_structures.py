@@ -147,8 +147,7 @@ def get_database_session(args):
         session = get_db_session(args)
     except Exception as err:
         logger.error(
-            "Could not connect to local CAZyme database.\n"
-            "The following error was raised:\n"
+            "Could not connect to local CAZyme database.The following error was raised:\n"
             f"{err}\nTerminating program\n"
         )
         sys.exit(1)
