@@ -462,7 +462,7 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
 def test_get_pdb_acc_from_clss_fams(db_session):
     """Test get_pdb_acc_from_clss_fams()"""
     
-    config_dict = {"classes": ["PL28"], "families": ["PL28"]}
+    config_dict = {"classes": ["PL28"], "GH": ["PL28"], "PL": None}
 
     get_pdb_structures.get_pdb_acc_from_clss_fams(db_session, config_dict)
 
