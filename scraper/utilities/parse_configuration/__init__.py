@@ -584,48 +584,9 @@ def create_streamline_scraping_warning(args):
     )
 
 
-def get_configuration(args):
+def parse_configuration_for_cazy_database(args):
     """Get configuration for the Expand module.
 
-    :param file_io_path: Path to file_io module
-    :param args: cmd-line argument parser
-
-    Return configuration dictionary, set of taxonomy filters and set of Taxonomy Kingdoms.
-    """
-    # retrieve inital parsing of configuration data
-    (
-        excluded_classes, config_dict, cazy_dict, taxonomy_filters_dict, kingdoms, ec_filter,
-    ) = parse_configuration(args)
-    # excluded_classes and cazy_dict are used in the crawler module but are not needed for the
-    # the expand module
-
-    taxonomy_filters = []
-
-    for key in taxonomy_filters_dict:
-        try:
-            if len(taxonomy_filters_dict[key]) != 0:
-                taxonomy_filters += taxonomy_filters_dict[key]
-        except (TypeError, KeyError):
-            pass
-
-    if len(taxonomy_filters) == 0:
-        taxonomy_filters = None
-
-    else:
-        taxonomy_filters = set(taxonomy_filters)
-
-    if kingdoms == "all":
-        kingdoms = ['Archaea', 'Bacteria', 'Eukaryota', 'Viruses', 'Unclassified']
-
-    kingdoms = set(kingdoms)
-
-    return config_dict, taxonomy_filters, kingdoms
-
-
-def parse_configuration_for_cazy_database(file_io_path, args):
-    """Get configuration for the Expand module.
-
-    :param file_io_path: Path to file_io module
     :param args: cmd-line argument parser
 
     Return configuration dictionary, set of taxonomy filters and set of Taxonomy Kingdoms.
@@ -669,7 +630,7 @@ def parse_configuration_for_cazy_database(file_io_path, args):
     return config_dict, taxonomy_filters, kingdoms, ec_filters
 
 
-def parse_configuration_for_cazy_dict(file_io_path, args):
+def parse_configuration_for_cazy_dict(args):
     """Get configuration for the Expand module when CAZy data is in a dict not database.
     :param file_io_path: Path to file_io module
     :param args: cmd-line argument parser
