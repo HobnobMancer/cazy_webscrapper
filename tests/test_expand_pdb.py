@@ -320,3 +320,52 @@ def test_get_accessions_config_ec_only(args_parser, monkeypatch):
 
     get_pdb_structures.get_pdb_accessions(args=args_parser["args"], session="session")
 
+
+def test_get_accession_config_tax_kngdm(args_parser, monkeypatch):
+    """Test get_pdb_accessions when configuration is given, Taxa and Kingdom filters."""
+
+    def mock_parse_config(*args, **kwargs):
+        return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, {'Bacteria'}, None
+    
+    def mock_db_query(*args, **kwargs):
+        genus = Namespace(genus='Aspergillus', species='Fumigatus')
+        kingdom = Namespace(kingoms='Bacteria')
+        ecs = Namespace(ec_number='1.2.3.4')
+        [
+            ['NA','acc'],
+            ['item1', genus, kingdom, ecs],
+        ]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+
+    get_pdb_structures.get_pdb_accessions(args=args_parser["args"], session="session")
+
+
+def test_get_accession_config_tax_ec(args_parser, monkeypatch):
+    """Test get_pdb_accessions when configuration is given, Taxa and EC number filters."""
+
+    def mock_parse_config(*args, **kwargs):
+        return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, None, {'1.2.3.4'}
+    
+    def mock_db_query(*args, **kwargs):
+        genus = Namespace(genus='Aspergillus', species='Fumigatus')
+        kingdom = Namespace(kingoms='Bacteria')
+        ecs = Namespace(ec_number='1.2.3.4')
+        [
+            ['NA','acc'],
+            ['item1', genus, kingdom, ecs],
+        ]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_acc_from_clss_fams", mock_db_query)
+
+    get_pdb_structures.get_pdb_accessions(args=args_parser["args"], session="session")
