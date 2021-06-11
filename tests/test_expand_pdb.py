@@ -142,6 +142,7 @@ def test_main_argv(args_parser, monkeypatch):
             description="Retrieve structures for CAZymes",
             conflict_handler="error",
             add_help=True,
+            parser_args=True,
         )
         return parser_args
 
@@ -175,6 +176,9 @@ def test_main_argv(args_parser, monkeypatch):
     get_pdb_structures.main(["args"])
 
 
+# test get_database_session()
+
+
 def test_get_sesh_false_path(args_no_db):
     """Test get_database_session when the path does not exist"""
     with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -202,3 +206,25 @@ def test_get_sesh_success(args_parser, monkeypatch):
     monkeypatch.setattr(sql_orm, "get_db_session", mock_get_sesh)
 
     get_pdb_structures.get_database_session(args_parser["args"])
+
+
+# test get_pdb_accessions()
+
+
+def test_no_config(args_parser, monkeypatch):
+    """Test get_pdb_accessions when no configuration is given."""
+
+    def mock_parse_config(*args, **kwargs):
+        return None, None, None, None
+    
+    def mock_db_query(*args, **kwargs):
+        [['item','acc'], ['item1','acc'], ['item','acc']]
+    
+    monkeypatch.setattr(
+        parse_configuration,
+        "parse_configuration_for_cazy_database",
+        mock_parse_config,
+    )
+    monkeypatch.setarrt(get_pdb_structures, "get_all_pdb_accessions", mock_db_query)
+
+    get_pdb_structures.get_all_pdb_accessions(args_parser["args"], "session")
