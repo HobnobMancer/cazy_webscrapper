@@ -276,6 +276,7 @@ def get_pdb_accessions(args, session):
 
             # check if CAZyme records meets the taxonomy criteria
             source_organism = result[-3].genus + result[-3].species
+            print(source_organism, taxonomy_filters)
             if any(filter in source_organism for filter in taxonomy_filters):
 
                 # check kingdom requirements are met
