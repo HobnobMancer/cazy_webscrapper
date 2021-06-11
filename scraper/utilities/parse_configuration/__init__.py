@@ -206,11 +206,11 @@ def get_ec_filter(args, raw_config_dict):
 
     if args.ec is not None:
         ecs += (args.ec).split(",")
-    
-    i = 0
-    for i in range(len(ecs)):
-        ecs[i] = ecs[i].replace("EC", "")
-        ecs[i] = ecs[i].replace("ec", "")
+
+    # standardise EC numbers
+    ecs = [ec.replaced("EC","") for ec in ecs]
+    ecs = [ec.replaced("ec","") for ec in ecs]
+    ecs = [ec.replaced("*","-") for ec in ecs]
 
     ec_filter = set(ecs)
 
