@@ -78,9 +78,10 @@ def time_stamp():
 
 
 @pytest.fixture()
-def db_path():
-    db_path = "tests/test_inputs/unit_test_database/unit_test_2021-04-27--11-54-58.db"
-    return db_path()
+def db_path(test_input_dir):
+    db_path = test_input_dir / "unit_test_database"
+    db_path = db_path / "unit_test_2021-04-27--11-54-58.db"
+    return db_path
 
 
 @pytest.fixture(scope="session")
