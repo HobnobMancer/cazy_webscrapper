@@ -632,9 +632,14 @@ def parse_configuration_for_cazy_database(file_io_path, args):
     """
     # retrieve inital parsing of configuration data
     (
-        excluded_classes, config_dict, cazy_dict, taxonomy_filters_dict, kingdoms, ec_filters,
+        excluded_classes,
+        config_dict,
+        cazy_dict,
+        taxonomy_filters_dict,
+        kingdoms,
+        ec_filters,
     ) = parse_configuration(
-        file_io_path, args,
+        args,
     )
     # excluded_classes and cazy_dict are used in the crawler module but are not needed for the
     # the expand module
