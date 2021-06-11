@@ -87,15 +87,15 @@ There are three different methods to install `cazy_webscraper`:
 
 `cazy_webscraper` is available in the [`bioconda`](https://bioconda.github.io/user/install.html) channel of [`conda`](https://docs.conda.io/projects/conda/en/latest/user-guide/install/). If you have the `bioconda` channel available, `cazy_webscraper` can be installed from the command-line with:
 
-```bash
+``bash
 conda install cazy_webscraper
-```
+``
 
 If the `bioconda` channel is not available, then use:
 
-```bash
+``bash
 conda install -c bioconda cazy_webscraper
-```
+``
 
 If Conda is not installed, please see the Conda website for installation [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
@@ -107,9 +107,9 @@ Install `cazy_webscraper` via `bioconda` installs the full cazy_webscraper and a
 
 An easy way to install `cazy_webscraper` is to install it via [PyPi](https://pypi.org/project/cazy-webscraper/0.1.2/), using the command:
 
-```bash
+``bash
 pip3 install cazy_webscraper
-```
+``
 
 **To invoke `cazy_webscraper` call the program from the command-line using `cazy_webscraper.py`.**
 
@@ -118,28 +118,28 @@ pip3 install cazy_webscraper
 `cazy_webscraper` can also be installed directly from the source GitHub repository.  
 First clone the GitHub repository. This can be done at the command-line with the command:
 
-```bash
+``bash
 git clone https://github.com/HobnobMancer/cazy_webscraper.git
-```
+``
 
 Then change directory to the repository root, and use Python's setup tools to install:
 
-```bash
+``bash
 cd cazy_webscraper
 pip3 install -e .
-```
+``
 
 If you install `cazy_webscraper` from source, to invoke `cazy_webscraper` you will need to call it using: 
 
-```bash
+``bash
 python3 <path to cazy_webscraper.py file>
-```
+``
 
 For example, if you were located in the root of the, then use the command:  
 
-```bash
+``bash
 python3 scraper/cazy_webscraper.py
-```
+``
 
 ## Getting started
 
@@ -237,11 +237,11 @@ save time having to write out all the subfamilies for a given CAZy family.
 
 Each family must be listed on a separate line and the name surrounded by double or single quotation marks. For example:
 
-```
+``
 Glycoside Hydrolases (GHs):
     - "GH1"
     - "GH2"
-```
+``
 
 Please find more information on writing lists in Yaml files [here](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html).
 
@@ -278,31 +278,55 @@ Optional arguments are: _The format to pass arguments to the script is the same 
 - `-v` `--verbose` Default False. Enables verbose logging, changing the logger level from `WARNING` to `INFO`.
 
 **Protein Structures**
-`get_pdb_structures.py` retrieves protein structure files from PDB. The downloading of the structure files is handled by the `BioPython` `PDB` module, further information on the module can be found [here](https://biopython.org/docs/1.75/api/Bio.PDB.html).
+`expand.get_pdb_structures.py` retrieves protein structure files from PDB. The downloading of the structure files is handled by the `Biopython` `PDB` module, further information on the module can be found [here](https://biopython.org/docs/1.75/api/Bio.PDB.html).
 
-to invoke the script, use the following command:  
-`python3 <path to get_pdb_structures.py> <path to local CAZy database> <file format of downloaded files>`  
-The file formats and descriptions are taken straight from the `BioPython` documentation [found here](https://biopython.org/docs/1.75/api/Bio.PDB.PDBList.html?highlight=pdblist#Bio.PDB.PDBList.PDBList.retrieve_pdb_file).
-- "mmCif" (default, PDBx/mmCif file),
-- "pdb" (format PDB),
-- "xml" (PDBML/XML format),
-- "mmtf" (highly compressed),
-- "bundle" (PDB formatted archive for large structure}
+`cazy_webscraper.py` retrieves the PDB accessions for all CAZymes matching the user specified critiera, then passes the PDB accessions to `Biopython.PDB`, which retrieves the structure files from PDB and writes them to a local directory.
 
-Optional arguments: _The format to pass arguments to the script is the same format use to pass the same argument to `cazy_webscraper`_
-- `-c` `--config` Define path to a configuration yaml file to define CAZy classes and/or families to retrieve the protein structures for
-- `--classes` Define CAZy classes to retrieve protein structures for
-- `--families` Define CAZy families to retrieve protein structures for
-- `-f` `--force` Force writing to directory that already exists
-- `--genera` Genera of species to retrieve structures for
-- `--kingdoms` Taxonomy Kingdoms to retrieve structures for
-- `-l` `--log` Path to write out a log file to
-- `-n` `--nodelete` Default False. If enables it stops content in the existing output directory being deleted, else the contents in the existing output directory are deleted first before proceeding
-- `-o` `--outdir` Default is the current working directory. Define path to output directory. If the output directory does not exist the program will create it.
-- `-p` `--primary` Default False. If enabled only retrieve protein structures for **primary** GenBank accessions
-- `--species` Species to retrieve structures for
-- `--strains` Specific species strains to retrieve structures for
-- `v` `--verbose` Default False. Enables verbose logging, changing the logger level from `WARNING` to `INFO`.
+To retrieve the structure file for every PDB accession listed in your local CAZyme database (which is the 
+default behaviour), the command has the following structure:
+
+```bash
+cazy_webscraper_get_pdb_structures <path_to_your_local_cazyme_db.db> <files_types>
+```
+
+The path to the local CAZyme database needs to point specifically at the database file created using 
+`cazy_webscraper`, which has the name format: `cazy_scrape_YYYY-MM-DD--HH-MM-ss.db`. For example, 
+`cazy_scrape_2021-06-10--22-44-49.db`.
+
+The accepted file formats are (*these are determined by `Biopython.PDB`, and the following is taken from 
+the `Biopython.PDB` [documentation](https://biopython.org/docs/1.75/api/Bio.PDB.PDBList.html):
+•	`mmCif` (default, PDBx/mmCif file),
+•	`pdb` (format PDB),
+•	`xml` (PDBML/XML format),
+•	`mmtf` (highly compressed),
+•	`bundle` (PDB formatted archive for large structure}
+
+**Optional arguments:**
+
+Many of the flags are the same flags for customising the scraping of CAZy. For `--classess`, `ec`, `--families`, `--kingdoms`, `--genera`, `--species` and `--strains`, the default is not to apply the filter. The filter is only applied if the flag is called.
+
+- `--batch_limit` - Number of PDB accessions passed to Biopython.PDB at once, to retrieve from PDB. Default: 200
+- `--cazy_synonyms` - Path to JSON file containing class synonoms to used instead of those built into cazy_webscraper
+- `-c`, `--classes` - List of CAZy classes to limit the retrieval of structure files to. Separate classes with a single comma
+- `--ec` - List of EC numbers, separate EC numbers with a single comma. CAZymes with at least one of the listed EC numbers will 
+be selected for retrieving structure files for
+- `-f`, `--force` - Force writing to output directory that already exists. Default: False - will not write out to an output directory 
+that already exists.
+- `--families` - List of CAZy families to limit the retrieval of structure files to. Separate families with a single comma
+- `--kingdoms` - List of taxonomy kingdoms to limit the retrieval structure files for CAZymes that are derived from species from the specified 
+kingdoms. Options: archaea, bacteria, eukaryota, viruses, unclassified (not case sensitive). 
+- `--genera` - List of genera to limit the retrieval structure files for CAZymes that are derived from species from the specified 
+genera.
+- `-l`, `--log` - Write out log to a file. Define a path to write out the log to. Default: None, does not write the log to a log file.
+- `-n`, `--nodelete` - Enable not deleting content in an output directory that already exists. Default: False – 
+content in the output directory **is deleted**. **The output directory is nuked!**. If enabled/called 
+the content already present in an existing output directory **is not deleted**.
+- `-o`, `--output` - Path to output directory. Default: write out structure files to the current working directory.
+- `--overwrite` - Enable overwriting local structure files if already present. Default: False – do not overwrite a file if already present.
+- `--species` - List of species to limit the retrieval of structure files for CAZymes that are derived from these species. List a species will identify 
+CAZymes from *all strains* of each listed species.
+- `--strains` - List of species *strains* to limit of structure files for CAZymes that are derived from these specific species strains.
+- `-v`, `--verbose` - Enable verbose logging. Default: False.
 
 
 ## Directories
