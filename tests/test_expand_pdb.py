@@ -121,7 +121,7 @@ def test_main_args(args_parser, monkeypatch):
     def mock_download(*args, **kwargs):
         return
 
-    monkeypatch.setattr(parsers, "build_parser", mock_building_parser)
+    monkeypatch.setattr(parsers, "build_pdb_structures_parser", mock_building_parser)
     monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
     monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
     monkeypatch.setattr(get_pdb_structures, "get_database_session", mock_get_sess)
@@ -164,7 +164,7 @@ def test_main_argv(args_parser, monkeypatch):
     def mock_download(*args, **kwargs):
         return
 
-    monkeypatch.setattr(parsers, "build_parser", mock_building_parser)
+    monkeypatch.setattr(parsers, "build_pdb_structures_parser", mock_building_parser)
     monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
     monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
     monkeypatch.setattr(get_pdb_structures, "get_database_session", mock_get_sess)
