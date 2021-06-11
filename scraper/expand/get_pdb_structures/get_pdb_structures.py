@@ -198,7 +198,7 @@ def get_pdb_accessions(args, session):
                 continue
                 
             # check if CAZyme records meets the taxonomy criteria
-            source_organism = result[-3].genus + result[-3].species
+            source_organism = result[-3].genus + " " + result[-3].species
             if any(filter in source_organism for filter in taxonomy_filters):
                 pdb_accessions.append(result[0])
                 continue
@@ -231,7 +231,7 @@ def get_pdb_accessions(args, session):
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
-            source_organism = result[-3].genus + result[-3].species
+            source_organism = result[-3].genus + " " + result[-3].species
             if any(filter in source_organism for filter in taxonomy_filters):
 
                 # check if CAZyme meets kingdom criteria (it should do but worth to check)
@@ -246,7 +246,7 @@ def get_pdb_accessions(args, session):
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
-            source_organism = result[-3].genus + result[-3].species
+            source_organism = result[-3].genus + " " + result[-3].species
             if any(filter in source_organism for filter in taxonomy_filters):
 
                 # check if the CAZyme record meets the EC filter requirements
@@ -275,7 +275,7 @@ def get_pdb_accessions(args, session):
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
-            source_organism = result[-3].genus + result[-3].species
+            source_organism = result[-3].genus + " " + result[-3].species
             print(source_organism, taxonomy_filters)
             if any(filter in source_organism for filter in taxonomy_filters):
 
