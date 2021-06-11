@@ -400,7 +400,12 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
     """Test get_pdb_accessions when configuration is given, Tax, kingdom and EC number filters."""
 
     def mock_parse_config(*args, **kwargs):
-        return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, {'Bacteria'}, {'1.2.3.4'}
+        return (
+            {"classes": ["GH"], "families": ["PL28"]},
+            {'Aspergillus'},
+            {'Bacteria'},
+            {'1.2.3.4'},
+        )
     
     def mock_db_query(*args, **kwargs):
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
