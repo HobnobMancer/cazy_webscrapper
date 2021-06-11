@@ -500,6 +500,16 @@ def build_pdb_structures_parser(argv: Optional[List] = None):
         help="Classes from which all families are to be scraped. Separate classes by ','"
     )
 
+    parser.add_argument(
+        "--ec",
+        type=str,
+        default=None,
+        help=(
+            "EC numbers that a CAZyme must be annotated with at least one to "
+            "retrieve the structure file"
+        ),
+    )
+
     # enable force writing in an existing directory
     parser.add_argument(
         "-f"
