@@ -208,9 +208,9 @@ def get_ec_filter(args, raw_config_dict):
         ecs += (args.ec).split(",")
 
     # standardise EC numbers
-    ecs = [ec.replaced("EC","") for ec in ecs]
-    ecs = [ec.replaced("ec","") for ec in ecs]
-    ecs = [ec.replaced("*","-") for ec in ecs]
+    ecs = [ec.replace("EC","") for ec in ecs]
+    ecs = [ec.replace("ec","") for ec in ecs]
+    ecs = [ec.replace("*","-") for ec in ecs]
 
     ec_filter = set(ecs)
 
