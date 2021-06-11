@@ -51,6 +51,7 @@ from argparse import Namespace, ArgumentParser
 
 from scraper import utilities
 from scraper.expand.get_pdb_structures import get_pdb_structures
+from scraper.sql import sql_orm
 from scraper.utilities import file_io, parse_configuration, parsers
 
 
@@ -80,6 +81,13 @@ def args_parser(db_path, output_dir):
     return args
 
 
+def args_no_db():
+    args = {"args": Namespace(
+        database="Fake_path"
+    )}
+    return args
+
+
 def test_main_args(args_parser, monkeypatch):
     """Test main() when args is None."""
 
@@ -94,7 +102,7 @@ def test_main_args(args_parser, monkeypatch):
         return parser_args
 
     def mock_parser(*args, **kwargs):
-        return args_parser
+        return args_parser["args"]
 
     def mock_config_logger(*args, **kwargs):
         return
@@ -136,7 +144,7 @@ def test_main_argv(args_parser, monkeypatch):
         return parser_args
 
     def mock_parser(*args, **kwargs):
-        return args_parser
+        return args_parser["args"]
 
     def mock_config_logger(*args, **kwargs):
         return
@@ -162,3 +170,34 @@ def test_main_argv(args_parser, monkeypatch):
     monkeypatch.setattr(get_pdb_structures, "download_pdb_structures", mock_download)
     
     get_pdb_structures.main(argv=args_parser["args"])
+
+
+def test_get_sesh_false_path(args_no_db):
+    """Test get_database_session when the path does not exist"""
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        get_pdb_structures.get_database_session(args_no_db["args"])
+    assert pytest_wrapped_e.type == SystemExit
+
+
+def test_get_sesh_error(args_parser, monkeypatch):
+    """Test get_database_session when an error arises when opening the session."""
+    
+    def mock_raise_error(*args, **kawrgs):
+        raise ValueError
+
+    monkeypatch.setattr(sql_orm, "get_db_session", mock_raise_error)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        get_pdb_structures.get_database_session(args_parser["args"])
+    assert pytest_wrapped_e.type == SystemExit
+
+
+def test_get_sesh_success(args_parser, monkeypatch):
+    """Test get_database_session when successfully retrieves session."""
+    
+    def mock_get_sesh(*args, **kawrgs):
+        raise
+
+    monkeypatch.setattr(sql_orm, "get_db_session", mock_get_sesh)
+
+    get_pdb_structures.get_database_session(args_parser["args"])
