@@ -553,7 +553,7 @@ def test_download_none(args_no_outdir, monkeypatch):
     
     monkeypatch.setattr(PDBList, "download_pdb_files", mock_PDBList)
 
-    accession_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    accession_list = ['6D3U[A,B]','6D2C']
 
     get_pdb_structures.download_pdb_structures(accession_list, args_no_outdir['args'])
 
@@ -566,6 +566,6 @@ def test_download(args_outdir, monkeypatch):
     
     monkeypatch.setattr(PDBList, "download_pdb_files", mock_PDBList)
 
-    accession_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    accession_list = ['6D3U[A,B]','6D2C']
 
     get_pdb_structures.download_pdb_structures(accession_list, args_outdir['args'])
