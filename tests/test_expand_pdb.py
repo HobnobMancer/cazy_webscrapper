@@ -190,9 +190,7 @@ def test_get_sesh_error(args_parser, monkeypatch):
 
     monkeypatch.setattr(sql_orm, "get_db_session", mock_raise_error)
 
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        get_pdb_structures.get_database_session(args_parser["args"])
-    assert pytest_wrapped_e.type == SystemExit
+    get_pdb_structures.get_database_session(args_parser["args"])
 
 
 def test_get_sesh_success(args_parser, monkeypatch):
