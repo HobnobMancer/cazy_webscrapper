@@ -341,7 +341,7 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
 
 def test_add_existing_deleted_fam(db_session):
     """Test add_deteleted_cazy_family() when the fam is already present."""
-    fam = "deletedFam"
+    fam = "deletedFAM"
 
     sql_interface.add_deleted_cazy_family(fam, db_session)
 
