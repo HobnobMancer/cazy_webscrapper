@@ -331,6 +331,28 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
     )
 
 
+def test_add_protein_error_message(db_session, monkeypatch):
+    """Test add_protein_to_db() when an error message is returned."""
+
+    def mock_adding_a_new_protein(*args, **kwargs):
+        return "error message"
+
+    monkeypatch.setattr(sql_interface, "add_new_protein_to_db", mock_adding_a_new_protein)
+
+    existing_genbank_with_no_cazyme = "test_genbank_no_cazyme"
+    args = {'args': Namespace(streamline=None)}
+    sql_interface.add_protein_to_db(
+        "test_cazyme_name",
+        "cazy_family",
+        "source_genus organism",
+        "kingdom",
+        existing_genbank_with_no_cazyme,
+        db_session,
+        args['args'],
+        ec_numbers=["EC4.2.2.-"],
+    )
+
+
 # test streamline_addition()
 
 
