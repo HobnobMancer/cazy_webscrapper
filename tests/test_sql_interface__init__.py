@@ -333,7 +333,28 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
 # test parse_unique_genbank_conflict()
 
 
-######
+def test_parse_unique_genbank_conflict(db_session, monkeypatch):
+    """Test parse_unique_genbank_conflict() when no primary genbank accessions returned."""
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cazyme_name = "cazyme_test_name"
+    family = "sub_famfamily"
+    source_organism = "test source organism strain"
+    kingdom = "Bacteria"
+    primary_genbank = f"unique_primary_genbank_{time_stamp}"
+
+    def mock_none(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(sql_interface, "add_new_protein_to_db", mock_none)
+
+    sql_interface.parse_unique_genbank_conflict(
+        cazyme_name,
+        family,
+        source_organism,
+        kingdom,
+        primary_genbank,
+        db_session,
+    )
 
 
 # test add deleted cazy family()
