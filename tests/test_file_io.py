@@ -331,6 +331,7 @@ def test_write_fasta_for_db(making_output_dir):
     shutil.rmtree(path_)
 
 
+@pytest.mark.skip()
 def test_build_db(making_output_dir, monkeypatch):
     """Test build_blast_db()"""
     temp_dir = making_output_dir / "fasta_test"
