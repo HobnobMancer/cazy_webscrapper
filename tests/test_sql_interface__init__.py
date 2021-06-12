@@ -102,6 +102,43 @@ def test_add_db_log_with_config(db_session):
         "strains": ["Saccharolobus solfataricus POZ149", "Saccharolobus solfataricus SULB"]
     }
     ec_filters = ['EC1.2.3.4', 'EC3.4.5.6']
+    kingdoms = None
+    args = {
+        "args": Namespace(
+            classes="GH,PL",
+            families="AA1,AA2",
+            genera="Trichoderma",
+            species="Aspergillus Niger",
+            strains="Acidianus ambivalens LEI 10",
+            kingdoms="Archaea,Bacteria",
+            ec="EC1.2.3.4,EC5.6.4.7",
+            streamline="genbank",
+        )
+    }
+
+    sql_interface.log_scrape_in_db(
+        "YYYY-MM-DD--HH-MM-SS",
+        config_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        db_session,
+        args["args"],
+    )
+
+
+def test_add_db_log_with_full_config(db_session):
+    config_dict = {
+        'classes': ['GH','PL','CE'],
+        'GH': ['GH1', 'GH2'], 
+        'PL': ['PL1_1'],
+    }
+    taxonomy_filters = {
+        "genera": ["Caldivirga", "Cuniculiplasma"],
+        "species": ["Pyrococcus furiosus"],
+        "strains": ["Saccharolobus solfataricus POZ149", "Saccharolobus solfataricus SULB"]
+    }
+    ec_filters = ['EC1.2.3.4', 'EC3.4.5.6']
     kingdoms = ["Archaea"]
     args = {
         "args": Namespace(
@@ -125,6 +162,7 @@ def test_add_db_log_with_config(db_session):
         db_session,
         args["args"],
     )
+
 
 
 # tests for add_proteins_to_db
