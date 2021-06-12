@@ -454,7 +454,7 @@ def parse_unique_genbank_conflict(
             family,
             source_organism,
             kingdom,
-            primary_genbank_query[0],
+            primary_genbank,
             session,
             ec_numbers,
             gbk_nonprimary,
