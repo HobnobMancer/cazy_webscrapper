@@ -48,7 +48,7 @@ pytest -v
 import pytest
 
 from argparse import Namespace
-from datetime import datetime
+from datetime import datetime, time
 
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -128,6 +128,7 @@ def test_add_db_log_with_config(db_session):
 
 
 # tests for add_proteins_to_db
+
 
 def test_adding_a_new_protein(db_session):
     """Test adding a new protein to the local database."""
@@ -327,6 +328,51 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
         identical_genbanks_no_cazymes,
         db_session,
         args['args'],
+    )
+
+
+# test streamline_addition()
+
+
+def test_streamline_addition(db_session, monkeypatch):
+    """Test streamline addition"""
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cazyme_name = 'ulvan lyase (BN863_22190)'
+    primary_genbank = 'WP_038530530.1'
+    gbk_nonprimary = ['CDF79931.1', f'nonprimary_{time_stamp}']
+    ec_numbers = [f'EC{time_stamp}']
+    uni_primary = [f'primaryUNI{time_stamp}']
+    uni_nonprimary = [f'nonprimaryUNI{time_stamp}']
+    pdb_accessions = [f'PDB{time_stamp}']
+    family = f"FAM{time_stamp}"
+    source_organism = "Formosa agariphila KMM 3901"
+    kingdom = "Bacteria"
+
+    args = {"args": Namespace(streamline="")}
+
+    def mock_none(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_none)
+    monkeypatch.setattr(sql_interface, "add_cazy_family", mock_none)
+    monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_none)
+    monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_none)
+    monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_none)
+
+    sql_interface.streamline_addition(
+        cazyme_name,
+        family,
+        source_organism,
+        kingdom,
+        primary_genbank,
+        db_session,
+        args['args'],
+        ec_numbers,
+        gbk_nonprimary,
+        uni_primary,
+        uni_nonprimary,
+        pdb_accessions,
     )
 
 
