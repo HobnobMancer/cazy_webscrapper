@@ -327,7 +327,7 @@ def get_yaml_configuration(config_dict, cazy_dict, std_class_names, args):
     Return dictionary containing CAZy classes and families named in YAML configuration file.
     """
     logger = logging.getLogger(__name__)
-
+    logger.info("Parsing configuration files")
     # open configuration file
     try:
         with open(args.config) as fh:
@@ -440,6 +440,7 @@ def get_cmd_defined_fams_classes(cazy_dict, std_class_names, args):
     Return dictionary of CAZy classes and families to be scraped.
     """
     logger = logging.getLogger(__name__)
+    logger.info("Identifying cmd-line defined CAZy classes and families")
 
     # create dictionary which will store families and classes to be scraped
     config_dict = {
@@ -584,44 +585,6 @@ def create_streamline_scraping_warning(args):
     )
 
 
-def get_configuration(args):
-    """Get configuration for the Expand module.
-
-    :param file_io_path: Path to file_io module
-    :param args: cmd-line argument parser
-
-    Return configuration dictionary, set of taxonomy filters and set of Taxonomy Kingdoms.
-    """
-    # retrieve inital parsing of configuration data
-    (
-        excluded_classes, config_dict, cazy_dict, taxonomy_filters_dict, kingdoms, ec_filter,
-    ) = parse_configuration(args)
-    # excluded_classes and cazy_dict are used in the crawler module but are not needed for the
-    # the expand module
-
-    taxonomy_filters = []
-
-    for key in taxonomy_filters_dict:
-        try:
-            if len(taxonomy_filters_dict[key]) != 0:
-                taxonomy_filters += taxonomy_filters_dict[key]
-        except (TypeError, KeyError):
-            pass
-
-    if len(taxonomy_filters) == 0:
-        taxonomy_filters = None
-
-    else:
-        taxonomy_filters = set(taxonomy_filters)
-
-    if kingdoms == "all":
-        kingdoms = ['Archaea', 'Bacteria', 'Eukaryota', 'Viruses', 'Unclassified']
-
-    kingdoms = set(kingdoms)
-
-    return config_dict, taxonomy_filters, kingdoms
-
-
 def parse_configuration_for_cazy_database(file_io_path, args):
     """Get configuration for the Expand module.
 
@@ -669,29 +632,15 @@ def parse_configuration_for_cazy_database(file_io_path, args):
     return config_dict, taxonomy_filters, kingdoms, ec_filters
 
 
-def parse_configuration_for_cazy_dict(file_io_path, args):
+def parse_configuration_for_cazy_dict(args):
     """Get configuration for the Expand module when CAZy data is in a dict not database.
-    :param file_io_path: Path to file_io module
+
     :param args: cmd-line argument parser
+
     Return a set of CAZy classes and families to retrieve protein sequences for.
     """
-    logger = logging.getLogger(__name__)
-
-    # open config dict if provided by the user
-    raw_config_dict = None
-    if args.config is not None:
-        try:
-            with open(args.config, "r") as fh:
-                raw_config_dict = yaml.full_load(fh)
-        except FileNotFoundError:
-            logger.error(
-                "Did not find the configuration file. Check the path is correct.\n"
-                "Terminating programme"
-            )
-            sys.exit(1)
-    
     # Get dictionary of accepted CAZy class synonyms
-    cazy_dict, std_class_names = get_cazy_dict_std_names(file_io_path)
+    cazy_dict, std_class_names = get_cazy_dict_std_names(args)
 
     # Retrieve user specified CAZy classes and families to be scraped at CAZy
 
@@ -720,6 +669,10 @@ def parse_configuration_for_cazy_dict(file_io_path, args):
         for item in cmd_config[key]:
             if item not in config_dict[key]:  # do not add duplicates
                 config_dict[key].append(item)
-        
+    
+    config_data = []
+    for key in config_dict:
+        for item in config_dict[key]:
+            config_data.append(item)
 
-    return set(config_dict.values())
+    return set(config_data)
