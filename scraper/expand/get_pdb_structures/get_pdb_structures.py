@@ -232,7 +232,6 @@ def get_pdb_accessions(args, session):
             source_organism = result[-3].genus + " " + result[-3].species
             if any(filter in source_organism for filter in taxonomy_filters):
                 pdb_accessions.append(result[0])
-                continue
     
     # apply only kingdoms filters
     elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is None):
@@ -242,7 +241,6 @@ def get_pdb_accessions(args, session):
 
             if result[-2].kingdom in kingdoms:
                 pdb_accessions.append(result[0])
-                continue
         
     # apply only EC number filters
     elif (taxonomy_filters is None) and (kingdoms is None) and (ec_filters is not None):
@@ -253,7 +251,6 @@ def get_pdb_accessions(args, session):
             # check if the CAZyme record meets the EC filter requirements
             if result[-1].ec_number in ec_filters:
                 pdb_accessions.append(result[0])
-                continue
     
     # apply taxonomy and kingdom filters
     elif (taxonomy_filters is not None) and (kingdoms is not None) and (ec_filters is None):
@@ -268,7 +265,6 @@ def get_pdb_accessions(args, session):
                 # check if CAZyme meets kingdom criteria (it should do but worth to check)
                 if result[-2].kingdom in kingdoms:
                     pdb_accessions.append(result[0])
-                    continue
 
     # apply taxonomy and EC number filters
     elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is not None):
@@ -283,7 +279,6 @@ def get_pdb_accessions(args, session):
                 # check if the CAZyme record meets the EC filter requirements
                 if result[-1].ec_number in ec_filters:
                     pdb_accessions.append(result[0])
-                    continue
 
     # apply kingdom and EC filters
     elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is not None):
@@ -297,7 +292,6 @@ def get_pdb_accessions(args, session):
                 # check if the CAZyme record meets the EC filter requirements
                 if result[-1].ec_number in ec_filters:
                     pdb_accessions.append(result[0])
-                    continue
 
     # apply taxonomy, kingdom and EC number filters
     else:
@@ -315,7 +309,6 @@ def get_pdb_accessions(args, session):
                     # check if the CAZyme record meets the EC filter requirements
                     if result[-1].ec_number in ec_filters:
                         pdb_accessions.append(result[0])
-                        continue
 
     return list(set(pdb_accessions))
 
