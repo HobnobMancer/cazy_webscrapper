@@ -342,6 +342,13 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         help="Number of accessions posted to NCBI per epost, advice to be max 200. Default=150"
     )
 
+    parser.add_argument(
+        "--ec",
+        type=str,
+        default=None,
+        help="Defines EC numbers to restrict the retrieval of protein sequences to"
+    )
+
     # Add option to force file over writting
     parser.add_argument(
         "-f",
