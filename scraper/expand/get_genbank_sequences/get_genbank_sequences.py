@@ -79,53 +79,34 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     
     Entrez.email = args.email
 
-    if (args.database is None) and (args.dict is None):
-        logger.warning(
-            "No CAZy data provided.\n"
-            "Please provide a path to a local dict (JSON file) or SQL db.\n"
-            "Terminating program."
-        )
-        sys.exit(1)
-    
-    elif (args.database is not None) and (args.dict is not None):
-        logger.warning(
-            "CAZy dict (JSON file) AND SQL db provided.\n"
-            "Please provide ONLY ONE to path to a local dict (JSON file) OR SQL db.\n"
-            "Terminating program."
-        )
-        sys.exit(1)
-    
-    if args.database is not None:
-        # check path to the local db is valid
-        if os.path.isfile(args.database) is False:
-            logger.error(
-                "Could not find local CAZy database.\n"
-                "Check path is correct.\nTerminating programme."
-            )
-            sys.exit(1)
-        
-        # move to script that handles retrieving sequences for proteins in a SQL database
-        from_sql_db.sequences_for_proteins_from_db(date_today, args)
-    
-    elif args.dict is not None:
-        # check the path to the local CAZy dict is valid
-        if os.path.isfile(args.dict) is False:
-            logger.error(
-                "Could not find local CAZy dict (JSON file).\n"
-                "Check path is correct.\nTerminating programme."
-            )
-            sys.exit(1)
-        
-        if args.fasta == Path(os.getcwd()):
-            logger.error(
-                "Writing out FASTA files of protein sequences to the current working directory.\n"
-                "If this is NOT desired, cancel and reinvoke the script with the --fasta flag\n"
-                "defining the path to the directory to write fasta files to."
-            )
-        
+    if args.fasta is not None:
+        logger.info("Enabled writing out FASTA files")
+        if len((args.fasta).parts) != 1:
+            logger.info("Compiling path to directory for FASTA files")
+            dir_path = Path("/".join((args.fasta).parts))
+            
+            logger.info(f"Building directory for FASTA files: {dir_path}")
+            file_io.make_output_directory(dir_path, args.force, args.nodelete)
+
+    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
+        logger.info("Enabled creating BLAST database containing retrieved protein sequences")
+        if len((args.blastdb).parts) != 1:
+            logger.info("Compile path to directory for BLAST db")
+            dir_path = Path("/".join((args.blastdb).parts))
+
+            logger.info(f"Building directory for BLAST db: {dir_path}")
+            file_io.make_output_directory(dir_path, args.force, args.nodelete)
+
+    if str(args.database).endswith(".json"):
+        logger.info("CAZy dictionary (JSON file) provided")
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
         from_dict.sequences_for_proteins_from_dict(date_today, args)
-    
+
+    else:
+        logger.info("CAZy database provided")
+        # move to script that handles retrieving sequences for proteins in a SQL database
+        from_sql_db.sequences_for_proteins_from_db(date_today, args)
+
     if args.blastdb is not None:  # build a local BLAST database
         blast_db.build_blast_db(args)
     
