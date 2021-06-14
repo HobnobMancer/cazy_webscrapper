@@ -58,10 +58,22 @@ from scraper.sql.sql_orm import (
 
 
 def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
+    """Retrieve GenBank accession and associated Taxonomy and EC number records of CAZymes that
+    do not have a sequence in the database.
+
+    :param session: open SQL database session
+    :param config_dict: dict defining CAZy classes and families to retrieved records from
+
+    Return list of query results.
+    """
+    logger = logging.getLogger(__name__)
+
     genbank_query_class = None
     genbank_query_family = None
 
     if len(config_dict["classes"]) != 0:
+        logger.info(f"Retrieve records for specific CAZy classes: {config_dict['classes']}")
+
         # retrieve list of CAZy classes to get sequences for
         cazy_classes = config_dict["classes"]
 
@@ -75,13 +87,20 @@ def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
                 filter(CazyFamily.family.regexp(rf"{cazy_class}\d+")).\
                 subquery()
 
-            genbank_query_class = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            genbank_query_class = session.query(
+                Genbank,
+                Cazymes_Genbanks,
+                Cazyme,
+                Taxonomy,
+                Kingdom,
+            ).\
                 join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
                 join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
                 join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
                 join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
                 filter(Cazyme.cazyme_id.in_(class_subquery)).\
                 filter(Cazymes_Genbanks.primary == True).\
+                filter(Genbank.sequence == None).\
                 all()
 
     # Retrieve protein sequences for specified families
@@ -90,6 +109,8 @@ def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
             continue
         if config_dict[key] is None:
             continue  # no families to parse
+
+        logger.info(f"Retrieving records from CAZy families in {key}")
 
         for family in tqdm(config_dict[key], desc=f"Parsing families in {key}"):
 
@@ -107,13 +128,20 @@ def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
                     filter(CazyFamily.family == family).\
                     subquery()
 
-            genbank_query_family = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            genbank_query_family = session.query(
+                Genbank,
+                Cazymes_Genbanks,
+                Cazyme,
+                Taxonomy,
+                Kingdom,
+            ).\
                 join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
                 join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
                 join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
                 join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
                 filter(Cazyme.cazyme_id.in_(family_subquery)).\
                 filter(Cazymes_Genbanks.primary == True).\
+                filter(Genbank.sequence == None).\
                 all()
 
     return genbank_query_class, genbank_query_family
@@ -307,7 +335,6 @@ def get_all_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
 
 def get_prim_genbank_acc_for_update(session, date_today, args):
     """Retrieve all PRIMARY GenBank accessions in the database.
-
 
     :param session: open SQL database session
     :param date_today: str, date script was invoked
