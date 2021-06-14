@@ -48,7 +48,7 @@ from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
 from scraper.expand.get_genbank_sequences.ncbi import query_entrez
-from scraper.utilities import file_io, parse_configuration
+from scraper.utilities import parse_configuration
 
 
 def sequences_for_proteins_from_dict(date_today, args):
@@ -61,20 +61,11 @@ def sequences_for_proteins_from_dict(date_today, args):
     """
     logger = logging.getLogger(__name__)
 
-    file_io.make_output_directory(args.fasta, args.force, args.nodelete)
-
-    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
-        file_io.make_output_directory(args.blastdb, args.force, args.nodelete)
-
-    # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
-    parse_configuration_path = parse_configuration.__file__
-    config_dict = parse_configuration.parse_configuration_for_cazy_dict(
-        parse_configuration_path,
-        args,
-    )
-
     # retrieve dict of CAZy family classifications of proteins
     cazy_dict = get_cazy_dict(args)
+
+    # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
+    config_dict = parse_configuration.parse_configuration_for_cazy_dict(args)
 
     # retrieve sequences for proteins in the cazy_dict matching user specified critera
     protein_list = get_qualifying_proteins(cazy_dict, config_dict)
@@ -151,6 +142,10 @@ def get_qualifying_proteins(cazy_dict, config_data):
 
     Return list of proteins (1 protein = 1 GenBank acession) to retrieve seqs for.
     """
+    logger = logging.getLogger(__name__)
+
+    logger.info("Retrieving GenBank accessions of proteins matching provided criteria")
+
     proteins = set()  # proteins to retrieve sequences for, set prevents duplicates
 
     if (len(list(config_data["classes"])) == 0) and (len(list(config_data["families"])) != 0):
