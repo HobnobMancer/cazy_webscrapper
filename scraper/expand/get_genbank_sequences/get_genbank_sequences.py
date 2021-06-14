@@ -81,12 +81,27 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     if args.fasta is not None:
         logger.info("Enabled writing out FASTA files")
-        if len((args.fasta).parts) != 1:
-            logger.info("Compiling path to directory for FASTA files")
-            dir_path = Path("/".join((args.fasta).parts))
-            
-            logger.info(f"Building directory for FASTA files: {dir_path}")
-            file_io.make_output_directory(dir_path, args.force, args.nodelete)
+
+        # check if passed a path to a file or dir
+        if len((args.fasta).suffix) == 0:  # passed path to a dir
+            logger.info(f"Building directory for FASTA files: {args.fasta}")
+            logger.info(f"Writing out to dir if already exists: {args.force}")
+            logger.info(f"Nucking dir for the FASTA file: {args.nodelete}")
+            file_io.make_output_directory(args.fasta, args.force, args.nodelete)
+        
+        else:  # passed path to file
+            # check if need to create path to dir
+            logger.info("Provided path to a FASTA file")
+            if len((args.fasta).parts) != 1:
+                logger.info("Compiling path to directory for the FASTA file")
+                dir_path = Path("/".join((args.fasta).parts))
+
+                logger.info(f"Building directory for the FASTA file: {dir_path}")
+                logger.info(f"Writing out to dir if already exists: {args.force}")
+                logger.info(f"Nucking dir for the FASTA file: {args.nodelete}")
+                file_io.make_output_directory(dir_path, args.force, args.nodelete)
+            else:
+                logger.info(f"Writing out FASTA file {args.fasta} to the current working directory")
 
     if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
         logger.info("Enabled creating BLAST database containing retrieved protein sequences")
