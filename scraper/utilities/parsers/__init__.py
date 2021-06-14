@@ -317,6 +317,14 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         help="Path to configuration file. Default: None, scrapes entire database",
     )
 
+    # Add option to use own CAZy class synoymn dict
+    parser.add_argument(
+        "--cazy_synonyms",
+        type=Path,
+        default=None,
+        help="Path to JSON file containing CAZy class synoymn names",
+    )
+
     # Add option to define classes to retrieve protein sequences for
     parser.add_argument(
         "--classes",
