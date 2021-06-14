@@ -89,13 +89,14 @@ def sequences_for_proteins_from_dict(date_today, args):
         total=(math.ceil(len(protein_list) / args.epost)),
     ):
         try:
-            query_entrez.get_sequences_for_dict(accession_list, date_today, args)
+            query_entrez.get_sequences_for_dict(accession_list, args)
+
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
-            logger.warning(
-                "RuntimeError raised for accession list. Will query accessions individualy after"
+            logger.error(
+                "RuntimeError raised for accession list. Will query accessions individualy after\n"
+                "RuntimeError:\n"
+                f"{err}"
             )
-            with open("legihton_error.txt", "a") as fh:
-                fh.write(f"{err}\n{str(accession_list)}")
             accessions_lists_for_individual_queries.append(accession_list)
 
     if len(accessions_lists_for_individual_queries) != 0:
@@ -105,12 +106,13 @@ def sequences_for_proteins_from_dict(date_today, args):
         ):
             for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
                 try:
-                    query_entrez.get_sequences_for_dict([accession], date_today, args)
+                    query_entrez.get_sequences_for_dict([accession], args)
                 except RuntimeError as err:
-                    logger.warning(
+                    logger.error(
                         f"Querying NCBI for {accession} raised the following RuntimeError:\n"
                         f"{err}"
                     )
+
     return
 
 
