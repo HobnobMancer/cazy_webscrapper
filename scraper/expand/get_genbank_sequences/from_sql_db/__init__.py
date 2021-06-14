@@ -67,7 +67,8 @@ def sequences_for_proteins_from_db(date_today, args):
         session = get_db_session(args)
     except Exception as err:
         logger.error(
-            "Could not connect to local CAZyme database.\nThe following error was raised:\n"
+            "Could not connect to local CAZyme database.\n"
+            "The following error was raised:\n"
             f"{err}\nTerminating program\n"
         )
         sys.exit(1)
@@ -89,6 +90,13 @@ def sequences_for_proteins_from_db(date_today, args):
         kingdoms,
         ec_filters,
     )
+
+    if genbank_accessions is None:
+        logger.warning(
+            "Retrieved no GenBank accessions matching provided criteria\n"
+            "Therefore, retrieveing no protein sequences from NCBI"
+        )
+        return "EXIT"
 
     logger.warning(f"Retrieving sequences for {len(genbank_accessions)} proteins")
 
@@ -220,25 +228,7 @@ def get_genbank_accessions(
                     config_dict,
                 )
 
-        # parse retrieved records from the SQL database by applying taxonomic and EC number filters
-
-        class_genbank_accessions = parse_genbank_query(
-            genbank_query_class,
-            taxonomy_filters,
-            kingdoms,
-            ec_filters,
-            session,
-        )
-
-        family_genbank_accessions = parse_genbank_query(
-            genbank_query_family,
-            taxonomy_filters,
-            kingdoms,
-            ec_filters,
-            session,
-        )
-
-        genbank_accessions = class_genbank_accessions + family_genbank_accessions
+        query_results = genbank_query_class + genbank_query_family
 
     else:
         if args.update:  # retrieve all GenBank accessions
@@ -249,14 +239,14 @@ def get_genbank_accessions(
                     "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
                     "Do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_prim_genbank_acc_for_update(session, date_today)
+                query_results = query_sql_db.get_prim_genbank_acc_for_update(session, date_today)
 
             else:
                 logger.warning(
                     "Retrieving sequences for ALL GenBank accessions that\n"
                     "do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                genbank_query = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
+                query_results = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
             logger.info(
@@ -268,69 +258,201 @@ def get_genbank_accessions(
                     "Retrieving sequences for all PRIMARY GenBank accessions that\n"
                     "do not have a sequence in the db"
                 )
-                genbank_query = query_sql_db.get_prim_genbank_accessions_with_no_seq(session)
+                query_results = query_sql_db.get_prim_genbank_accessions_with_no_seq(session)
 
             else:
                 logger.warning(
                     "Retrieving sequences for ALL GenBank accessions that\n"
                     "do not have a sequence in the db"
                 )
-                genbank_query = query_sql_db.get_genbank_accessions_with_no_seq(session)
+                query_results = query_sql_db.get_genbank_accessions_with_no_seq(session)
 
-        # apply taxonomic and EC number filters
-        logger.info("Extracting GenBank accessions from GenBank records")
-        genbank_accessions = parse_genbank_query(
-            genbank_query,
-            taxonomy_filters,
-            kingdoms,
-            ec_filters,
-            session,
+    # check if any records were retrived from the querying of the local CAZyme database
+    try:
+        if len(query_results) == 0:
+            logger.warning(
+                "Retrieved no records from the local CAZyme database mathcing provided criteria"
+            )
+            return
+    except TypeError:
+        logger.warning(
+            "Retrieved no records from the local CAZyme database mathcing provided criteria"
         )
+        return
+
+    # apply taxonomic and EC number filters
+    logger.info(
+        "Applying any provided taxonomic and EC number filters to records"
+        "retrieved from the local CAZyme database"
+    )
+    filtered_query_results = parse_genbank_query(
+        query_results,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        session,
+    )
+
+    if args.update:
+        genbank_accessions = check_if_to_update(filtered_query_results, date_today, args)
+
+    else:
+        logger.info(
+            "Extracting GenBank accessions from records retrieved from the local CAZyme database"
+        )
+        genbank_accessions = [
+            query_result.genbank_accession for query_result in filtered_query_results
+        ]
 
     return list(set(genbank_accessions))  # prevent quering the same accession multiple times
 
 
-def parse_genbank_query(genbank_query, taxonomy_filters, kingdoms, ec_filters, session):
+def parse_genbank_query(
+    genbank_query_results,
+    taxonomy_filters,
+    kingdoms,
+    ec_filters,
+    session,
+):
     """Parse SQL query result and retrieve GenBank accessions of CAZymes that meet the user cirteria
 
-    :param:
+    :param genbank_query_results: list of query results from the local CAZyme database
+    :param taxonomy_filters: list of genera, species and strains to retrict the retrival of seq to
+    :param kingdoms: list of taxonomic kingdoms to restrict the retrieval of CAZymes to
+    :param ec_filters: list of EC numbers, a CAZyme must be annotated with at least one EC number
+        from the list to have its protein sequence retrived.
 
-    Return list of GenBank accessions.
+    Return list of GenBank records from the query results that meet the user's criteria.
     """
-    if genbank_query is None:
-        return []
+    logger = logging.getLogger(__name__)
 
+    tax_filtered_genbank_accessions = []
+
+    # apply no filters
     if (taxonomy_filters is None) and (kingdoms is None) and (ec_filters is None):
-        accessions = [item[0] for item in genbank_query]
-        return [x for x in accessions if "NA" != x]
+        return genbank_query_results
     
-    genbank_accessions = []
-
-    for item in genbank_query:
-        if item[0] != "NA":  # if GenBank accession not stored as 'NA'
-
+    # apply only taxonomy filters
+    elif (taxonomy_filters is not None) and (kingdoms is None):
+        logger.info("Applying taxonomy filters")
+        for result in genbank_query_results:
+            if result[0].genbank_accession == "NA":
+                continue
+                
             # check if CAZyme records meets the taxonomy criteria
-            source_organism = item[-2].genus + item[-2].species
+            source_organism = result[-2].genus + " " + result[-2].species
             if any(filter in source_organism for filter in taxonomy_filters):
-                genbank_accessions.append(item[0])
+                tax_filtered_genbank_accessions.append(result[0])
+    
+    # apply only kingdom filter
+    elif (taxonomy_filters is None) and (kingdoms is not None):
+        logger.info("Applying kingdom filters")
+        for result in genbank_query_results:
+            if result[0].genbank_accession == "NA":
                 continue
 
-            # check if CAZyme records meets the kingdom requirement
-            if item[-1].kingdom in kingdoms:
-                genbank_accessions.append(item[0])
+            if result[-1].kingdom in kingdoms:
+                tax_filtered_genbank_accessions.append(result[0])
+    
+    # apply taxonomy and kingdom filter
+    else:
+        logger.info("Applying taxonomy and kingdom filters")
+        for result in genbank_query_results:
+            if result[0].genbank_accession == "NA":
                 continue
+                
+            # check if CAZyme records meets the taxonomy criteria
+            source_organism = result[-2].genus + " " + result[-2].species
+            if any(filter in source_organism for filter in taxonomy_filters):
+                
+                # apply kingdom filter
+                if result[-1].kingdom in kingdoms:
+                    tax_filtered_genbank_accessions.append(result[0])
+                    continue
 
     if ec_filters is None:
-        return genbank_accessions
+        return tax_filtered_genbank_accessions
     
-    # check if the parent CAZymes of the GenBank accessions meet the EC number filter
-    filtered_genbank_accessions = []
-    for i in tqdm(range(len(genbank_accessions), desc="Applying EC number filter")):
-        ec_annotations = query_sql_db.query_sql_db.query_ec_number(session, genbank_accessions[i])
+    logger.info("Applying EC number filters")
+    final_filtered_genbank_accessions = [] 
+    for query_result in tqdm(
+        tax_filtered_genbank_accessions,
+        desc="Applying EC number filter",
+    ):
+        ec_annotations = query_sql_db.query_sql_db.query_ec_number(
+            session,
+            query_result.genbank_accession,
+        )
 
         # check if any of the EC number annotations for the protein (identified by its genbank 
         # accession) are included in the EC numbers specificed by the user
         if (set(ec_annotations) and set(ec_filters)):
-            filtered_genbank_accessions.append(genbank_accessions[i])
+            final_filtered_genbank_accessions.append(query_result)
 
-    return filtered_genbank_accessions
+    return final_filtered_genbank_accessions
+
+
+def check_if_to_update(genbank_records, date_today, args):
+    """Coordinate checking if need to update sequences in the local CAZyme database.
+
+    :param genbank_records: list of GenBank records retrieved from the local CAZyme db
+    :param date_today: str, date program was invoked
+    :param args: cmd-lines args parser
+
+    Return list of query_results, with each query result in the list representing a CAZyme record
+    which does not have a seq in the local db, or has a seq which needs to be updated.
+    """
+    logger = logging.getLogger(__name__)
+    
+    # separate records with and without sequences, and extract GenBank accession
+    logger.warning("Separating GenBank records with and without sequences in the local CAZyme db")
+    
+    with_seq = []
+    without_seq = []
+
+    for record in genbank_records:
+        if record.sequence is None:
+            without_seq.append(record.genbank_accession)
+        else:
+            with_seq.append(record.genbank_accession)
+
+    logger.info("Checking which protein sequences are to be updated")
+    genbank_seq_to_update = []
+
+    accessions_lists_for_individual_queries = []
+
+    for accession_list in tqdm(
+        get_accession_chunks(with_seq, args.epost),
+        desc="Batch retrieving NCBI to check if to update seq",
+        total=(math.ceil(len(with_seq) / args.epost)),
+    ):
+        try:
+            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
+            genbank_seq_to_update += genbank_to_update
+
+        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+            logger.warning(
+                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
+                f"The following error was raised:\n{err}"
+            )
+            accessions_lists_for_individual_queries.append(accession_list)
+
+    if len(accessions_lists_for_individual_queries) != 0:
+        for accession_list in tqdm(
+            accessions_lists_for_individual_queries,
+            desc="Performing individual queries for records that previously raised errors",
+        ):
+            for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
+
+                try:
+                    genbank_to_update = query_entrez.check_ncbi_seq_data([accession], date_today)
+                    genbank_seq_to_update += genbank_to_update
+
+                except RuntimeError as err:
+                    logger.warning(
+                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
+                        f"{err}"
+                    )
+
+    genbank_accessions = without_seq + genbank_seq_to_update
+    return genbank_accessions
