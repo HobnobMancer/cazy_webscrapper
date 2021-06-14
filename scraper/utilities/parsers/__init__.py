@@ -301,8 +301,9 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         type=Path,
         default=None,
         help=(
-            "Create BLAST database of retrieved GenBank protein sequences.\n"
-            "Give the path to the directory to store the database"
+            "Enable creating a BLAST db of retrieved protein sequences.\n"
+            "Path to a FILE (without file extension) for a BLAST database.\n"
+            "This path will be used to create the FASTA file for the database and the database."
         ),
     )
 
@@ -358,9 +359,8 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Enable writing out retrieved sequences to FASTA file(s).\n"
-            "Writing 'separate' produces a single FASTA file per retrieved protein sequence,\n"
-            "else, write the path to the FASTA to add retrieved protein sequences to\n"
-            "(this can be a pre-existing or non-existing FASTA file."
+            "Path to a dir to write out one FASTA file for each retrieved seqs\n"
+            "OR a path to a FASTA file to write all retrieved seqs to"
         ),
     )
 
