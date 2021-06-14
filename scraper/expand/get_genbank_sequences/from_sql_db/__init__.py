@@ -72,20 +72,15 @@ def sequences_for_proteins_from_db(date_today, args):
         )
         sys.exit(1)
 
-    file_io.make_output_directory(args.fasta, args.force, args.nodelete)
-
-    if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
-        file_io.make_output_directory(args.blastdb, args.force, args.nodelete)
-
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
-    parse_configuration_path = parse_configuration.__file__
     (
-        config_dict, taxonomy_filters, kingdoms, ec_filters,
-    ) = parse_configuration.parse_configuration_for_cazy_database(
-        parse_configuration_path,
-        args,
-    )
+        config_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+    ) = parse_configuration.parse_configuration_for_cazy_database(args)
 
+    logger.info("Retrieving GenBank accessions that match provided criteria")
     genbank_accessions = get_genbank_accessions(
         args,
         session,
@@ -94,6 +89,8 @@ def sequences_for_proteins_from_db(date_today, args):
         kingdoms,
         ec_filters,
     )
+
+    logger.warning(f"Retrieving sequences for {len(genbank_accessions)} proteins")
 
     # break up protein_list into multiple, smaller lists for batch querying Entrez
     # batches of greater than 200 can be rejected by Entrez during busy periods
@@ -131,8 +128,8 @@ def sequences_for_proteins_from_db(date_today, args):
                         f"Queried NCBI for {accession} raised the following RuntimeError:\n"
                         f"{err}"
                     )
-    return
 
+    return
 
 
 def get_genbank_accessions(
@@ -162,6 +159,7 @@ def get_genbank_accessions(
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
         if args.update:
+            logger.info("Enabled updating sequences in local CAZyme database")
             
             if args.primary:
                 logger.warning(
@@ -192,6 +190,9 @@ def get_genbank_accessions(
                 )
         
         else:  # retrieve GenBank accesions of records that don't have a sequence
+            logger.info(
+                "Only retrieving sequences for proteins that do not have a seq in the CAZyme db"
+            )
 
             if args.primary:
                 logger.warning(
@@ -241,6 +242,7 @@ def get_genbank_accessions(
 
     else:
         if args.update:  # retrieve all GenBank accessions
+            logger.info("Enabled updating sequences in local CAZyme database")
 
             if args.primary:
                 logger.warning(
@@ -257,6 +259,10 @@ def get_genbank_accessions(
                 genbank_query = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
+            logger.info(
+                "Only retrieving sequences for proteins that do not have a seq in the CAZyme db"
+            )
+
             if args.primary:
                 logger.warning(
                     "Retrieving sequences for all PRIMARY GenBank accessions that\n"
@@ -272,6 +278,7 @@ def get_genbank_accessions(
                 genbank_query = query_sql_db.get_genbank_accessions_with_no_seq(session)
 
         # apply taxonomic and EC number filters
+        logger.info("Extracting GenBank accessions from GenBank records")
         genbank_accessions = parse_genbank_query(
             genbank_query,
             taxonomy_filters,
