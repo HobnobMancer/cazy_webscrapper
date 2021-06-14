@@ -51,6 +51,110 @@ from scraper.sql.sql_orm import Genbank
 from scraper.utilities import file_io
 
 
+def get_sequences_for_dict(accessions, args):
+    """Retrieve protein sequences from Entrez for proteins from CAZy dictionary (JSON file).
+
+    :param accessions: list, GenBank accessions of proteins
+    :param args: cmb-line args parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+
+    # perform batch query of Entrez
+    accessions_string = ",".join(accessions)
+
+    # Runtime error captured by try/except function call
+    epost_result = Entrez.read(
+        entrez_retry(
+            Entrez.epost,
+            args,
+            db="Protein",
+            id=accessions_string,
+        )
+    )
+
+    # retrieve the web environment and query key from the Entrez post
+    epost_webenv = epost_result["WebEnv"]
+    epost_query_key = epost_result["QueryKey"]
+
+    # retrieve the protein sequences
+    with entrez_retry(
+        Entrez.efetch,
+        args,
+        db="Protein",
+        query_key=epost_query_key,
+        WebEnv=epost_webenv,
+        rettype="fasta",
+        retmode="text",
+    ) as seq_handle:
+        for record in SeqIO.parse(seq_handle, "fasta"):
+            # retrieve the accession of the record
+            temp_accession = record.id  # accession of the current working protein record
+
+            if temp_accession.find("|") != -1:  # sometimes multiple items are listed
+                print("temp accession: ", temp_accession)
+                success = False   # will be true if finds protein accession
+
+                temp_accessions = temp_accession.split("|")
+                for item in temp_accessions:
+                    # check if a accession number
+                    try:
+                        re.match(
+                            (
+                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
+                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                            ),
+                            item,
+                        ).group()
+                        temp_accession = item
+                        success = True
+                        break
+                    except AttributeError:  # raised if not an accession
+                        continue
+
+            else:
+                success = True  # have protein accession number
+
+            if success is False:
+                logger.error(
+                    f"Could not retrieve single protein accession from {record.id}\n"
+                    f"writing out record with complete record ID: {record.id}"
+                )
+
+            # check the retrieved protein accession is in the list of retrieved accession
+            if temp_accession not in accessions:
+                logger.warning(
+                    f"Retrieved the accession {temp_accession} from the record id={record.id},\n"
+                    "but this accession was not in the origina CAZy dict.\n"
+                    f"Retrieving sequencing, writing the record ID ({record.id}), as the accession"
+                )
+
+            if args.fasta is not None:
+                file_io.write_out_fasta(record, temp_accession, args)
+
+            if args.blastdb is not None:
+                # need all squences in a single FASTA file to create a BLASTdb
+                file_io.write_fasta_for_db(record, args)
+
+            # remove the accession from the list
+            try:
+                accessions.remove(temp_accession)
+            except ValueError:
+                logger.warning(
+                    f"Tried to remove {temp_accession} from list of accessions, "
+                    "but it was not in the list of accessions.\n"
+                    "The returned accession and the one present in CAZy do not match."
+                )
+
+    if len(accessions) != 0:
+        logger.warning("Protein sequences for the following CAZymes were not retrieved:")
+        for acc in accessions:
+            logger.warning(f"GenBank accession: {acc}")
+
+    return
+
+
 def check_ncbi_seq_data(genbank_records):
     """Query NCBI to see if sequence has been updated since the last retrieval.
 
@@ -125,111 +229,6 @@ def check_ncbi_seq_data(genbank_records):
             genbank_records_to_update.append(accessions_dict[temp_accession][1])
 
     return genbank_records_to_update
-    
-
-
-def get_sequences_for_dict(accessions, date_today, args):
-    """Retrieve protein sequences from Entrez and write out to FASTA files.
-
-    :param accessions: list, GenBank accessions of proteins
-    :param date_today: str, YYYY/MM/DD
-    :param args: cmb-line args parser
-
-    Return nothing.
-    """
-    logger = logging.getLogger(__name__)
-
-    # perform batch query of Entrez
-    accessions_string = ",".join(accessions)
-    try:
-        epost_result = Entrez.read(
-            entrez_retry(
-                Entrez.epost,
-                args,
-                db="Protein",
-                id=accessions_string,
-            )
-        )
-    except RuntimeError as err:
-        print("HELP! HELP! HELP!", err)
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
-
-    # retrieve the protein sequences
-    with entrez_retry(
-        Entrez.efetch,
-        args,
-        db="Protein",
-        query_key=epost_query_key,
-        WebEnv=epost_webenv,
-        rettype="fasta",
-        retmode="text",
-    ) as seq_handle:
-        for record in SeqIO.parse(seq_handle, "fasta"):
-            # retrieve the accession of the record
-            temp_accession = record.id  # accession of the current working protein record
-
-            if temp_accession.find("|") != -1:  # sometimes multiple items are listed
-                print("temp accession: ", temp_accession)
-                success = False   # will be true if finds protein accession
-
-                temp_accessions = temp_accession.split("|")
-                for item in temp_accessions:
-                    # check if a accession number
-                    try:
-                        re.match(
-                            (
-                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
-                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
-                            ),
-                            item,
-                        ).group()
-                        temp_accession = item
-                        success = True
-                        break
-                    except AttributeError:  # raised if not an accession
-                        continue
-
-            else:
-                success = True  # have protein accession number
-
-            if success is False:
-                logger.error(
-                    f"Could not retrieve single protein accession from {record.id}\n"
-                    f"writing out record with complete record ID: {record.id}"
-                )
-
-            # check the retrieved protein accession is in the list of retrieved accession
-            if temp_accession not in accessions:
-                logger.warning(
-                    f"Retrieved the accession {temp_accession} from the record id={record.id},\n"
-                    "but this accession was not in the origina CAZy dict.\n"
-                    f"Retrieving sequencing, writing the record ID ({record.id}), as the accession"
-                )
-
-            file_io.write_out_fasta(record, temp_accession, args)
-
-            if args.blastdb is not None:
-                # need all squences in a single FASTA file to create a BLASTdb
-                file_io.write_fasta_for_db(record, args)
-
-            # remove the accession from the list
-            try:
-                accessions.remove(temp_accession)
-            except ValueError:
-                logger.warning(
-                    f"Tried to remove {temp_accession} from list of accessions, but it was not "
-                    "in the list of accessions.\n"
-                    "The returned accession and the one present in CAZy do not match."
-                )
-
-    if len(accessions) != 0:
-        logger.warning("Protein sequences for the following CAZymes were not retrieved:")
-        for acc in accessions:
-            logger.warning(f"GenBank accession: {acc}")
-
-    return
 
 
 def get_sequences_add_to_db(accessions, date_today, session, args):
