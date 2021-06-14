@@ -57,9 +57,11 @@ from scraper.sql.sql_orm import (
 )
 
 
+# Retrieve all records from specific CAZy classes and families
+
+
 def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
-    """Retrieve GenBank accession and associated Taxonomy and EC number records of CAZymes that
-    do not have a sequence in the database.
+    """Retrieve Primary GenBank accession and associated Taxonomy and EC number records of CAZymes.
 
     :param session: open SQL database session
     :param config_dict: dict defining CAZy classes and families to retrieved records from
@@ -100,7 +102,6 @@ def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
                 join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
                 filter(Cazyme.cazyme_id.in_(class_subquery)).\
                 filter(Cazymes_Genbanks.primary == True).\
-                filter(Genbank.sequence == None).\
                 all()
 
     # Retrieve protein sequences for specified families
@@ -141,17 +142,28 @@ def get_prim_gnbk_acc_from_clss_fams(session, config_dict):
                 join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
                 filter(Cazyme.cazyme_id.in_(family_subquery)).\
                 filter(Cazymes_Genbanks.primary == True).\
-                filter(Genbank.sequence == None).\
                 all()
 
     return genbank_query_class, genbank_query_family
 
 
 def get_all_gnbk_acc_from_clss_fams(session, config_dict):
+    """Retrieve all GenBank records and associated taxonomic and biochemical (EC number records) of
+    CAZymes from user specified CAZy classes and families.
+
+    :param session: open SQL database session
+    :param config_dict: dict defining CAZy classes and families to retrieved records from
+
+    Return list of query results.
+    """
+    logger = logging.getLogger(__name__)
+
     genbank_query_class = None
     genbank_query_family = None
 
     if len(config_dict["classes"]) != 0:
+        logger.info(f"Retrieve records from specific CAZy classes: {config_dict['classes']}")
+
         # retrieve list of CAZy classes to get sequences for
         cazy_classes = config_dict["classes"]
 
@@ -165,7 +177,13 @@ def get_all_gnbk_acc_from_clss_fams(session, config_dict):
                 filter(CazyFamily.family.regexp(rf"{cazy_class}\d+")).\
                 subquery()
 
-            genbank_query_class = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            genbank_query_class = session.query(
+                Genbank,
+                Cazymes_Genbanks,
+                Cazyme,
+                Taxonomy,
+                Kingdom,
+            ).\
                 join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
                 join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
                 join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
@@ -179,6 +197,8 @@ def get_all_gnbk_acc_from_clss_fams(session, config_dict):
             continue
         if config_dict[key] is None:
             continue  # no families to parse
+    
+        logger.info(f"Retrieve records for specific CAZy families from: {key}")
 
         for family in tqdm(config_dict[key], desc=f"Parsing families in {key}"):
 
@@ -196,7 +216,13 @@ def get_all_gnbk_acc_from_clss_fams(session, config_dict):
                     filter(CazyFamily.family == family).\
                     subquery()
 
-            genbank_query_family = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            genbank_query_family = session.query(
+                Genbank,
+                Cazymes_Genbanks,
+                Cazyme,
+                Taxonomy,
+                Kingdom,
+            ).\
                 join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
                 join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
                 join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
@@ -205,6 +231,10 @@ def get_all_gnbk_acc_from_clss_fams(session, config_dict):
                 all()
     
     return genbank_query_class, genbank_query_family
+
+
+# Retrieve sequences from specific CAZy classes and families that do not have a sequence in the
+# local CAZyme database
 
 
 def get_prim_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
@@ -333,6 +363,9 @@ def get_all_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
     return genbank_query_class, genbank_query_family
 
 
+# Retrieve seqeunces when user did not specify CAZy classes or families
+
+
 def get_prim_genbank_acc_for_update(session, date_today, args):
     """Retrieve all PRIMARY GenBank accessions in the database.
 
@@ -343,8 +376,6 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
     Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
     been update since the sequence was last retrieved and added to the local CAZyme db.
     """
-    logger = logging.getLogger(__name__)
-
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
         join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
@@ -352,53 +383,6 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
         join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
         filter(Cazymes_Genbanks.primary == True).\
         all()
-
-    genbank_query_no_seq = []
-    genbank_query_with_seq = []
-
-    # separate out returned records that do and do not have sequences
-    for result in genbank_query:
-        if result.sequence is None:
-            genbank_query_no_seq.append(result)
-        else:
-            genbank_query_with_seq.append(result)
-
-    genbank_query_to_update = []
-    accessions_lists_for_individual_queries = []
-
-    for accession_list in tqdm(
-        get_genbank_sequences.get_accession_chunks(genbank_query_with_seq, args.epost),
-        desc="Batch retrieving NCBI to check if to update seq",
-        total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
-    ):
-        try:
-            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
-            genbank_query_to_update += genbank_to_update
-
-        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
-            logger.warning(
-                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
-                f"The following error was raised:\n{err}"
-            )
-
-    if len(accessions_lists_for_individual_queries) != 0:
-        for accession_list in tqdm(
-            accessions_lists_for_individual_queries,
-            desc="Performing individual queries for records that previously raised errors",
-        ):
-            for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
-
-                try:
-                    genbank_to_update = query_entrez.check_ncbi_seq_data([accession], date_today)
-                    genbank_query_to_update += genbank_to_update
-
-                except RuntimeError as err:
-                    logger.warning(
-                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
-                        f"{err}"
-                    )
-
-    genbank_query = genbank_query_no_seq + genbank_query_to_update
 
     return genbank_query
 
@@ -413,8 +397,6 @@ def get_all_genbank_acc_for_update(session, date_today, args):
     Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
     been update since the sequence was last retrieved and added to the local CAZyme db.
     """
-    logger = logging.get_logger(__name__)
-
     genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
         join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
         join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
@@ -422,54 +404,11 @@ def get_all_genbank_acc_for_update(session, date_today, args):
         join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
         all()
 
-    genbank_query_no_seq = []
-    genbank_query_with_seq = []
-
-    # separate out returned records that do and do not have sequences
-    for result in genbank_query:
-        if result.sequence is None:
-            genbank_query_no_seq.append(result)
-        else:
-            genbank_query_with_seq.append(result)
-
-    genbank_query_to_update = []
-    accessions_lists_for_individual_queries = []
-
-    for accession_list in tqdm(
-        get_genbank_sequences.get_accession_chunks(genbank_query_with_seq, args.epost),
-        desc="Batch retrieving NCBI to check if to update seq",
-        total=(math.ceil(len(genbank_query_with_seq) / args.epost)),
-    ):
-        try:
-            genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
-            genbank_query_to_update += genbank_to_update
-
-        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
-            logger.warning(
-                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
-                f"The following error was raised:\n{err}"
-            )
-
-    if len(accessions_lists_for_individual_queries) != 0:
-        for accession_list in tqdm(
-            accessions_lists_for_individual_queries,
-            desc="Performing individual queries for records that previously raised errors",
-        ):
-            for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
-
-                try:
-                    genbank_to_update = query_entrez.check_ncbi_seq_data([accession], date_today)
-                    genbank_query_to_update += genbank_to_update
-
-                except RuntimeError as err:
-                    logger.warning(
-                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
-                        f"{err}"
-                    )
-
-    genbank_query = genbank_query_no_seq + genbank_query_to_update
-
     return genbank_query
+
+
+# Retrieve seqeunces when user did not specify CAZy classes or families that do not have a
+# sequence in the local CAZyme database
 
     
 def get_prim_genbank_accessions_with_no_seq(session):
@@ -505,6 +444,9 @@ def get_genbank_accessions_with_no_seq(session):
         filter(Genbank.sequence == None).\
         all()
     return genbank_query
+
+
+# check the EC number of the CAZyme
 
 
 def query_ec_number(session, genbank_accession):
