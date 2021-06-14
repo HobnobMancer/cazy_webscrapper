@@ -97,19 +97,23 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                 dir_path = Path("/".join((args.fasta).parts))
 
                 logger.info(f"Building directory for the FASTA file: {dir_path}")
-                logger.info(f"Writing out to dir if already exists: {args.force}")
+                logger.info(f"Writing out to FASTA dir if already exists: {args.force}")
                 logger.info(f"Nucking dir for the FASTA file: {args.nodelete}")
+            
                 file_io.make_output_directory(dir_path, args.force, args.nodelete)
+        
             else:
                 logger.info(f"Writing out FASTA file {args.fasta} to the current working directory")
 
     if args.blastdb is not None:  # build directory to store FASTA file for BLAST db
         logger.info("Enabled creating BLAST database containing retrieved protein sequences")
         if len((args.blastdb).parts) != 1:
-            logger.info("Compile path to directory for BLAST db")
+            logger.info("Compiling path to directory for BLAST db")
             dir_path = Path("/".join((args.blastdb).parts))
 
             logger.info(f"Building directory for BLAST db: {dir_path}")
+            logger.info(f"Writing out to BLAST db dir if already exists: {args.force}")
+            logger.info(f"Nucking dir for the BLAST db: {args.nodelete}")
             file_io.make_output_directory(dir_path, args.force, args.nodelete)
 
     if str(args.database).endswith(".json"):
