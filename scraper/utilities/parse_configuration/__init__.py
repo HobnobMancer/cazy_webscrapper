@@ -585,10 +585,9 @@ def create_streamline_scraping_warning(args):
     )
 
 
-def parse_configuration_for_cazy_database(file_io_path, args):
+def parse_configuration_for_cazy_database(args):
     """Get configuration for the Expand module.
 
-    :param file_io_path: Path to file_io module
     :param args: cmd-line argument parser
 
     Return configuration dictionary, set of taxonomy filters and set of Taxonomy Kingdoms.
@@ -669,7 +668,7 @@ def parse_configuration_for_cazy_dict(args):
         for item in cmd_config[key]:
             if item not in config_dict[key]:  # do not add duplicates
                 config_dict[key].append(item)
-    
+
     config_data = []
     for key in config_dict:
         for item in config_dict[key]:

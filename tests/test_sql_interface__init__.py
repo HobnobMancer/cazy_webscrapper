@@ -48,7 +48,7 @@ pytest -v
 import pytest
 
 from argparse import Namespace
-from datetime import datetime
+from datetime import datetime, time
 
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -102,6 +102,43 @@ def test_add_db_log_with_config(db_session):
         "strains": ["Saccharolobus solfataricus POZ149", "Saccharolobus solfataricus SULB"]
     }
     ec_filters = ['EC1.2.3.4', 'EC3.4.5.6']
+    kingdoms = None
+    args = {
+        "args": Namespace(
+            classes="GH,PL",
+            families="AA1,AA2",
+            genera="Trichoderma",
+            species="Aspergillus Niger",
+            strains="Acidianus ambivalens LEI 10",
+            kingdoms="Archaea,Bacteria",
+            ec="EC1.2.3.4,EC5.6.4.7",
+            streamline="genbank",
+        )
+    }
+
+    sql_interface.log_scrape_in_db(
+        "YYYY-MM-DD--HH-MM-SS",
+        config_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        db_session,
+        args["args"],
+    )
+
+
+def test_add_db_log_with_full_config(db_session):
+    config_dict = {
+        'classes': ['GH','PL','CE'],
+        'GH': ['GH1', 'GH2'], 
+        'PL': ['PL1_1'],
+    }
+    taxonomy_filters = {
+        "genera": ["Caldivirga", "Cuniculiplasma"],
+        "species": ["Pyrococcus furiosus"],
+        "strains": ["Saccharolobus solfataricus POZ149", "Saccharolobus solfataricus SULB"]
+    }
+    ec_filters = ['EC1.2.3.4', 'EC3.4.5.6']
     kingdoms = ["Archaea"]
     args = {
         "args": Namespace(
@@ -127,7 +164,9 @@ def test_add_db_log_with_config(db_session):
     )
 
 
+
 # tests for add_proteins_to_db
+
 
 def test_adding_a_new_protein(db_session):
     """Test adding a new protein to the local database."""
@@ -330,10 +369,98 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
     )
 
 
+def test_add_protein_error_message(db_session, monkeypatch):
+    """Test add_protein_to_db() when an error message is returned."""
+
+    def mock_adding_a_new_protein(*args, **kwargs):
+        return "error message"
+
+    monkeypatch.setattr(sql_interface, "add_new_protein_to_db", mock_adding_a_new_protein)
+
+    existing_genbank_with_no_cazyme = "test_genbank_no_cazyme"
+    args = {'args': Namespace(streamline=None)}
+    sql_interface.add_protein_to_db(
+        "test_cazyme_name",
+        "cazy_family",
+        "source_genus organism",
+        "kingdom",
+        existing_genbank_with_no_cazyme,
+        db_session,
+        args['args'],
+        ec_numbers=["EC4.2.2.-"],
+    )
+
+
+# test streamline_addition()
+
+
+def test_streamline_addition(db_session, monkeypatch):
+    """Test streamline addition"""
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cazyme_name = 'ulvan lyase (BN863_22190)'
+    primary_genbank = 'WP_038530530.1'
+    gbk_nonprimary = ['CDF79931.1', f'nonprimary_{time_stamp}']
+    ec_numbers = [f'EC{time_stamp}']
+    uni_primary = [f'primaryUNI{time_stamp}']
+    uni_nonprimary = [f'nonprimaryUNI{time_stamp}']
+    pdb_accessions = [f'PDB{time_stamp}']
+    family = f"FAM{time_stamp}"
+    source_organism = "Formosa agariphila KMM 3901"
+    kingdom = "Bacteria"
+
+    args = {"args": Namespace(streamline="")}
+
+    def mock_none(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_none)
+    monkeypatch.setattr(sql_interface, "add_cazy_family", mock_none)
+    monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_none)
+    monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_none)
+    monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_none)
+
+    sql_interface.streamline_addition(
+        cazyme_name,
+        family,
+        source_organism,
+        kingdom,
+        primary_genbank,
+        db_session,
+        args['args'],
+        ec_numbers,
+        gbk_nonprimary,
+        uni_primary,
+        uni_nonprimary,
+        pdb_accessions,
+    )
+
+
 # test parse_unique_genbank_conflict()
 
 
-######
+def test_parse_unique_genbank_conflict(db_session, monkeypatch):
+    """Test parse_unique_genbank_conflict() when no primary genbank accessions returned."""
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cazyme_name = "cazyme_test_name"
+    family = "sub_famfamily"
+    source_organism = "test source organism strain"
+    kingdom = "Bacteria"
+    primary_genbank = f"unique_primary_genbank_{time_stamp}"
+
+    def mock_none(*args, **kwargs):
+        return
+    
+    monkeypatch.setattr(sql_interface, "add_new_protein_to_db", mock_none)
+
+    sql_interface.parse_unique_genbank_conflict(
+        cazyme_name,
+        family,
+        source_organism,
+        kingdom,
+        primary_genbank,
+        db_session,
+    )
 
 
 # test add deleted cazy family()
@@ -341,7 +468,7 @@ def test_multiple_genbanks_no_cazymes(db_session, monkeypatch):
 
 def test_add_existing_deleted_fam(db_session):
     """Test add_deteleted_cazy_family() when the fam is already present."""
-    fam = "deletedFam"
+    fam = "deletedFAM"
 
     sql_interface.add_deleted_cazy_family(fam, db_session)
 

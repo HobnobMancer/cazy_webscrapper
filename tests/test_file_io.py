@@ -3,7 +3,7 @@
 # (c) University of St Andrews 2020-2021
 # (c) University of Strathclyde 2020-2021
 # (c) James Hutton Institute 2020-2021
-
+#
 # Author:
 # Emma E. M. Hobbs
 #
@@ -55,7 +55,6 @@ from argparse import Namespace
 
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-
 from scraper.utilities import file_io
 
 
@@ -286,7 +285,7 @@ def test_write_out_fasta(making_output_dir):
         name="fake",
         description="test protein record",
     )
-    args = {"args": Namespace(fasta=fasta_path)}
+    args = {"args": Namespace(fasta=fasta_path, separate_fasta=False)}
 
     file_io.write_out_fasta(record, genbank_accession, args["args"])
 
@@ -306,8 +305,52 @@ def test_write_out_fasta_separate_files(making_output_dir):
         name="fake",
         description="test protein record",
     )
-    args = {"args": Namespace(fasta="separate", write=path_)}
+    args = {"args": Namespace(fasta=path_, separate_fasta=True)}
 
     file_io.write_out_fasta(record, genbank_accession, args["args"])
 
     shutil.rmtree(path_)
+
+
+def test_write_fasta_for_db(making_output_dir):
+    """Test write_fasta_for_db()"""
+    # prepare dir for test
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+
+    record = SeqRecord(
+        Seq("MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"),
+        id="fake_protein.1",
+        name="fake",
+        description="test protein record",
+    )
+    args = {"args": Namespace(blastdb=path_, blastdb_name="blast_db")}
+
+    file_io.write_fasta_for_db(record, args["args"])
+
+    shutil.rmtree(path_)
+
+
+@pytest.mark.skip()
+def test_build_db(making_output_dir, monkeypatch):
+    """Test build_blast_db()"""
+    temp_dir = making_output_dir / "fasta_test"
+    file_io.make_output_directory(temp_dir, True, False)
+    args = {"args": Namespace(blastdb=temp_dir, blastdb_name="test_fasta")}
+
+    record = SeqRecord(
+        Seq("MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"),
+        id="fake_protein.1",
+        name="fake",
+        description="test protein record",
+    )
+
+    # create fasta for db
+    file_io.write_fasta_for_db(record, args["args"])
+    file_io.write_fasta_for_db(record, args["args"])
+
+    # test function
+    file_io.build_blast_db(args["args"])
+
+    # delete all
+    shutil.rmtree(temp_dir)

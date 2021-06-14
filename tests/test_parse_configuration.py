@@ -454,6 +454,12 @@ def test_get_ec_filter(args_config_cmd, raw_config_dict):
     parse_configuration.get_ec_filter(args_config_cmd["args"], raw_config_dict)
 
 
+def test_get_ec_filter_keyerror(args_config_cmd):
+    """Test get_ec_filter when 'EC' key is not present."""
+    raw_config_dict = {"classes": None}
+    parse_configuration.get_ec_filter(args_config_cmd["args"], raw_config_dict)
+
+
 # test get_kingdoms
 
 
@@ -469,6 +475,18 @@ def test_get_kingdoms_all_wrong(raw_config_dict):
     args = {"args": Namespace(kingdoms="milly")}
 
     parse_configuration.get_kingdoms(args["args"], raw_config_dict)
+
+
+def test_get_kingdoms_keyerror(args_config_cmd):
+    """Test get_kingdoms when 'kingdoms' is not in config file."""
+    raw_config_dict = {'classes': None}
+    parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
+
+
+def test_get_kingdoms_none(args_config_cmd):
+    """Test get_kingdoms when none are listed in the config file."""
+    raw_config_dict = {'classes': None, "kingdoms": None}
+    parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
 
 
 # test get_cazy_dict_std_names()
@@ -641,36 +659,47 @@ def test_get_no_excluded_classes(cazy_dictionary):
         cazy_dictionary,
     )
 
-# test get_configuration() - retrieves configuraiton for the expand module
+
+def test_get_excluded_classes(cazy_dictionary):
+    """Test get_excluded_classes when excluded classes are retrieved."""
+    std_classes = list(cazy_dictionary.keys())
+    config_dict = {
+        "classes": [
+            'Carbohydrate Esterases (CEs)',
+            'Auxiliary Activities (AAs)',
+            'GlycosylTransferases (GTs)',
+        ],
+        "Glycoside Hydrolases (GHs)": [
+            "GH1",
+            "GH2",
+        ],
+    }
+
+    parse_configuration.get_excluded_classes(
+        std_classes,
+        config_dict,
+        cazy_dictionary,
+    )
 
 
-def test_get_configuraiton_0(cazy_dictionary, monkeypatch):
-    """Tests getting configuration for the expand module when NO tax filters are given."""
-
-    def mock_parse_config(*args, **kwargs):
-        return None, None, cazy_dictionary, {}, set(), set()
-
-    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
-
-    parse_configuration.get_configuration("args")
+# test convert_lists_to_none()
 
 
-def test_get_configuraiton_1(cazy_dictionary, monkeypatch):
-    """Tests getting configuration for the expand module when ARE tax filters are given."""
+def test_convert_lists():
+    """Test convert_lists_to_none"""
+    config_dict = {
+        "classes": [
+            'Carbohydrate Esterases (CEs)',
+            'Auxiliary Activities (AAs)',
+        ],
+        "Glycoside Hydrolases (GHs)": [
+            "GH1",
+            "GH2",
+        ],
+        'GlycosylTransferases (GTs)': [],
+    }
 
-    def mock_parse_config(*args, **kwargs):
-        return(
-            None,
-            None,
-            cazy_dictionary,
-            {"genera": ["Trichoderma", "Aspergillus"]},
-            set(['viruses']),
-            set(["EC1.2.3.4"])
-        )
-
-    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
-
-    parse_configuration.get_configuration("args")
+    parse_configuration.convert_lists_to_none(config_dict)
 
 
 # test creating logger warning message when enabled streamlined scraping
@@ -680,3 +709,71 @@ def test_creating_streamlined_warning_message():
     """Test creating logger warning message when enabled streamlined scraping."""
     args = {"args": Namespace(streamline="genbank,ec,uniprot,pdb")}
     parse_configuration.create_streamline_scraping_warning(args["args"])
+
+
+# test parse_configuration_for_cazy_database()
+
+
+def test_expand_config_no_filters(monkeypatch):
+    """Test parse_configuration_for_cazy_database"""
+
+    def mock_parse_config(*args, **kwargs):
+        return (
+            None,
+            None,
+            None,
+            {},
+            "all",
+            [],
+        )
+    
+    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
+
+    parse_configuration.parse_configuration_for_cazy_database('args')
+
+
+def test_parse_expand_config(monkeypatch):
+    """Test parse_configuration_for_cazy_database"""
+
+    def mock_parse_config(*args, **kwargs):
+        return (
+            None,
+            None,
+            None,
+            {'genera': 'Aspergillus', "species": None},
+            ['bacteria', 'archea'],
+            ['1.2.3.4', '2.3.1.21'],
+        )
+    
+    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_parse_config)
+
+    parse_configuration.parse_configuration_for_cazy_database('args')
+
+
+# test parse_configuration_for_cazy_dict()
+
+
+def test_parse_expand_config_dict_sysexit(args_no_yaml):
+    """Test parse_configuration_for_cazy_dict()"""
+
+    with pytest.raises(SystemExit) as pytest_wrapped_err:
+        parse_configuration.parse_configuration_for_cazy_dict(
+            args_no_yaml["args"],
+        )
+    assert pytest_wrapped_err.type == SystemExit
+
+
+def test_parse_expand_config_dict(args_config_file, raw_config_dict, monkeypatch):
+    """Test parse_configuration_for_cazy_dict()"""
+
+    def mock_std_names(*args, **kwargs):
+        return raw_config_dict, ['classes']
+    
+    def mock_get_config(*args, **kwargs):
+        return raw_config_dict
+    
+    monkeypatch.setattr(parse_configuration, "get_cazy_dict_std_names", mock_std_names)
+    monkeypatch.setattr(parse_configuration, "get_yaml_configuration", mock_get_config)
+    monkeypatch.setattr(parse_configuration, "get_cmd_defined_fams_classes", mock_get_config)
+
+    parse_configuration.parse_configuration_for_cazy_dict(args_config_file['args'])

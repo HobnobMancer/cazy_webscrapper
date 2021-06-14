@@ -197,14 +197,12 @@ def get_pdb_accessions(args, session):
     Return list of unique PDB accession.
     """
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
-    parse_configuration_path = parse_configuration.__file__
     (
         config_dict,
         taxonomy_filters,
         kingdoms,
         ec_filters,
     ) = parse_configuration.parse_configuration_for_cazy_database(
-        parse_configuration_path,
         args,
     )
 
