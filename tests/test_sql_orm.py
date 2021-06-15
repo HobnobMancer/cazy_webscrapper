@@ -112,7 +112,7 @@ def test_regex_search(db_session):
         filter(CazyFamily.family.regexp(rf"{cazy_class}\d+")).\
         all()
 
-    assert len(class_query) == 24
+    assert len(class_query) == 26
 
 
 def test_calling_class_instances():
