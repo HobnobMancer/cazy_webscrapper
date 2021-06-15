@@ -215,22 +215,24 @@ def check_ncbi_seq_data(genbank_accessions, gbk_records_without_seq, args):
             )
             continue
 
+        # convert strings to dates
         previous_retrieval_data = gbk_records_without_seq[temp_accession].seq_update_date
-        
         previous_retrieval_data = previous_retrieval_data.split("/")  # Y=[0], M=[1], D=[]
-
-        ncbi_seq_date = doc["UpdateDate"]
-        ncbi_seq_date = ncbi_seq_date.split("/")  # Y=[0], M=[1], D=[]
-
-        if datetime.date(
+        previous_retrieval_data = datetime(
             previous_retrieval_data[0],
             previous_retrieval_data[1],
             previous_retrieval_data[2],
-        ) < datetime.data(
+        )
+
+        ncbi_seq_date = doc["UpdateDate"]
+        ncbi_seq_date = ncbi_seq_date.split("/")  # Y=[0], M=[1], D=[]
+        ncbi_seq_date = datetime(
             ncbi_seq_date[0],
             ncbi_seq_date[1],
             ncbi_seq_date[2],
-        ):
+        )
+
+        if ncbi_seq_date > previous_retrieval_data:
             # the sequence at NCBI has been updated since the seq was retrieved, need to update seq
             genbank_records_to_update.append(temp_accession)
 
