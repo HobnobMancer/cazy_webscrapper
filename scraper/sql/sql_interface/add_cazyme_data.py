@@ -104,8 +104,7 @@ def add_new_protein_to_db(
 
     # define source organism
     if source_organism == 'unidentified':
-        genus = source_organism
-        species = source_organism
+        genus, species = source_organism, source_organism
 
     else:
         genus_sp_separator = source_organism.find(" ")
@@ -140,6 +139,7 @@ def add_new_protein_to_db(
             error_message = (
                 f"Could not add CAZyme {cazyme_name} from {source_organism} to the database"
             )
+            session.rollback()
 
     # establish relationship between the CAZyme and its primary GenBank accession
     try:
