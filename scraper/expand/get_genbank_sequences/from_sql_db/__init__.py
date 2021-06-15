@@ -472,7 +472,7 @@ def check_if_to_update(genbank_records, args):
         try:
             genbank_to_update = ncbi.check_ncbi_seq_data(
                 accession_list,
-                gbk_records_without_seq,
+                gbk_records_with_seq,
                 args,
             )
             genbank_seq_to_update += genbank_to_update
@@ -494,7 +494,7 @@ def check_if_to_update(genbank_records, args):
                 try:
                     genbank_to_update = ncbi.check_ncbi_seq_data(
                         [accession],
-                        gbk_records_without_seq,
+                        gbk_records_with_seq,
                         args,
                     )
                     genbank_seq_to_update += genbank_to_update
