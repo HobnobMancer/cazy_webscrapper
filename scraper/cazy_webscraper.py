@@ -101,15 +101,22 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         args = parser.parse_args()
 
     if logger is None:
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__package__)
         config_logger(args)
 
     if args.output is not sys.stdout:
+        logger.info("Preparing output directory")
+        logger.info(
+            f"Output dir:{args.output}\n"
+            f"Force writing to exiting output dir: {args.force}\n"
+            f"Delete content of exiting output dir: {args.nodelete}\n"
+        )
         file_io.make_output_directory(args.output, args.force, args.nodelete)
 
     cazy_home = "http://www.cazy.org"
 
     # retrieve configuration data
+    logger.info("Parsing configuration")
     (
         excluded_classes,
         config_dict,
@@ -124,6 +131,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     # Check if retrieving pages from CAZy and writing to disk for scraping later
     if args.get_pages:
+        logger.info("Creating local CAZy HTML page library")
         get_cazy_pages.get_cazy_pages(
             args,
             cazy_home,
@@ -139,6 +147,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         # build database and return open database session
         if args.database is not None:  # open session for existing local database
             if args.database == "dict":  # build dictionary of {genbank_accession: CAZy families}
+                logger.info("Creating JSON file of CAZy family classifications NOT a database")
                 session = {}
 
             else:
@@ -151,6 +160,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
                     )
                     sys.exit(1)
                 try:
+                    logger.info("Opening session to existing local CAZyme database")
                     session = sql_orm.get_db_session(args)
                 except Exception:
                     logger.error("Failed to build SQL database. Terminating program", exc_info=True)
@@ -158,6 +168,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
         else:  # create a new empty database to populate
             try:
+                logger.info("Building a new local CAZyme database")
                 session = sql_orm.build_db(time_stamp, args)
             except Exception:
                 logger.error("Failed to build SQL database. Terminating program", exc_info=True)
@@ -167,9 +178,11 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             logger.warning("Enabled retrieval of subfamily classifications")
 
         if args.streamline is not None:
+            logger.info("Configuring streamlined mode")
             parse_configuration.create_streamline_scraping_warning(args)
 
         # log scraping of CAZy in local db
+        logger.info("Add log of scrape to the local CAZyme database")
         sql_interface.log_scrape_in_db(
             time_stamp,
             config_dict,
@@ -182,6 +195,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
         # Check if scraping from local CAZy files
         if args.scrape_files is not None:
+            logger.info("Scraping data from local CAZy HTML pages")
             parse_local_pages.parse_local_pages(
                 args,
                 cazy_home,
@@ -193,6 +207,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             )
 
         else:
+            logger.info("Scraping data directly from CAZy")
             get_cazy_data(
                 cazy_home,
                 excluded_classes,
