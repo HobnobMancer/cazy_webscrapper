@@ -40,12 +40,9 @@
 
 
 import logging
-import math
 
 from tqdm import tqdm
 
-from scraper.expand import get_genbank_sequences
-from scraper.expand.get_genbank_sequences.ncbi import query_entrez
 from scraper.sql.sql_orm import (
     Cazyme,
     CazyFamily,
