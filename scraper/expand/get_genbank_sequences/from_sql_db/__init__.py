@@ -370,9 +370,14 @@ def get_genbank_accessions(
         logger.info(
             "Extracting GenBank accessions from records retrieved from the local CAZyme database"
         )
-        genbank_accessions = [
-            query_result.genbank_accession for query_result in filtered_query_results
-        ]
+        try:
+            genbank_accessions = [
+                query_result.genbank_accession for query_result in filtered_query_results
+            ]
+        except AttributeError:
+            genbank_accessions = [
+                query_result[0].genbank_accession for query_result in filtered_query_results
+            ]
 
     return list(set(genbank_accessions))  # prevent quering the same accession multiple times
 
