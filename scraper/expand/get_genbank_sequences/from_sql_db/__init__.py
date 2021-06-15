@@ -407,14 +407,14 @@ def check_if_to_update(genbank_records, date_today, args):
     # separate records with and without sequences, and extract GenBank accession
     logger.warning("Separating GenBank records with and without sequences in the local CAZyme db")
     
-    with_seq = []
-    without_seq = []
+    gbk_records_with_seq = []
+    gbk_records_without_seq = []
 
     for record in genbank_records:
         if record.sequence is None:
-            without_seq.append(record.genbank_accession)
+            gbk_records_without_seq.append(record.genbank_accession)
         else:
-            with_seq.append(record.genbank_accession)
+            gbk_records_with_seq.append(record.genbank_accession)
 
     logger.info("Checking which protein sequences are to be updated")
     genbank_seq_to_update = []
@@ -422,9 +422,9 @@ def check_if_to_update(genbank_records, date_today, args):
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
-        get_accession_chunks(with_seq, args.epost),
+        get_accession_chunks(gbk_records_with_seq, args.epost),
         desc="Batch retrieving NCBI to check if to update seq",
-        total=(math.ceil(len(with_seq) / args.epost)),
+        total=(math.ceil(len(gbk_records_with_seq) / args.epost)),
     ):
         try:
             genbank_to_update = query_entrez.check_ncbi_seq_data(accession_list, date_today)
@@ -454,5 +454,6 @@ def check_if_to_update(genbank_records, date_today, args):
                         f"{err}"
                     )
 
-    genbank_accessions = without_seq + genbank_seq_to_update
+    genbank_accessions = gbk_records_without_seq + genbank_seq_to_update
+
     return genbank_accessions
