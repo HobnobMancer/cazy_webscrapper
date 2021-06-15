@@ -200,6 +200,7 @@ def empty_config_dict():
 def args_no_yaml():
     args_dict = {
         "args": Namespace(
+            cazy_synonyms=None,
             config="test/test/test_yaml.yaml",
             classes=None,
             families=None,
