@@ -53,7 +53,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from scraper.sql.sql_interface import add_cazyme_data
-from scraper.sql.sql_orm import Genbank
+from scraper.sql.sql_orm import Genbank, Cazyme
 
 
 # Unit tests for add_new_protein_to_db()
@@ -288,22 +288,22 @@ def test_add_new_protein_unidentified(db_session, monkeypatch):
 #     )
 
 
-# # Unit tests for adding subfamilies
+# Unit tests for adding subfamilies
 
 
-# def test_adding_new_subfamily(db_session):
-#     """Test adding a new subfamily to the local database."""
+def test_adding_new_subfamily(db_session):
+    """Test adding a new subfamily to the local database."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-#     new_fam = f"GH{time_stamp}_1"
+    time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    new_fam = f"GH{time_stamp}_1"
 
-#     sql_interface.add_cazy_subfamily(
-#         new_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_subfamily(
+        new_fam,
+        cazyme,
+        db_session,
+    )
 
 
 # def test_adding_cazyme_to_existing_db(db_session):
