@@ -155,10 +155,13 @@ def get_sequences_for_dict(accessions, args):
     return
 
 
-def check_ncbi_seq_data(genbank_records, args):
+def check_ncbi_seq_data(genbank_accessions, gbk_records_without_seq, args):
     """Query NCBI to see if sequence has been updated since the last retrieval.
 
-    :param genbank_records: list of GenBank records from the local database
+    :param genbank_accessions: list of GenBank accessions from the local database
+    :param gbk_records_without_seq: dict keyed by GenBank accession and valued by GenBank record
+        from the local CAZyme database with the GenBank accession
+    :param args: cmd-line args parser
 
     Return list of GenBank records whose sequence needs updating.
     """
@@ -166,14 +169,7 @@ def check_ncbi_seq_data(genbank_records, args):
 
     genbank_records_to_update = []
 
-    accessions_dict = {}
-    accessions_list = []
-
-    for record in genbank_records:
-        accessions_dict[record.genbank_accession] = [record.seq_update_date, record]
-        accessions_list.append(record)
-
-    accessions_list = ",".join(accessions_list)
+    accessions_list = ",".join(genbank_accessions)
 
     epost_result = Entrez.read(
         entrez_retry(
@@ -204,17 +200,22 @@ def check_ncbi_seq_data(genbank_records, args):
     for doc in summary_docs:
         try:
             temp_accession = doc["AccessionVersion"]  # accession of the current working protein
-        except KeyError:
+        except KeyError as err:
             logger.warning(
-                f"Retrieved protein with accession {temp_accession} but this accession is not in "
-                "the local database.\nNot retrieving a sequence for this accession."
+                "Could not retrieve AccessionVersion from the current record.\n"
+                f"{err}"
             )
             continue
-        try:
-            previous_retrieval_data = accessions_dict[temp_accession][0]
-        except KeyError:
-            f"{temp_accession} not in database but retrieved from NCBI for accession in the "
-            f"database\nWill not retrieve a sequence for {temp_accession}"
+        
+        if temp_accession not in genbank_accessions:
+            logger.warning(
+                f"Retrieved protein with accession {temp_accession}\n"
+                "but this accession is not in the local database.\n"
+                "Not retrieving a sequence for this accession."
+            )
+            continue
+
+        previous_retrieval_data = gbk_records_without_seq[temp_accession].seq_update_date
         
         previous_retrieval_data = previous_retrieval_data.split("/")  # Y=[0], M=[1], D=[]
 
@@ -231,7 +232,7 @@ def check_ncbi_seq_data(genbank_records, args):
             ncbi_seq_date[2],
         ):
             # the sequence at NCBI has been updated since the seq was retrieved, need to update seq
-            genbank_records_to_update.append(accessions_dict[temp_accession][1])
+            genbank_records_to_update.append(temp_accession)
 
     return genbank_records_to_update
 

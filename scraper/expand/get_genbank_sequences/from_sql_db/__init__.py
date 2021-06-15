@@ -324,7 +324,16 @@ def get_genbank_accessions(
     )
 
     if args.update:
-        genbank_accessions = check_if_to_update(filtered_query_results, date_today, args)
+        logger.info(
+            f"Out of {len(filtered_query_results)} records, checking which have no seq in the "
+            "local db and\n"
+            "which have a seq to update"
+        )
+        
+        genbank_accessions = check_if_to_update(
+            filtered_query_results,
+            args,
+        )
 
     else:
         logger.info(
@@ -423,15 +432,15 @@ def parse_genbank_query(
     return final_filtered_genbank_accessions
 
 
-def check_if_to_update(genbank_records, date_today, args):
+def check_if_to_update(genbank_records, args):
     """Coordinate checking if need to update sequences in the local CAZyme database.
 
     :param genbank_records: list of GenBank records retrieved from the local CAZyme db
-    :param date_today: str, date program was invoked
     :param args: cmd-lines args parser
 
-    Return list of query_results, with each query result in the list representing a CAZyme record
-    which does not have a seq in the local db, or has a seq which needs to be updated.
+    Return list of GenBank accessions from GenBank records from the local CAZyme database that
+    either do not have a sequence, or the sequence in the NCBI database has been updated since
+    the sequence was last retrieved and added to the local CAZyme database.
     """
     logger = logging.getLogger(__name__)
     
@@ -439,13 +448,13 @@ def check_if_to_update(genbank_records, date_today, args):
     logger.warning("Separating GenBank records with and without sequences in the local CAZyme db")
     
     gbk_records_with_seq = []
-    gbk_records_without_seq = []
+    gbk_records_without_seq = {}  # {accession: db_genbank_record}
 
     for record in genbank_records:
         if record.sequence is None:
             gbk_records_without_seq.append(record.genbank_accession)
         else:
-            gbk_records_with_seq.append(record.genbank_accession)
+            gbk_records_with_seq[record.genbank_accession] = record
 
     logger.info("Checking which protein sequences are to be updated")
     genbank_seq_to_update = []
@@ -453,12 +462,19 @@ def check_if_to_update(genbank_records, date_today, args):
     accessions_lists_for_individual_queries = []
 
     for accession_list in tqdm(
-        get_accession_chunks(gbk_records_with_seq, args.epost),
+        get_accession_chunks(
+            list(gbk_records_with_seq.keys()),
+            args.epost,
+        ),
         desc="Batch retrieving NCBI to check if to update seq",
         total=(math.ceil(len(gbk_records_with_seq) / args.epost)),
     ):
         try:
-            genbank_to_update = ncbi.check_ncbi_seq_data(accession_list, args)
+            genbank_to_update = ncbi.check_ncbi_seq_data(
+                accession_list,
+                gbk_records_without_seq,
+                args,
+            )
             genbank_seq_to_update += genbank_to_update
 
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
@@ -476,7 +492,11 @@ def check_if_to_update(genbank_records, date_today, args):
             for accession in tqdm(accession_list, desc="Checking NCBI seq date"):
 
                 try:
-                    genbank_to_update = ncbi.check_ncbi_seq_data([accession], args)
+                    genbank_to_update = ncbi.check_ncbi_seq_data(
+                        [accession],
+                        gbk_records_without_seq,
+                        args,
+                    )
                     genbank_seq_to_update += genbank_to_update
 
                 except RuntimeError as err:
