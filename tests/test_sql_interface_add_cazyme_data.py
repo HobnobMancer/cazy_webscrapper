@@ -459,16 +459,16 @@ def test_adding_cazyme_to_existing_db(db_session):
 #     )
 
 
-# # Unit tests for adding PDB accessions to the local database
+# Unit tests for adding PDB accessions to the local database
 
 
-# def test_adding_pdb_accessions(time_stamp, db_session):
-#     """Test adding PDB accessions to the local database."""
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-#     accessions = [f'new_accession-{time_stamp}', 'existing_pdb', 'dupEC']
+def test_adding_pdb_accessions(time_stamp, db_session):
+    """Test adding PDB accessions to the local database."""
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    accessions = [f'new_accession-{time_stamp}', 'existing_pdb', 'dupEC']
 
-#     sql_interface.add_pdb_accessions(
-#         accessions,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_pdb_accessions(
+        accessions,
+        cazyme,
+        db_session,
+    )
