@@ -374,7 +374,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Enable writing out retrieved sequences to FASTA file(s).\n"
-            "Path to a dir to write out one FASTA file for each retrieved seqs\n"
+            "Path to a dir to write out one FASTA file for each retrieved seq\n"
             "OR a path to a FASTA file to write all retrieved seqs to"
         ),
     )
