@@ -105,14 +105,17 @@ def write_out_fasta(record, genbank_accession, args):
 
     Return nothing.
     """
-    if args.separate_fasta:
+    # determine if writing out a single FASTA for each protein or writing all proteins seq
+    # to a single fasta
+    if len((args.fasta).suffix) == 0:
+        # writing out fasta to a single FASTA in the dir specified by the user
         fasta_name = f"{genbank_accession}.fasta"
         fasta_name = args.fasta / fasta_name
 
         with open(fasta_name, "w") as fh:
             SeqIO.write(record, fh, "fasta")
 
-    else:  # add sequences to FASTA file
+    else:  # add sequences to the FASTA file specified by the user
         with open(args.fasta, "a") as fh:
             SeqIO.write(record, fh, "fasta")
 
@@ -127,8 +130,7 @@ def write_fasta_for_db(record, args):
 
     Return nothing.
     """
-    fasta_name = args.blastdb
-    fasta_name = fasta_name / f"{args.blastdb_name}.fasta"
+    fasta_name = f"{args.blastdb}.fasta"
 
     with open(fasta_name, "a") as fh:
         SeqIO.write(record, fh, "fasta")
@@ -145,8 +147,7 @@ def build_blast_db(args):
     """
     logger = logging.getLogger(__name__)
 
-    fasta_name = args.blastdb
-    fasta_name = fasta_name / f"{args.blastdb_name}.fasta"
+    fasta_name = f"{args.blastdb}.fasta"
 
     # build the command
     cmd_makedb = NcbimakeblastdbCommandline(
