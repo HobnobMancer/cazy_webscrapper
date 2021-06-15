@@ -270,8 +270,8 @@ def test_output_dir_creation_exists(test_dir):
 # test writing out FASTA files
 
 
-def test_write_out_fasta(making_output_dir):
-    """Test writing out FASTA file."""
+def test_write_out_single_fasta(making_output_dir):
+    """Test writing out a single FASTA file."""
     # prepare dir for writing test output
     path_ = making_output_dir / "fasta_test"
     file_io.make_output_directory(path_, True, False)
@@ -285,7 +285,7 @@ def test_write_out_fasta(making_output_dir):
         name="fake",
         description="test protein record",
     )
-    args = {"args": Namespace(fasta=fasta_path, separate_fasta=False)}
+    args = {"args": Namespace(fasta=fasta_path)}
 
     file_io.write_out_fasta(record, genbank_accession, args["args"])
 
@@ -305,7 +305,7 @@ def test_write_out_fasta_separate_files(making_output_dir):
         name="fake",
         description="test protein record",
     )
-    args = {"args": Namespace(fasta=path_, separate_fasta=True)}
+    args = {"args": Namespace(fasta=path_)}
 
     file_io.write_out_fasta(record, genbank_accession, args["args"])
 
@@ -317,6 +317,7 @@ def test_write_fasta_for_db(making_output_dir):
     # prepare dir for test
     path_ = making_output_dir / "fasta_test"
     file_io.make_output_directory(path_, True, False)
+    db_path = path_ / "test_blast_db"
 
     record = SeqRecord(
         Seq("MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"),
@@ -324,7 +325,7 @@ def test_write_fasta_for_db(making_output_dir):
         name="fake",
         description="test protein record",
     )
-    args = {"args": Namespace(blastdb=path_, blastdb_name="blast_db")}
+    args = {"args": Namespace(blastdb=db_path)}
 
     file_io.write_fasta_for_db(record, args["args"])
 
