@@ -200,7 +200,7 @@ def test_add_new_protein_unidentified(db_session, monkeypatch):
 #     )
 
 
-# # Unit tests for add_cazy_family
+# Unit tests for add_cazy_family
 
 
 def test_adding_new_family(db_session):
