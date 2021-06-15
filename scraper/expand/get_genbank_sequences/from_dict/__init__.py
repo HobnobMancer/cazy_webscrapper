@@ -47,7 +47,7 @@ import sys
 from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
-from scraper.expand.get_genbank_sequences.ncbi import query_entrez
+from scraper.expand.get_genbank_sequences import ncbi
 from scraper.utilities import parse_configuration
 
 
@@ -89,7 +89,7 @@ def sequences_for_proteins_from_dict(date_today, args):
         total=(math.ceil(len(protein_list) / args.epost)),
     ):
         try:
-            query_entrez.get_sequences_for_dict(accession_list, args)
+            ncbi.get_sequences_for_dict(accession_list, args)
 
         except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
             logger.error(
@@ -106,7 +106,7 @@ def sequences_for_proteins_from_dict(date_today, args):
         ):
             for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
                 try:
-                    query_entrez.get_sequences_for_dict([accession], args)
+                    ncbi.get_sequences_for_dict([accession], args)
                 except RuntimeError as err:
                     logger.error(
                         f"Querying NCBI for {accession} raised the following RuntimeError:\n"
