@@ -430,6 +430,15 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         help="Enable retrieveing protein sequences for only primary GenBank accessions",
     )
 
+    # Add option to enable number of times to retry scraping
+    parser.add_argument(
+        "-r",
+        "--retries",
+        type=int,
+        default=10,
+        help="Number of times to retry scraping a family or class page if error encountered",
+    )
+
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
     # all strains belonging to each listed species
     parser.add_argument(
