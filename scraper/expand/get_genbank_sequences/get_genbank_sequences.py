@@ -55,7 +55,6 @@ from scraper.expand.get_genbank_sequences import (
     from_dict,
     from_sql_db,
 )
-from scraper.expand.get_genbank_sequences.ncbi import blast_db
 from scraper.utilities import config_logger, file_io
 from scraper.utilities.parsers import build_genbank_sequences_parser
 
@@ -74,7 +73,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         args = build_genbank_sequences_parser(argv).parse_args()
 
     if logger is None:
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__package__)
         config_logger(args)
     
     Entrez.email = args.email
@@ -119,15 +118,15 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     if str(args.database).endswith(".json"):
         logger.info("CAZy dictionary (JSON file) provided")
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
-        from_dict.sequences_for_proteins_from_dict(date_today, args)
+        err = from_dict.sequences_for_proteins_from_dict(date_today, args)
 
     else:
         logger.info("CAZy database provided")
         # move to script that handles retrieving sequences for proteins in a SQL database
-        from_sql_db.sequences_for_proteins_from_db(date_today, args)
+        err = from_sql_db.sequences_for_proteins_from_db(date_today, args)
 
-    if args.blastdb is not None:  # build a local BLAST database
-        blast_db.build_blast_db(args)
+    if (args.blastdb is not None) and (err is None):  # build a local BLAST database
+        file_io.build_blast_db(args)
     
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     end_time = pd.to_datetime(start_time)
