@@ -246,46 +246,34 @@ def test_add_new_protein_unidentified(db_session, monkeypatch):
 #     )
 
 
-# def test_duplicate_families_no_nonsubfams(db_session):
-#     """Test when multiple families are found with none without subfamilies."""
+def test_identical_families_subfams(db_session):
+    """Test when multiple families are found with none without subfamilies."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     duplicate_families = "dupFam"
+    time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
-#     sql_interface.add_cazy_family(
-#         duplicate_families,
-#         cazyme,
-#         db_session,
-#     )
+    duplicate_families = f"PL28_{time_stamp}"
 
-
-# def test_duplicate_families_one_with_no_subfams(db_session):
-#     """test when multiple families are found and one has no subfamiy submission."""
-
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-
-#     identical_fam = "identFam"
-
-#     sql_interface.add_cazy_family(
-#         identical_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_family(
+        duplicate_families,
+        cazyme,
+        db_session,
+    )
 
 
-# def test_duplicate_families_multiple_with_no_subfams(db_session):
-#     """test when multiple families have no subfamily assoication."""
+def test_duplicate_families_with_no_subfams(db_session):
+    """test when fam is already in db have no subfamily assoication."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     identical_fam = "IdenticalFamily"
+    identical_fam = "PL28"
 
-#     sql_interface.add_cazy_family(
-#         identical_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_family(
+        identical_fam,
+        cazyme,
+        db_session,
+    )
 
 
 # Unit tests for adding subfamilies
@@ -311,7 +299,7 @@ def test_adding_cazyme_to_existing_db(db_session):
 
     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-    existing_fam = "PL28"
+    existing_fam = "PL2_1"
 
     add_cazyme_data.add_cazy_subfamily(
         existing_fam,
@@ -320,50 +308,50 @@ def test_adding_cazyme_to_existing_db(db_session):
     )
 
 
-# def test_multiple_subfamilies_found(db_session):
-#     """Test when multiple identical subfamilies are found in the local database."""
+def test_adding_cazyme_to_existing_db_2(db_session):
+    """Test adding a CAZyme to an existing subfamily in the local database."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     identical_subfam = "testident_ident123"
+    existing_fam = "GH5_1"
 
-#     sql_interface.add_cazy_subfamily(
-#         identical_subfam,
-#         cazyme,
-#         db_session,
-#     )
-
-
-# # Unit tests for adding non-primary GenBank accessions
+    add_cazyme_data.add_cazy_subfamily(
+        existing_fam,
+        cazyme,
+        db_session,
+    )
 
 
-# def test_adding_new_non_prim_gb_acc(db_session):
-#     """Test adding a new non-primary GenBank accession."""
-
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-
-#     time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-#     new_acc = [f"gb_acc_{time_stamp}"]
-
-#     sql_interface.add_nonprimary_gbk_accessions(
-#         new_acc,
-#         cazyme,
-#         db_session,
-#     )
+# Unit tests for adding non-primary GenBank accessions
 
 
-# def test_duplicate_non_prim_db_acc(db_session):
-#     """Test when finding multiple identical non-primary duplicate GenBank accessions."""
+def test_adding_new_non_prim_gb_acc(db_session):
+    """Test adding a new non-primary GenBank accession."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     duplicate_acc = ["dupNonPrimGBAcc"]
+    time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    new_acc = [f"gb_acc_{time_stamp}"]
 
-#     sql_interface.add_nonprimary_gbk_accessions(
-#         duplicate_acc,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_nonprimary_gbk_accessions(
+        new_acc,
+        cazyme,
+        db_session,
+    )
+
+
+def test_duplicate_non_prim_db_acc(db_session):
+    """Test when finding multiple identical non-primary duplicate GenBank accessions."""
+
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+
+    duplicate_acc = ["duplicate_NonPrim_gbk_Acc"]
+
+    add_cazyme_data.add_nonprimary_gbk_accessions(
+        duplicate_acc,
+        cazyme,
+        db_session,
+    )
 
 
 # Unit tests for adding EC numbers
