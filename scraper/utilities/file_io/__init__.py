@@ -105,6 +105,8 @@ def write_out_fasta(record, genbank_accession, args):
 
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
+
     # determine if writing out a single FASTA for each protein or writing all proteins seq
     # to a single fasta
     if len((args.fasta).suffix) == 0:
@@ -112,10 +114,15 @@ def write_out_fasta(record, genbank_accession, args):
         fasta_name = f"{genbank_accession}.fasta"
         fasta_name = args.fasta / fasta_name
 
+        logger.info(f"Writing out seq to {fasta_name}")
+
         with open(fasta_name, "w") as fh:
             SeqIO.write(record, fh, "fasta")
 
     else:  # add sequences to the FASTA file specified by the user
+
+        logger.info(f"Writing out seq to {args.fasta}")
+
         with open(args.fasta, "a") as fh:
             SeqIO.write(record, fh, "fasta")
 
@@ -131,6 +138,8 @@ def write_out_fasta_only(record, genbank_accession, args):
 
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
+
     # determine if writing out a single FASTA for each protein or writing all proteins seq
     # to a single fasta
     if len((args.fasta_only).suffix) == 0:
@@ -138,10 +147,15 @@ def write_out_fasta_only(record, genbank_accession, args):
         fasta_name = f"{genbank_accession}.fasta"
         fasta_name = args.fasta_only / fasta_name
 
+        logger.info(f"Writing out seq to {fasta_name}")
+
         with open(fasta_name, "w") as fh:
             SeqIO.write(record, fh, "fasta")
 
     else:  # add sequences to the FASTA file specified by the user
+
+        logger.info(f"Writing out seq to {args.fasta}")
+
         with open(args.fasta_only, "a") as fh:
             SeqIO.write(record, fh, "fasta")
 
