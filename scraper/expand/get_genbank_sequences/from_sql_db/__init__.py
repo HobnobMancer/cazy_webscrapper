@@ -124,38 +124,69 @@ def sequences_for_proteins_from_db(date_today, args):
         except ValueError:
             pass
 
-        try:
-            ncbi.get_sequences_add_to_db(
-                accession_list,
-                date_today,
-                session,
-                args,
-            )
-        except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
-            logger.warning(
-                "RuntimeError raised for accession list. Will query accessions individualy after.\n"
-                f"The following error was raised:\n{err}"
-            )
+        if args.fasta_only:   # Retrieve seqs and write to FASTA ONLY do not write to db
+            try:
+                ncbi.get_sequences(
+                    accession_list,
+                    args,
+                )
+            except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+                logger.warning(
+                    "RuntimeError raised for accession list. "
+                    "Will query accessions individualy after.\n"
+                    f"The following error was raised:\n{err}"
+                )
+
+        else:  # write seqs to db (and FASTA if enabled)
+            try:
+                ncbi.get_sequences_add_to_db(
+                    accession_list,
+                    date_today,
+                    session,
+                    args,
+                )
+            except RuntimeError as err:  # typically Some IDs have invalid value and were omitted.
+                logger.warning(
+                    "RuntimeError raised for accession list. "
+                    "Will query accessions individualy after.\n"
+                    f"The following error was raised:\n{err}"
+                )
 
     if len(accessions_lists_for_individual_queries) != 0:
         for accession_list in tqdm(
             accessions_lists_for_individual_queries,
             desc="Performing individual queries for records that previously raised errors",
         ):
-            for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
-                try:
-                    ncbi.get_sequences_add_to_db(
-                        [accession],
-                        date_today,
-                        session,
-                        args,
-                    )
 
-                except RuntimeError as err:
-                    logger.warning(
-                        f"Queried NCBI for {accession} raised the following RuntimeError:\n"
-                        f"{err}"
-                    )
+            if args.fasta_only:  # Retrieve seqs and write to FASTA ONLY do not write to db
+                for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
+                    try:
+                        ncbi.get_sequences(
+                            [accession],
+                            args,
+                        )
+
+                    except RuntimeError as err:
+                        logger.warning(
+                            f"Queried NCBI for {accession} raised the following RuntimeError:\n"
+                            f"{err}"
+                        )
+
+            else:  # write seqs to db (and FASTA if enabled)
+                for accession in tqdm(accession_list, desc="Retrieving individual sequences"):
+                    try:
+                        ncbi.get_sequences_add_to_db(
+                            [accession],
+                            date_today,
+                            session,
+                            args,
+                        )
+
+                    except RuntimeError as err:
+                        logger.warning(
+                            f"Queried NCBI for {accession} raised the following RuntimeError:\n"
+                            f"{err}"
+                        )
 
     return
 
@@ -186,7 +217,7 @@ def get_genbank_accessions(
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
-        if args.update:
+        if (args.update) or (args.fasta_only):
             logger.info("Enabled updating sequences in local CAZyme database")
             
             if args.primary:
@@ -255,7 +286,7 @@ def get_genbank_accessions(
         )
 
     else:
-        if args.update:  # retrieve all GenBank accessions
+        if (args.update) or (args.fasta_only):  # retrieve all GenBank accessions
             logger.info("Enabled updating sequences in local CAZyme database")
 
             if args.primary:
