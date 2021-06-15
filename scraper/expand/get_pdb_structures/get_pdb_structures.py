@@ -99,7 +99,14 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     # get list of all PDB accessions to retrieve structure files for
     pdb_accessions = get_pdb_accessions(args=args, session=session)
-    pdb_accessions = [acc.pdb_accession for acc in pdb_accessions]
+
+    if len(pdb_accessions) == 0:
+        logger.warning(
+            "No PDB accessions matched the criteria provided.\n"
+            "Retrieving no protein structure files from PDB"
+        )
+    else:
+        logger.warning(f"Retrieving {len(pdb_accessions)} structure files from PDB")
 
     download_pdb_structures(pdb_accessions, args)
 
@@ -196,6 +203,8 @@ def get_pdb_accessions(args, session):
 
     Return list of unique PDB accession.
     """
+    logger = logging.getLogger(__name__)
+
     # retrieve configuration data, as a dict of CAZy classes and families to retrieve seqs for
     (
         config_dict,
@@ -214,6 +223,11 @@ def get_pdb_accessions(args, session):
 
     # parse the PDB query results to retain only those that match the user's criteria
     # object order Pdb, Cazyme, Taxonomy, Kingdom, EC
+
+    logger.info(
+        f"Retrieved {len(pdb_query_results)} from the local CAZyme database\n"
+        "Now applying any provided taxonomy and EC number filters"
+    )
 
     pdb_accessions = []
 
@@ -309,8 +323,12 @@ def get_pdb_accessions(args, session):
                     # check if the CAZyme record meets the EC filter requirements
                     if result[-1].ec_number in ec_filters:
                         pdb_accessions.append(result[0])
+    
+    logger.info("Removing chain annotation from PDB accessions")
+    # remove chain annotations from pdb accession
+    formated_pdb_accessions = [(acc.pdb_accession).split("[")[0] for acc in pdb_accessions]
 
-    return list(set(pdb_accessions))
+    return list(set(formated_pdb_accessions))
 
 
 def get_pdb_acc_from_clss_fams(session, config_dict):
@@ -412,12 +430,9 @@ def download_pdb_structures(pdb_accessions, args):
     logger = logging.getLogger(__name__)
     logger.warning("Starting downloading of structure files from PDB")
 
-    # remove chain annotations from pdb accession
-    formated_pdb_accessions = [(acc.split("[")[0]) for acc in pdb_accessions]
-
     if args.outdir is None:
         logger.warning("Downloading to current working directory")
-        for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
+        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
             for file_type in tqdm((args.pdb).split(","), desc="Downloading"):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
@@ -427,7 +442,7 @@ def download_pdb_structures(pdb_accessions, args):
 
     else:
         logger.warning(f"Downloading structures to {args.outdir}")
-        for accession_list in get_accession_chunks(formated_pdb_accessions, args.batch_limit):
+        for accession_list in get_accession_chunks(pdb_accessions, args.batch_limit):
             for file_type in tqdm((args.pdb).split(","), desc="Downloading"):
                 pdbl.download_pdb_files(
                     pdb_codes=accession_list,
