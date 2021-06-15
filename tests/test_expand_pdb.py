@@ -330,7 +330,11 @@ def test_no_config(args_parser, monkeypatch):
         return None, None, None, None
     
     def mock_db_query(*args, **kwargs):
-        return [['item','acc'], ['item1','acc'], ['item','acc']]
+        return [
+            [Namespace(pdb_accession="NA"), "item"],
+            [Namespace(pdb_accession="6DFG"),'acc'],
+            [Namespace(pdb_accession="7FGH[A]"),'acc'],
+        ]
     
     monkeypatch.setattr(
         parse_configuration,
@@ -349,12 +353,13 @@ def test_get_accessions_config_tax_only(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, {"Aspergillus"}, None, None
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
-        return  [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+        return [
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -374,12 +379,13 @@ def test_get_accessions_config_kngdm_only(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, None, {'Bacteria'}, None
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -399,12 +405,13 @@ def test_get_accessions_config_ec_only(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, None, None, {'1.2.3.4'}
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -424,12 +431,13 @@ def test_get_accession_config_tax_kngdm(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, {'Bacteria'}, None
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -449,12 +457,13 @@ def test_get_accession_config_tax_ec(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, {'Aspergillus'}, None, {'1.2.3.4'}
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -474,12 +483,13 @@ def test_get_accession_config_kngdm_ec(args_parser, monkeypatch):
         return {"classes": ["GH"], "families": ["PL28"]}, None, {'Bacteria'}, {'1.2.3.4'}
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(
@@ -504,12 +514,13 @@ def test_get_accessions_all_filters(args_parser, monkeypatch):
         )
     
     def mock_db_query(*args, **kwargs):
+        pdb = Namespace(pdb_accession="1ACB[A]")
         genus = Namespace(genus='Aspergillus', species='Fumigatus')
         kingdom = Namespace(kingdom='Bacteria')
         ecs = Namespace(ec_number='1.2.3.4')
         return [
-            ['NA','acc'],
-            ['item1', genus, kingdom, ecs],
+            [Namespace(pdb_accession="NA"),'acc'],
+            [pdb, genus, kingdom, ecs],
         ]
     
     monkeypatch.setattr(

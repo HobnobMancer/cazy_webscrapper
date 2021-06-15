@@ -233,13 +233,15 @@ def get_pdb_accessions(args, session):
 
     # apply no filters
     if (taxonomy_filters is None) and (kingdoms is None) and (ec_filters is None):
-        accessions = [item[0] for item in pdb_query_results]
-        pdb_accessions = [x for x in accessions if "NA" != x]
+        pdb_accessions = [
+            item[0] for item in pdb_query_results if item[0].pdb_accession != "NA"
+        ]
+
 
     # apply only taxonomy_filters
     elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
                 
             # check if CAZyme records meets the taxonomy criteria
@@ -250,7 +252,7 @@ def get_pdb_accessions(args, session):
     # apply only kingdoms filters
     elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             if result[-2].kingdom in kingdoms:
@@ -259,7 +261,7 @@ def get_pdb_accessions(args, session):
     # apply only EC number filters
     elif (taxonomy_filters is None) and (kingdoms is None) and (ec_filters is not None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             # check if the CAZyme record meets the EC filter requirements
@@ -269,7 +271,7 @@ def get_pdb_accessions(args, session):
     # apply taxonomy and kingdom filters
     elif (taxonomy_filters is not None) and (kingdoms is not None) and (ec_filters is None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
@@ -283,7 +285,7 @@ def get_pdb_accessions(args, session):
     # apply taxonomy and EC number filters
     elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is not None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
@@ -297,7 +299,7 @@ def get_pdb_accessions(args, session):
     # apply kingdom and EC filters
     elif (taxonomy_filters is None) and (kingdoms is not None) and (ec_filters is not None):
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             # check kingdom requirements are met
@@ -310,7 +312,7 @@ def get_pdb_accessions(args, session):
     # apply taxonomy, kingdom and EC number filters
     else:
         for result in pdb_query_results:
-            if result[0] == "NA":
+            if result[0].pdb_accession == "NA":
                 continue
 
             # check if CAZyme records meets the taxonomy criteria
