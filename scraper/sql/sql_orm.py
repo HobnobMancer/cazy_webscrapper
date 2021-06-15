@@ -555,4 +555,6 @@ def get_db_session(args):
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
+    logger.info(f"Opened session to local CAZyme database at:{db_path}")
+
     return Session()
