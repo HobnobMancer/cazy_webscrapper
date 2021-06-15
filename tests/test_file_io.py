@@ -312,6 +312,54 @@ def test_write_out_fasta_separate_files(making_output_dir):
     shutil.rmtree(path_)
 
 
+# test writing out fastas in fasta_only mode
+
+
+def test_write_out_single_fasta_only(making_output_dir):
+    """Test writing out a single FASTA file."""
+    # prepare dir for writing test output
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+    # define path to write test output to
+    fasta_path = path_ / "test.fasta"
+
+    genbank_accession = "test_accession"
+    record = SeqRecord(
+        Seq("MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"),
+        id="fake_protein.1",
+        name="fake",
+        description="test protein record",
+    )
+    args = {"args": Namespace(fasta_only=fasta_path)}
+
+    file_io.write_out_fasta_only(record, genbank_accession, args["args"])
+
+    shutil.rmtree(path_)
+
+
+def test_write_out_fasta_separate_files_fasta_only(making_output_dir):
+    """Test writing out FASTA file."""
+    # prepare dir for test
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+
+    genbank_accession = "test_accession"
+    record = SeqRecord(
+        Seq("MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"),
+        id="fake_protein.1",
+        name="fake",
+        description="test protein record",
+    )
+    args = {"args": Namespace(fasta_only=path_)}
+
+    file_io.write_out_fasta_only(record, genbank_accession, args["args"])
+
+    shutil.rmtree(path_)
+
+
+# test preparing and building blast database
+
+
 def test_write_fasta_for_db(making_output_dir):
     """Test write_fasta_for_db()"""
     # prepare dir for test
