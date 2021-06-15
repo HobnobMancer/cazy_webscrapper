@@ -87,117 +87,117 @@ def test_add_new_protein_unidentified(db_session, monkeypatch):
     )
 
 
-# def test_adding_new_protein_and_new_species_and_fam(db_session, monkeypatch, time_stamp):
-#     """Test add_new_protein_to_db and a new species to the database."""
+def test_adding_new_protein_and_new_species_and_fam(db_session, monkeypatch, time_stamp):
+    """Test add_new_protein_to_db and a new species to the database."""
 
-#     def mock_return_none(*args, **kwargs):
-#         return
+    def mock_return_none(*args, **kwargs):
+        return
 
-#     monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_ec_numbers", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_nonprimary_gbk_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_uniprot_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_return_none)
 
-#     new_species = f"genus-{time_stamp} species-{time_stamp}"
+    new_species = f"genus-{time_stamp} species-{time_stamp}"
 
-#     try:
-#         sql_interface.add_new_protein_to_db(
-#             "cazyme_name_test",
-#             "GH5",
-#             new_species,
-#             f"kingdom:{time_stamp}",
-#             Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
-#             db_session,
-#             ec_numbers=["EC number", "ec number"],
-#             gbk_nonprimary=["gen1", "gen2"],
-#             uni_nonprimary=["uni1", "uni2"],
-#             pdb_accessions=["pdb1", "pdb2"],
-#         )
-#     except ObjectDeletedError as e:
-#         pass
-
-
-# def test_addding_new_protein_with_existing_species(db_session, monkeypatch):
-#     """Test add_new_protein_to_db when the species exists in the database."""
-
-#     def mock_return_none(*args, **kwargs):
-#         return
-
-#     monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_return_none)
-
-#     existing_species = "test_existing_genus test_existing_species"
-
-#     gb = db_session.query(Genbank).filter(Genbank.genbank_accession == 'one_genbank_multi_cazymes')\
-#         .all()[0]
-
-#     sql_interface.add_new_protein_to_db(
-#         cazyme_name="cazyme_name",
-#         family="GH5_1",
-#         source_organism=existing_species,
-#         tax_kingdom='Bacteria',
-#         primary_genbank_object=gb,
-#         session=db_session,
-#         ec_numbers=["EC number", "ec number"],
-#         gbk_nonprimary=["gen1", "gen2"],
-#         uni_primary=["primary_uni"],
-#         uni_nonprimary=["uni1", "uni2"],
-#         pdb_accessions=["pdb1", "pdb2"],
-#     )
+    try:
+        add_cazyme_data.add_new_protein_to_db(
+            "cazyme_name_test",
+            "GH5",
+            new_species,
+            f"kingdom:{time_stamp}",
+            Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
+            db_session,
+            ec_numbers=["EC number", "ec number"],
+            gbk_nonprimary=["gen1", "gen2"],
+            uni_nonprimary=["uni1", "uni2"],
+            pdb_accessions=["pdb1", "pdb2"],
+        )
+    except ObjectDeletedError as e:
+        pass
 
 
-# def test_adding_new_protein_with_multiple_species(db_session, monkeypatch):
-#     """Test add_new_protein_to_db when there are multiple records for the same species."""
+def test_addding_new_protein_with_existing_species(db_session, monkeypatch):
+    """Test add_new_protein_to_db when the species exists in the database."""
 
-#     def mock_return_none(*args, **kwargs):
-#         return
+    def mock_return_none(*args, **kwargs):
+        return
 
-#     monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_ec_numbers", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_nonprimary_gbk_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_uniprot_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_return_none)
 
-#     duplicate_species = "duplicate_genus duplicate_species"
-#     time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    existing_species = "test_existing_genus test_existing_species"
 
-#     sql_interface.add_new_protein_to_db(
-#         "cazyme_name",
-#         "GH5_1",
-#         duplicate_species,
-#         "Eukaryota",
-#         Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
-#         db_session,
-#         ec_numbers=["EC number", "ec number"],
-#         gbk_nonprimary=["gen1", "gen2"],
-#         uni_primary=["primary_uni"],
-#         uni_nonprimary=["uni1", "uni2"],
-#         pdb_accessions=["pdb1", "pdb2"],
-#     )
+    gb = db_session.query(Genbank).filter(Genbank.genbank_accession == 'one_genbank_multi_cazymes')\
+        .all()[0]
+
+    add_cazyme_data.add_new_protein_to_db(
+        cazyme_name="cazyme_name",
+        family="GH5_1",
+        source_organism=existing_species,
+        tax_kingdom='Bacteria',
+        primary_genbank_object=gb,
+        session=db_session,
+        ec_numbers=["EC number", "ec number"],
+        gbk_nonprimary=["gen1", "gen2"],
+        uni_primary=["primary_uni"],
+        uni_nonprimary=["uni1", "uni2"],
+        pdb_accessions=["pdb1", "pdb2"],
+    )
+
+
+def test_adding_new_protein_with_multiple_species(db_session, monkeypatch):
+    """Test add_new_protein_to_db when there are multiple records for the same species."""
+
+    def mock_return_none(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(add_cazyme_data, "add_ec_numbers", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_nonprimary_gbk_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_uniprot_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_return_none)
+
+    duplicate_species = "duplicate_genus duplicate_species"
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    add_cazyme_data.add_new_protein_to_db(
+        "cazyme_name",
+        "GH5_1",
+        duplicate_species,
+        "Eukaryota",
+        Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
+        db_session,
+        ec_numbers=["EC number", "ec number"],
+        gbk_nonprimary=["gen1", "gen2"],
+        uni_primary=["primary_uni"],
+        uni_nonprimary=["uni1", "uni2"],
+        pdb_accessions=["pdb1", "pdb2"],
+    )
 
 
 # # test add_data_to_protein_record()
 
 
-# def test_add_data_to_protein_record(db_session, monkeypatch):
-#     """Test add_data_to_protein_record()."""
-#     def mock_no_return(*args, **kwargs):
-#         return
+def test_add_data_to_protein_record(db_session, monkeypatch):
+    """Test add_data_to_protein_record()."""
+    def mock_no_return(*args, **kwargs):
+        return
 
-#     monkeypatch.setattr(sql_interface, "add_cazy_family", mock_no_return)
-#     monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_no_return)
+    monkeypatch.setattr(add_cazyme_data, "add_cazy_family", mock_no_return)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_no_return)
 
-#     sql_interface.add_data_to_protein_record(
-#         Cazyme(cazyme_name="test_cazyme"),
-#         "GH3",
-#         db_session,
-#         ec_numbers=["EC number", "ec number"],
-#         gbk_nonprimary=["gen1", "gen2"],
-#         uni_primary=["primary_uni"],
-#         uni_nonprimary=["uni1", "uni2"],
-#         pdb_accessions=["pdb1", "pdb2"],
-#     )
+    add_cazyme_data.add_data_to_protein_record(
+        Cazyme(cazyme_name="test_cazyme"),
+        "GH3",
+        db_session,
+        ec_numbers=["EC number", "ec number"],
+        gbk_nonprimary=["gen1", "gen2"],
+        uni_primary=["primary_uni"],
+        uni_nonprimary=["uni1", "uni2"],
+        pdb_accessions=["pdb1", "pdb2"],
+    )
 
 
 # Unit tests for add_cazy_family
