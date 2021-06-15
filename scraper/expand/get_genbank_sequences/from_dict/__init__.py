@@ -74,7 +74,14 @@ def sequences_for_proteins_from_dict(date_today, args):
         protein_list.remove("NA")  # incase 'NA' was added when scraping CAZy
     except ValueError:
         pass
-    
+
+    if len(protein_list) == 0:
+        logger.warning(
+            "Retrieved 0 GenBank accessions from CAZy JSON file matching the provided criteria\n"
+            "Therefore, retrieveing not sequences from NCBI"
+        )
+        return "EXIT"
+
     logger.warning(f"Retrieving sequences for {len(protein_list)} proteins")
 
     # break up protein_list into multiple, smaller lists for batch querying Entrez
