@@ -314,7 +314,7 @@ def get_sequences(accessions, args):
                 )
                 continue
 
-            file_io.write_out_fasta(record, temp_accession, args)
+            file_io.write_out_fasta_only(record, temp_accession, args)
 
             if args.blastdb is not None:
                 file_io.write_fasta_for_db(record, args)
