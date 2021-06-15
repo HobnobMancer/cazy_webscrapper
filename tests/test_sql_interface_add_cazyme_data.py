@@ -52,39 +52,39 @@ from datetime import datetime
 
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from scraper.sql import sql_interface
+from scraper.sql.sql_interface import add_cazyme_data
+from scraper.sql.sql_orm import Genbank
 
 
-# # Unit tests for add_new_protein_to_db()
+# Unit tests for add_new_protein_to_db()
 
 
-# def test_adding_new_protein_and_new_species(db_session, monkeypatch):
-#     """Test add_new_protein_to_db and a new species to the database."""
+def test_add_new_protein_unidentified(db_session, monkeypatch):
+    """Test add_new_protein_to_db when the kingdom is already in the db, and the source
+    organism is 'unidentified'."""
 
-#     def mock_return_none(*args, **kwargs):
-#         return
+    def mock_return_none(*args, **kwargs):
+        return
 
-#     monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_return_none)
-#     monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_ec_numbers", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_nonprimary_gbk_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_uniprot_accessions", mock_return_none)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_return_none)
 
-#     time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     new_species = f"genus-{time_stamp} species-{time_stamp}"
-
-#     sql_interface.add_new_protein_to_db(
-#         "cazyme_name",
-#         "GH5_1",
-#         new_species,
-#         "Bacteria",
-#         Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
-#         db_session,
-#         ec_numbers=["EC number", "ec number"],
-#         gbk_nonprimary=["gen1", "gen2"],
-#         uni_primary=["primary_uni"],
-#         uni_nonprimary=["uni1", "uni2"],
-#         pdb_accessions=["pdb1", "pdb2"],
-#     )
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    add_cazyme_data.add_new_protein_to_db(
+        "cazyme_name",
+        "GH5_1",
+        'unidentified',
+        "Bacteria",
+        Genbank(genbank_accession=f"primary_genbank{time_stamp}"),
+        db_session,
+        ec_numbers=["EC number", "ec number"],
+        gbk_nonprimary=["gen1", "gen2"],
+        uni_primary=["primary_uni"],
+        uni_nonprimary=["uni1", "uni2"],
+        pdb_accessions=["pdb1", "pdb2"],
+    )
 
 
 # def test_adding_new_protein_and_new_species_and_fam(db_session, monkeypatch, time_stamp):
