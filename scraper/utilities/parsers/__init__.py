@@ -379,6 +379,21 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         ),
     )
 
+    # add option to retrieve protein seqs, not add to local db and also ignore if seq needs updating
+    # in the local db or if the seq is/is not present in the local db
+    parser.add_argument(
+        "--fasta_only",
+        type=Path,
+        default=None,
+        help=(
+            "Enable writing out retrieved sequences to FASTA file(s) ONLY.\n"
+            "Path to a dir to write out one FASTA file for each retrieved seq\n"
+            "OR a path to a FASTA file to write all retrieved seqs to\n"
+            "This ignores if seqs are/aren't in the local db and if they do/do not need updating.\n"
+            "NO SEQUENCES ARE ADDED TO THE DATABASE. WRITTEN TO FASTA FILE ONLY."
+        ),
+    )
+
     # Add option to restrict the scrape to specific kingdoms
     parser.add_argument(
         "--kingdoms",
