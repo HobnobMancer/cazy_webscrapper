@@ -237,7 +237,6 @@ def get_pdb_accessions(args, session):
             item[0] for item in pdb_query_results if item[0].pdb_accession != "NA"
         ]
 
-
     # apply only taxonomy_filters
     elif (taxonomy_filters is not None) and (kingdoms is None) and (ec_filters is None):
         for result in pdb_query_results:
