@@ -116,7 +116,7 @@ def write_out_fasta(record, genbank_accession, args):
 
         logger.info(f"Writing out seq to {fasta_name}")
 
-        with open(fasta_name, "w") as fh:
+        with open(fasta_name, "w+") as fh:
             SeqIO.write(record, fh, "fasta")
 
     else:  # add sequences to the FASTA file specified by the user
@@ -147,14 +147,14 @@ def write_out_fasta_only(record, genbank_accession, args):
         fasta_name = f"{genbank_accession}.fasta"
         fasta_name = args.fasta_only / fasta_name
 
-        logger.info(f"Writing out seq to {fasta_name}")
+        logger.info(f"fasta_only_mode: Writing out seq to {fasta_name}")
 
-        with open(fasta_name, "w") as fh:
+        with open(fasta_name, "w+") as fh:
             SeqIO.write(record, fh, "fasta")
 
     else:  # add sequences to the FASTA file specified by the user
 
-        logger.info(f"Writing out seq to {args.fasta}")
+        logger.info(f"fasta_only_mode: Writing out seq to {args.fasta}")
 
         with open(args.fasta_only, "a") as fh:
             SeqIO.write(record, fh, "fasta")
