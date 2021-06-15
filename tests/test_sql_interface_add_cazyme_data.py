@@ -306,18 +306,18 @@ def test_adding_new_subfamily(db_session):
     )
 
 
-# def test_adding_cazyme_to_existing_db(db_session):
-#     """Test adding a CAZyme to an existing subfamily in the local database."""
+def test_adding_cazyme_to_existing_db(db_session):
+    """Test adding a CAZyme to an existing subfamily in the local database."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     existing_fam = "testGH1_53"
+    existing_fam = "PL28"
 
-#     sql_interface.add_cazy_subfamily(
-#         existing_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_subfamily(
+        existing_fam,
+        cazyme,
+        db_session,
+    )
 
 
 # def test_multiple_subfamilies_found(db_session):
