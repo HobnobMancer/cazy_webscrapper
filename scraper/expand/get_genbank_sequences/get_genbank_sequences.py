@@ -142,7 +142,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
         if len((args.blastdb).parts) != 1:  # == 1 when database will be built in the cwd
             logger.info("Compiling path to directory for BLAST db")
-            dir_path = Path("/".join((args.fasta_only).parts[:-1]))
+            dir_path = Path("/".join((args.blastdb).parts[:-1]))
 
             logger.info(f"Building directory for BLAST db: {dir_path}")
             logger.info(f"Writing out to BLAST db dir if already exists: {args.force}")
