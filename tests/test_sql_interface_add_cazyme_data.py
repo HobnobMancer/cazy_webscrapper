@@ -366,97 +366,83 @@ def test_adding_cazyme_to_existing_db(db_session):
 #     )
 
 
-# # Unit tests for adding EC numbers
+# Unit tests for adding EC numbers
 
 
-# def test_adding_new_ec_num(db_session):
-#     """Testing adding a new EC# to the local database."""
+def test_adding_new_ec_num(db_session):
+    """Testing adding a new EC# to the local database."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-#     ec = [f"EC{time_stamp}"]
+    time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    ec = [f"EC{time_stamp}"]
 
-#     sql_interface.add_ec_numbers(
-#         ec,
-#         cazyme,
-#         db_session,
-#     )
-
-
-# def test_adding_existing_ec_num(db_session):
-#     """Testing adding an existing EC# to a CAZyme."""
-
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-
-#     ec = ["existing_ec"]
-
-#     sql_interface.add_ec_numbers(
-#         ec,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_ec_numbers(
+        ec,
+        cazyme,
+        db_session,
+    )
 
 
-# def test_finding_multiple_ecs(db_session):
-#     """Testing handling when multiple duplicate EC#s are found."""
+def test_finding_multiple_ecs(db_session):
+    """Testing handling when multiple duplicate EC#s are found."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     ec = ["dupEC"]
+    ec = ["duplicate_EC"]
 
-#     sql_interface.add_ec_numbers(
-#         ec,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_ec_numbers(
+        ec,
+        cazyme,
+        db_session,
+    )
 
 
 # # Unit tests for adding primary UniProt accessions
 
 
-# def test_new_primary_uniprot(db_session):
-#     """Test adding a new primary UniProt accession."""
+def test_new_primary_uniprot(db_session):
+    """Test adding a new primary UniProt accession."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-#     new_acc = f"uni_acc_test{time_stamp}"
+    time_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    new_acc = f"uni_acc_test{time_stamp}"
 
-#     sql_interface.add_uniprot_accessions(
-#         [new_acc],
-#         cazyme,
-#         True,
-#         db_session,
-#     )
-
-
-# def test_existing_primary_uniprot(db_session):
-#     """Test adding an existing primary UniProt accession to a CAZyme."""
-
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-
-#     existing_uni = "existing_acc_test"
-
-#     sql_interface.add_uniprot_accessions(
-#         [existing_uni],
-#         cazyme,
-#         True,
-#         db_session,
-#     )
+    add_cazyme_data.add_uniprot_accessions(
+        [new_acc],
+        cazyme,
+        True,
+        db_session,
+    )
 
 
-# def test_add_nonprimery_uniprot(db_session, time_stamp):
-#     """Test adding adding non-primary UniProt accessions."""
+def test_existing_primary_uniprot(db_session):
+    """Test adding an existing primary UniProt accession to a CAZyme."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     sql_interface.add_uniprot_accessions(
-#         [f'acc{time_stamp}', 'dupp_np'],
-#         cazyme,
-#         True,
-#         db_session,
-#     )
+    existing_uni = "existing_primary_uniprot"
+
+    add_cazyme_data.add_uniprot_accessions(
+        [existing_uni],
+        cazyme,
+        True,
+        db_session,
+    )
+
+
+def test_add_nonprimery_uniprot(db_session, time_stamp):
+    """Test adding adding non-primary UniProt accessions."""
+
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+
+    add_cazyme_data.add_uniprot_accessions(
+        [f'acc{time_stamp}', 'duplicate_uniprot_acc'],
+        cazyme,
+        True,
+        db_session,
+    )
 
 
 # Unit tests for adding PDB accessions to the local database
