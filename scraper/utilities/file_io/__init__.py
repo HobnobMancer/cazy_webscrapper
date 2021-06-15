@@ -122,6 +122,32 @@ def write_out_fasta(record, genbank_accession, args):
     return
 
 
+def write_out_fasta_only(record, genbank_accession, args):
+    """Write out GenBank protein record to a FASTA file, when no writing seq to db as well.
+
+    :param record: SeqIO parsed record
+    :param genbank_accession: str, accession number of the protein sequence in NCBI.GenBank
+    :param args: cmd-line arguments parser
+
+    Return nothing.
+    """
+    # determine if writing out a single FASTA for each protein or writing all proteins seq
+    # to a single fasta
+    if len((args.fasta_only).suffix) == 0:
+        # writing out fasta to a single FASTA in the dir specified by the user
+        fasta_name = f"{genbank_accession}.fasta"
+        fasta_name = args.fasta_only / fasta_name
+
+        with open(fasta_name, "w") as fh:
+            SeqIO.write(record, fh, "fasta")
+
+    else:  # add sequences to the FASTA file specified by the user
+        with open(args.fasta_only, "a") as fh:
+            SeqIO.write(record, fh, "fasta")
+
+    return
+
+
 def write_fasta_for_db(record, args):
     """Write out protein sequences to FASTA file for building a BLAST db of all retrieved sequences.
 
