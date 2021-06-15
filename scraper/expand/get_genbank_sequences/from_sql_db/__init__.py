@@ -447,8 +447,8 @@ def check_if_to_update(genbank_records, args):
     # separate records with and without sequences, and extract GenBank accession
     logger.warning("Separating GenBank records with and without sequences in the local CAZyme db")
     
-    gbk_records_with_seq = []
-    gbk_records_without_seq = {}  # {accession: db_genbank_record}
+    gbk_records_with_seq = {}  # {accession: db_genbank_record}
+    gbk_records_without_seq = []
 
     for record in genbank_records:
         if record.sequence is None:
