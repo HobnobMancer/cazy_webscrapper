@@ -219,17 +219,17 @@ def check_ncbi_seq_data(genbank_accessions, gbk_records_without_seq, args):
         previous_retrieval_data = gbk_records_without_seq[temp_accession].seq_update_date
         previous_retrieval_data = previous_retrieval_data.split("/")  # Y=[0], M=[1], D=[]
         previous_retrieval_data = datetime(
-            previous_retrieval_data[0],
-            previous_retrieval_data[1],
-            previous_retrieval_data[2],
+            int(previous_retrieval_data[0]),
+            int(previous_retrieval_data[1]),
+            int(previous_retrieval_data[2]),
         )
 
         ncbi_seq_date = doc["UpdateDate"]
         ncbi_seq_date = ncbi_seq_date.split("/")  # Y=[0], M=[1], D=[]
         ncbi_seq_date = datetime(
-            ncbi_seq_date[0],
-            ncbi_seq_date[1],
-            ncbi_seq_date[2],
+            int(ncbi_seq_date[0]),
+            int(ncbi_seq_date[1]),
+            int(ncbi_seq_date[2]),
         )
 
         if ncbi_seq_date > previous_retrieval_data:
@@ -237,6 +237,99 @@ def check_ncbi_seq_data(genbank_accessions, gbk_records_without_seq, args):
             genbank_records_to_update.append(temp_accession)
 
     return genbank_records_to_update
+
+
+def get_sequences(accessions, args):
+    """Retrieve protein sequences from Entrez and write to fasta file.
+
+    :param accessions: list, GenBank accessions
+    :param date_today: str, YYYY/MM/DD
+    :param session: open SQL database session
+    :param args: cmb-line args parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+    # perform batch query of Entrez
+    accessions_string = ",".join(accessions)
+    epost_result = Entrez.read(
+        entrez_retry(
+            Entrez.epost,
+            args,
+            db="Protein",
+            id=accessions_string,
+        )
+    )
+    # retrieve the web environment and query key from the Entrez post
+    epost_webenv = epost_result["WebEnv"]
+    epost_query_key = epost_result["QueryKey"]
+
+    # retrieve the protein sequences
+    with entrez_retry(
+        Entrez.efetch,
+        args,
+        db="Protein",
+        query_key=epost_query_key,
+        WebEnv=epost_webenv,
+        rettype="fasta",
+        retmode="text",
+    ) as seq_handle:
+        for record in SeqIO.parse(seq_handle, "fasta"):
+            # retrieve the accession of the record
+            temp_accession = record.id
+
+            success = False   # will be true if finds protein accession
+
+            temp_accession = temp_accession.split("|")
+
+            for item in temp_accession:
+                try:  # check if item is an accession number
+                    re.match(
+                        (
+                            r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
+                            r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                        ),
+                        item,
+                    ).group()
+                    temp_accession = item
+                    success = True
+                    break
+                except AttributeError:  # raised if not an accession
+                    continue
+
+            if success is False:
+                logger.error(
+                    f"Could not retrieve accession from {record.id}, therefore, "
+                    "protein sequence not added to the database,\n"
+                    "because cannot retrieve the necessary CAZyme record"
+                )
+                continue
+
+            # check the retrieve protein accession is in the list of retrieved accession
+            if temp_accession not in accessions:
+                logger.warning(
+                    f"Retrieved the accession {temp_accession} from the record id={record.id}, "
+                    "but this accession is not in the database.\n"
+                    "Therefore, not adding this protein seqence to the local database"
+                )
+                continue
+
+            file_io.write_out_fasta(record, temp_accession, args)
+
+            if args.blastdb is not None:
+                file_io.write_fasta_for_db(record, args)
+
+            # remove the accession from the list
+            accessions.remove(temp_accession)
+
+    if len(accessions) != 0:
+        logger.warning(
+            "Protein sequences were not retrieved for the following CAZymes in the local database"
+        )
+        for acc in accessions:
+            logger.warning(f"GenBank accession: {acc}")
+
+    return
 
 
 def get_sequences_add_to_db(accessions, date_today, session, args):
