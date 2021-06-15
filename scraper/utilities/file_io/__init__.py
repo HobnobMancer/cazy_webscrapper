@@ -159,7 +159,6 @@ def build_blast_db(args):
 
     # check the command was successfully exectured
     if len(stderr) != 0:
-        logger.warning()
-        print(f"Could not build BLAST db.\nstdout={stdout}\nstderr={stderr}")
+        logger.warning(f"Could not build BLAST db.\nstdout={stdout}\nstderr={stderr}")
 
     return
