@@ -52,8 +52,8 @@ from argparse import Namespace, ArgumentParser
 
 from scraper import utilities
 from scraper.expand.get_genbank_sequences import get_genbank_sequences, from_dict, from_sql_db
-from scraper.expand.get_genbank_sequences.ncbi import blast_db
-from scraper.utilities import file_io, parse_configuration, parsers
+from scraper.expand.get_genbank_sequences import ncbi
+from scraper.utilities import file_io, parsers
 
 
 @pytest.fixture
