@@ -370,7 +370,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     # Add option to enable writing sequences to FASTA file or files, or not at all
     parser.add_argument(
         "--fasta",
-        type=str,
+        type=Path,
         default=None,
         help=(
             "Enable writing out retrieved sequences to FASTA file(s).\n"
@@ -407,6 +407,17 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         metavar="log file name",
         default=None,
         help="Defines log file name and/or path",
+    )
+
+    # Add option to prevent over writing of existing files
+    # and cause addition of files to output directory
+    parser.add_argument(
+        "-n",
+        "--nodelete",
+        dest="nodelete",
+        action="store_true",
+        default=False,
+        help="enable/disable deletion of exisiting files",
     )
 
     # enable retrieving protein sequences for only primary GenBank accessions
