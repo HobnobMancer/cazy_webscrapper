@@ -203,47 +203,33 @@ def test_add_new_protein_unidentified(db_session, monkeypatch):
 # # Unit tests for add_cazy_family
 
 
-# def test_adding_new_family(db_session):
-#     """Test adding a new CAZy family to the local database."""
+def test_adding_new_family(db_session):
+    """Test adding a new CAZy family to the local database."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     new_fam = f"GH{time_stamp}"
+    time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_fam = f"GH{time_stamp}"
 
-#     sql_interface.add_cazy_family(
-#         new_fam,
-#         cazyme,
-#         db_session,
-#     )
-
-
-# def test_add_existing_family(db_session):
-#     """Test adding an existing family to a CAZyme record."""
-
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
-
-#     existing_fam = "FamOnly"
-
-#     sql_interface.add_cazy_family(
-#         existing_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_family(
+        new_fam,
+        cazyme,
+        db_session,
+    )
 
 
-# def test_add_new_fam_cos_old_fam_has_subfam(db_session):
-#     """Test adding a new family because the existing family record is a subfamily."""
+def test_add_new_fam_when_old_fam_has_subfam(db_session):
+    """Test adding a new family because the existing family record is a subfamily."""
 
-#     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
 
-#     existing_fam = "FamWithSubFam"
+    existing_fam = "GH3"
 
-#     sql_interface.add_cazy_family(
-#         existing_fam,
-#         cazyme,
-#         db_session,
-#     )
+    add_cazyme_data.add_cazy_family(
+        existing_fam,
+        cazyme,
+        db_session,
+    )
 
 
 def test_identical_families_subfams(db_session):
