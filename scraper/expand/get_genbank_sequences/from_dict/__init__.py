@@ -157,7 +157,14 @@ def get_qualifying_proteins(cazy_dict, config_data):
 
     proteins = set()  # proteins to retrieve sequences for, set prevents duplicates
 
-    if (len(list(config_data["classes"])) == 0) and (len(list(config_data["families"])) != 0):
+    if (len(list(config_data["classes"])) == 0) and (len(list(config_data["families"])) == 0):
+        # check only in family configuration data
+        for protein in tqdm(cazy_dict, desc="Retrieving all CAZymes from CAZy dict"):
+            for fam in cazy_dict[protein]:
+                proteins.add(protein)
+                continue
+
+    elif (len(list(config_data["classes"])) == 0) and (len(list(config_data["families"])) != 0):
         # check only in family configuration data
         for protein in tqdm(cazy_dict, desc="Identifying CAZymes matching config data"):
             for fam in cazy_dict[protein]:
