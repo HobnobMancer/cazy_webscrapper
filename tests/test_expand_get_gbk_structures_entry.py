@@ -61,6 +61,62 @@ def test_main_db(monkeypatch):
 
     db_path = Path("cazy_database.db")
     email = "dummy.email@domain"
+    fasta_file = Path("fasta_dir/fasta_file.fasta")
+    fasta_only = Path("fasta_only_dir/dir1/fasta_only.fasta")
+
+    args_namespace = {"args": Namespace(
+        email=email,
+        database=db_path,
+        fasta=fasta_file,
+        fasta_only=fasta_only,
+        verbose=False,
+        log=None,
+        blastdb=Path("blastdb_dir/dir1/dir2"),
+        force=False,
+        nodelete=False,
+    )}
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_genbank_sequences",
+            usage=None,
+            description="Retrieve protein sequences for CAZymes",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    def mock_parser(*args, **kwargs):
+        return args_namespace["args"]
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_making_output_dir(*args, **kwargs):
+        return
+    
+    def mock_from_sql(*args, **kwargs):
+        return
+
+    def mock_build_db(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_pdb_structures_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(from_sql_db, "sequences_for_proteins_from_db", mock_from_sql)
+    monkeypatch.setattr(file_io, "make_output_directory", mock_making_output_dir)
+    monkeypatch.setattr(file_io, "build_blast_db", mock_build_db)
+
+    get_genbank_sequences.main()
+
+
+def test_main_fastas_into_cwd(monkeypatch):
+    """Test main when a path to a CAZy database is provided,
+    and writing seqs to single FASTA file in the cwd"""
+
+    db_path = Path("cazy_database.db")
+    email = "dummy.email@domain"
     fasta_file = Path("fasta_file.fasta")
     fasta_only = Path("fasta_only.fasta")
 
