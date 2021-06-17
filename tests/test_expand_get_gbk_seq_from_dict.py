@@ -85,7 +85,7 @@ def test_seq_for_proteins(monkeypatch):
         return {}
 
     def mock_get_qualifying_proteins(*args, **kwargs):
-        return ["NA", "Protein1", "Protein2", "Protein3"]
+        return ["Protein1", "Protein2", "Protein3"]
     
     def mock_runtime_error(*args, **kwargs):
         raise RuntimeError
@@ -101,3 +101,26 @@ def test_seq_for_proteins(monkeypatch):
     monkeypatch.setattr(ncbi, "get_sequences_for_dict", mock_runtime_error)
 
     from_dict.sequences_for_proteins_from_dict("date_today", args_namespace["args"])
+
+
+# test get_cazy_dict()
+
+
+def test_get_cazy_dict_expand(test_input_dir):
+    """Test get_cazy_dict() when successful"""
+    dict_path = test_input_dir / "cazy_dictionary.json"
+
+    args_namespace = {"args": Namespace(database=dict_path)}
+
+    from_dict.get_cazy_dict(args_namespace["args"])
+
+
+def test_get_cazy_dict_expand_error(test_input_dir):
+    """Test get_cazy_dict() when FileNotFound error is raised"""
+    dict_path = test_input_dir / "cazy_dictaaaaaaionary.json"
+
+    args_namespace = {"args": Namespace(database=dict_path)}
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        from_dict.get_cazy_dict(args_namespace["args"])
+    assert pytest_wrapped_e.type == SystemExit
