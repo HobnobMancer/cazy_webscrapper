@@ -149,7 +149,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             logger.info(f"Nucking dir for the BLAST db: {args.nodelete}")
             file_io.make_output_directory(dir_path, args.force, args.nodelete)
 
-    if str(args.database).endswith(".json"):
+    if (args.database).suffix == ".json":
         logger.info("CAZy dictionary (JSON file) provided")
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
         err = from_dict.sequences_for_proteins_from_dict(date_today, args)
