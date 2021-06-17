@@ -53,6 +53,17 @@ from scraper.utilities import parse_configuration
 from scraper.expand.get_genbank_sequences import from_dict, ncbi
 
 
+@pytest.fixture
+def cazy_dict():
+    cazy_dict = {
+        "Protein1": ['GH1', 'CBM1'],
+        "Protein2": ['PL1', 'PL2'],
+        "Protien3": ['CE5', 'AA7'],
+        "Protein4": ['GT5', 'CBM9'],
+    }
+    return cazy_dict
+
+
 # test sequences_for_proteins_from_dict()
 
 
@@ -124,3 +135,30 @@ def test_get_cazy_dict_expand_error(test_input_dir):
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         from_dict.get_cazy_dict(args_namespace["args"])
     assert pytest_wrapped_e.type == SystemExit
+
+
+# test get_qualifying_proteins()
+
+
+def test_get_qual_proteins(cazy_dict):
+    """Test get_qualifying_proteins() when no fams or classes specified"""
+    config_dict = {"classes": [], "families": []}
+    from_dict.get_qualifying_proteins(cazy_dict, config_dict)
+
+
+def test_get_qual_proteins_fams(cazy_dict):
+    """Test get_qualifying_proteins() when only families are specified"""
+    config_dict = {"classes": [], "families": ['GH1', 'PL1']}
+    from_dict.get_qualifying_proteins(cazy_dict, config_dict)
+
+
+def test_get_qual_proteins_classes(cazy_dict):
+    """Test get_qualifying_proteins() when only classes are specified"""
+    config_dict = {"classes": ['GH', 'CBM'], "families": []}
+    from_dict.get_qualifying_proteins(cazy_dict, config_dict)
+
+
+def test_get_qual_proteins_classes_fams(cazy_dict):
+    """Test get_qualifying_proteins() when classes and fams are specified"""
+    config_dict = {"classes": ['PL'], "families": ['GH1']}
+    from_dict.get_qualifying_proteins(cazy_dict, config_dict)
