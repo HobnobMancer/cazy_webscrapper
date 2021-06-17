@@ -128,7 +128,7 @@ def get_cazy_dict(args):
     logger = logging.getLogger(__name__)
 
     try:
-        with open(args.dict, "r") as fh:
+        with open(args.database, "r") as fh:
             cazy_dict = json.load(fh)
 
     except FileNotFoundError:
