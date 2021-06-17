@@ -50,7 +50,7 @@ from argparse import Namespace, ArgumentParser
 from pathlib import Path
 
 from scraper.utilities import parse_configuration
-from scraper.expand.get_genbank_sequences import from_dict
+from scraper.expand.get_genbank_sequences import from_dict, ncbi
 
 
 # test sequences_for_proteins_from_dict()
@@ -73,4 +73,31 @@ def test_seq_for_proteins_no_proteins(monkeypatch):
     monkeypatch.setattr(from_dict, "get_qualifying_proteins", mock_get_qualifying_proteins)
 
     assert "EXIT" == from_dict.sequences_for_proteins_from_dict("date_today", "args")
+
+
+def test_seq_for_proteins(monkeypatch):
+    """Test sequences_for_proteins_from_dict()"""
+
+    def mock_get_cazy_dict(*args, **kwargs):
+        return {}
+
+    def mock_parse_config(*args, **kwargs):
+        return {}
+
+    def mock_get_qualifying_proteins(*args, **kwargs):
+        return ["NA", "Protein1", "Protein2", "Protein3"]
     
+    def mock_runtime_error(*args, **kwargs):
+        raise RuntimeError
+
+    args_namespace = {"args": Namespace(
+        epost=2,
+    )}
+    
+    monkeypatch.setattr(from_dict, "get_cazy_dict", mock_get_cazy_dict)
+    monkeypatch.setattr(parse_configuration, "parse_configuration_for_cazy_dict", mock_parse_config)
+    monkeypatch.setattr(from_dict, "get_qualifying_proteins", mock_get_qualifying_proteins)
+    monkeypatch.setattr(ncbi, "get_sequences_for_dict", mock_runtime_error)
+    monkeypatch.setattr(ncbi, "get_sequences_for_dict", mock_runtime_error)
+
+    from_dict.sequences_for_proteins_from_dict("date_today", args_namespace["args"])
