@@ -294,14 +294,14 @@ def get_genbank_accessions(
                     "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
                     "Do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                query_results = query_sql_db.get_prim_genbank_acc_for_update(session, date_today)
+                query_results = query_sql_db.get_prim_genbank_acc_for_update(session)
 
             else:
                 logger.warning(
                     "Retrieving sequences for ALL GenBank accessions that\n"
                     "do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                query_results = query_sql_db.get_all_genbank_acc_for_update(session, date_today)
+                query_results = query_sql_db.get_all_genbank_acc_for_update(session)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
             logger.info(

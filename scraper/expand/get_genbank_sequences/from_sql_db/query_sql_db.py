@@ -363,12 +363,10 @@ def get_all_gnbk_acc_from_clss_fams_no_seq(session, config_dict):
 # Retrieve seqeunces when user did not specify CAZy classes or families
 
 
-def get_prim_genbank_acc_for_update(session, date_today, args):
+def get_prim_genbank_acc_for_update(session):
     """Retrieve all PRIMARY GenBank accessions in the database.
 
     :param session: open SQL database session
-    :param date_today: str, date script was invoked
-    :param args: cmd-line args parser
 
     Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
     been update since the sequence was last retrieved and added to the local CAZyme db.
@@ -384,13 +382,10 @@ def get_prim_genbank_acc_for_update(session, date_today, args):
     return genbank_query
 
 
-def get_all_genbank_acc_for_update(session, date_today, args):
+def get_all_genbank_acc_for_update(session):
     """Retrieve all GenBank accessions in the database.
 
     :param session: open SQL database session
-    :param date_today: str, date script was invoked
-    :param args: cmd-line args parser
-
     Return list of GenBank accessions of records with no sequence or the sequence in NCBI has
     been update since the sequence was last retrieved and added to the local CAZyme db.
     """
