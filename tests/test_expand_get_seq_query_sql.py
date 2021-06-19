@@ -59,7 +59,7 @@ def test_expnd_seq_prim_gbk_class_fams(db_session):
 
     config_data = {
         "classes": ['PL'],
-        "GH": ["GH5"],
+        "GH": ["GH5", "GH3_1"],
         "PL": None,
     }
 
@@ -71,7 +71,7 @@ def test_expnd_seq_all_gbk_class_fams(db_session):
 
     config_data = {
         "classes": ['PL'],
-        "GH": ["GH5"],
+        "GH": ["GH5", "GH3_1"],
         "PL": None,
     }
 
@@ -83,7 +83,7 @@ def test_expnd_seq_prim_gbk_class_fams_no_seq(db_session):
 
     config_data = {
         "classes": ['PL'],
-        "GH": ["GH5"],
+        "GH": ["GH5", "GH3_1"],
         "PL": None,
     }
 
@@ -95,7 +95,7 @@ def test_expnd_seq_all_gbk_class_fams_no_seq(db_session):
 
     config_data = {
         "classes": ['PL'],
-        "GH": ["GH5"],
+        "GH": ["GH5", "GH3_1"],
         "PL": None,
     }
 
@@ -130,5 +130,12 @@ def test_expnd_seq_all_gbk_no_seq(db_session):
 def test_expnd_seq_ec_query(db_session):
     """Test query_ec_number()"""
     genbank_accession = "WP_038530530.1"
+
+    query_sql_db.query_ec_number(db_session, genbank_accession)
+
+
+def test_expnd_seq_ec_query_remove_EC(db_session):
+    """Test query_ec_number() when need to remove 'EC' prefix"""
+    genbank_accession = "GAL67220.1"
 
     query_sql_db.query_ec_number(db_session, genbank_accession)
