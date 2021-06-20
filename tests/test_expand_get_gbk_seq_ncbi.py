@@ -253,7 +253,7 @@ def test_entry_retry(args_namespace, monkeypatch):
     def mock_record(*args, **kwargs):
         return "test_record"
 
-    ncbi.entrez_retry(mock_record, args_namespace["args"])
+    ncbi.entrez_retry("mock_record", args_namespace["args"])
 
 
 def test_entrez_retry_none(args_namespace):
