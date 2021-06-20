@@ -49,8 +49,9 @@ import pytest
 from argparse import Namespace
 from pathlib import Path
 
-from scraper.utilities import file_io
 from scraper.expand.get_genbank_sequences import ncbi
+from scraper.sql.sql_orm import Genbank
+from scraper.utilities import file_io
 
 
 @pytest.fixture
@@ -70,6 +71,14 @@ def gbk_accessions():
 def args_namespace():
     args_dict = {"args": Namespace(fasta="path", fasta_only="path", blastdb="path")}
     return args_dict
+
+
+@pytest.fixture
+def sum_doc_path(test_dir):
+    path_ = test_dir / "test_inputs"
+    path_ = path_ / "test_inputs_expand"
+    path_ = path_ / "summary_doc.xml"
+    return path_
 
 
 def test_get_dict_ncbi(gbk_accessions, args_namespace, fasta_path, monkeypatch):
@@ -96,3 +105,63 @@ def test_get_dict_ncbi(gbk_accessions, args_namespace, fasta_path, monkeypatch):
         ncbi.get_sequences_for_dict(gbk_accessions, args_namespace["args"])
 
 
+def test_check_ncbi_seq_data_no_version(sum_doc_path, args_namespace, monkeypatch):
+    """Test check_ncbi_seq_data()"""
+
+    with open(sum_doc_path, "rb") as fh:
+        retrieved_record = fh
+
+        def mock_epost(*args, **kwargs):
+            return {'QueryKey': '1', 'WebEnv': 'MCID_60cf5b5ef457b676172c93c4'}
+
+        def mock_entrez(*args, **kwargst):
+            return retrieved_record
+
+        monkeypatch.setattr(ncbi, "bulk_query_ncbi", mock_epost)
+        monkeypatch.setattr(ncbi, "entrez_retry", mock_entrez)
+
+        gbk = Genbank(
+            genbank_accession='WP_001307453.1',
+            sequence='',
+            seq_update_date='2015/12/01',
+        )
+        gbk1  = Genbank(
+            genbank_accession="PNY18054.1",
+            sequence='',
+            seq_update_date='2015/12/01',
+        )
+
+        gbk_dict = {'WP_001307453.1': gbk, "PNY18054.1": gbk1}
+
+        ncbi.check_ncbi_seq_data(gbk_accessions, gbk_dict, args_namespace["args"])
+
+
+def test_check_ncbi_seq_data(sum_doc_path, args_namespace, monkeypatch):
+    """Test check_ncbi_seq_data()"""
+
+    with open(sum_doc_path, "rb") as fh:
+        retrieved_record = fh
+
+        def mock_epost(*args, **kwargs):
+            return {'QueryKey': '1', 'WebEnv': 'MCID_60cf5b5ef457b676172c93c4'}
+
+        def mock_entrez(*args, **kwargst):
+            return retrieved_record
+
+        monkeypatch.setattr(ncbi, "bulk_query_ncbi", mock_epost)
+        monkeypatch.setattr(ncbi, "entrez_retry", mock_entrez)
+
+        gbk = Genbank(
+            genbank_accession='WP_001307453.1',
+            sequence='',
+            seq_update_date='2015/12/01',
+        )
+        gbk1  = Genbank(
+            genbank_accession="PNY18054.1",
+            sequence='',
+            seq_update_date='2015/12/01',
+        )
+
+        gbk_dict = {'WP_001307453.1': gbk, "PNY18054.1": gbk1}
+
+        ncbi.check_ncbi_seq_data(gbk_accessions, gbk_dict, args_namespace["args"])

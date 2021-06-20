@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<!DOCTYPE TaxaSet PUBLIC "-//NLM//DTD Taxon, 14th January 2002//EN" "https://www.ncbi.nlm.nih.gov/entrez/query/DTD/taxon.dtd">
+<TaxaSet>
+<Taxon>
+    <TaxId>5061</TaxId>
+    <ScientificName>Aspergillus niger</ScientificName>
+    <OtherNames>
+        <Synonym>Aspergillus lacticoffeatus</Synonym>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>Aspergillus lacticoffeatus Frisvad &amp; Samson, 2004</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>Aspergillus niger Tiegh.</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>Aspergillus niger Tieghem, 1867</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>ATCC 16888</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>ATCC:16888</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CBS 101883</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CBS 554.65</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CBS:101883</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CBS:554.65</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>NRRL 326</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>NRRL:326</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>misspelling</ClassCDE>
+            <DispName>A. niger</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>misspelling</ClassCDE>
+            <DispName>Aspergillus lacticofeatus</DispName>
+        </Name>
+    </OtherNames>
+    <ParentTaxId>2720871</ParentTaxId>
+    <Rank>species</Rank>
+    <Division>Plants and Fungi</Division>
+    <GeneticCode>
+        <GCId>1</GCId>
+        <GCName>Standard</GCName>
+    </GeneticCode>
+    <MitoGeneticCode>
+        <MGCId>4</MGCId>
+        <MGCName>Mold Mitochondrial; Protozoan Mitochondrial; Coelenterate Mitochondrial; Mycoplasma; Spiroplasma</MGCName>
+    </MitoGeneticCode>
+    <Lineage>cellular organisms; Eukaryota; Opisthokonta; Fungi; Dikarya; Ascomycota; saccharomyceta; Pezizomycotina; leotiomyceta; Eurotiomycetes; Eurotiomycetidae; Eurotiales; Aspergillaceae; Aspergillus; Aspergillus subgen. Circumdati</Lineage>
+    <LineageEx>
+        <Taxon>
+            <TaxId>131567</TaxId>
+            <ScientificName>cellular organisms</ScientificName>
+            <Rank>no rank</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>2759</TaxId>
+            <ScientificName>Eukaryota</ScientificName>
+            <Rank>superkingdom</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>33154</TaxId>
+            <ScientificName>Opisthokonta</ScientificName>
+            <Rank>no rank</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>4751</TaxId>
+            <ScientificName>Fungi</ScientificName>
+            <Rank>kingdom</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>451864</TaxId>
+            <ScientificName>Dikarya</ScientificName>
+            <Rank>subkingdom</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>4890</TaxId>
+            <ScientificName>Ascomycota</ScientificName>
+            <Rank>phylum</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>716545</TaxId>
+            <ScientificName>saccharomyceta</ScientificName>
+            <Rank>no rank</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>147538</TaxId>
+            <ScientificName>Pezizomycotina</ScientificName>
+            <Rank>subphylum</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>716546</TaxId>
+            <ScientificName>leotiomyceta</ScientificName>
+            <Rank>no rank</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>147545</TaxId>
+            <ScientificName>Eurotiomycetes</ScientificName>
+            <Rank>class</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>451871</TaxId>
+            <ScientificName>Eurotiomycetidae</ScientificName>
+            <Rank>subclass</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>5042</TaxId>
+            <ScientificName>Eurotiales</ScientificName>
+            <Rank>order</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>1131492</TaxId>
+            <ScientificName>Aspergillaceae</ScientificName>
+            <Rank>family</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>5052</TaxId>
+            <ScientificName>Aspergillus</ScientificName>
+            <Rank>genus</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>2720871</TaxId>
+            <ScientificName>Aspergillus subgen. Circumdati</ScientificName>
+            <Rank>subgenus</Rank>
+        </Taxon>
+    </LineageEx>
+    <CreateDate>1995/02/27 09:24:00</CreateDate>
+    <UpdateDate>2020/07/15 10:55:50</UpdateDate>
+    <PubDate>1993/04/29 01:00:00</PubDate>
+</Taxon>
+
+</TaxaSet>
