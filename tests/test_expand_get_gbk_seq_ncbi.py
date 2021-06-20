@@ -197,3 +197,33 @@ def test_get_seq_from_ncbi(gbk_accessions, args_namespace, fasta_path, monkeypat
         monkeypatch.setattr(file_io, "write_fasta_for_db", mock_writing_fastas)
 
         ncbi.get_sequences(gbk_accessions, args_namespace["args"])
+
+
+def test_get_seq_from_ncbi_to_db(args_namespace, fasta_path, db_session, monkeypatch):
+    """Test get_sequences_add_to_db()"""
+
+    with open(fasta_path, "r") as fh:
+        retrieved_record = fh
+
+        def mock_epost(*args, **kwargs):
+            return {'QueryKey': '1', 'WebEnv': 'MCID_60cf5b5ef457b676172c93c4'}
+
+        def mock_entrez(*args, **kwargst):
+            return retrieved_record
+
+        def mock_writing_fastas(*args, **kwargs):
+            return
+
+        monkeypatch.setattr(ncbi, "bulk_query_ncbi", mock_epost)
+        monkeypatch.setattr(ncbi, "entrez_retry", mock_entrez)
+        monkeypatch.setattr(file_io, "write_out_fasta", mock_writing_fastas)
+        monkeypatch.setattr(file_io, "write_out_fasta_only", mock_writing_fastas)
+        monkeypatch.setattr(file_io, "write_fasta_for_db", mock_writing_fastas)
+
+        gbks = [
+            Genbank(genbank_accession="WP_001307453.1"),
+            Genbank(genbank_accession="PNY18054.1"),
+            Genbank(genbank_accession="accession_not_retrievied"),
+        ]
+
+        ncbi.get_sequences_add_to_db(gbks, "2021/06/20", db_session, args_namespace["args"])
