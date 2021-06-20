@@ -235,11 +235,7 @@ def test_get_seq_from_ncbi_to_db(args_namespace, fasta_path, db_session, monkeyp
         monkeypatch.setattr(file_io, "write_out_fasta_only", mock_writing_fastas)
         monkeypatch.setattr(file_io, "write_fasta_for_db", mock_writing_fastas)
 
-        gbks = [
-            Genbank(genbank_accession="WP_001307453.1"),
-            Genbank(genbank_accession="PNY18054.1"),
-            Genbank(genbank_accession="accession_not_retrievied"),
-        ]
+        gbks = ["PNY18054.1", "PNY18sss054.1", "PNX81180.1", "WP_001307453.1"]
 
         ncbi.get_sequences_add_to_db(gbks, "2021/06/20", db_session, args_namespace["args"])
 
