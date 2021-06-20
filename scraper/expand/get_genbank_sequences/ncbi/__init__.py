@@ -61,22 +61,7 @@ def get_sequences_for_dict(accessions, args):
     """
     logger = logging.getLogger(__name__)
 
-    # perform batch query of Entrez
-    accessions_string = ",".join(accessions)
-
-    # Runtime error captured by try/except function call
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost,
-            args,
-            db="Protein",
-            id=accessions_string,
-        )
-    )
-
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
+    epost_webenv, epost_query_key = bulk_query_ncbi(accessions, args)
 
     # retrieve the protein sequences
     with entrez_retry(
@@ -132,6 +117,9 @@ def get_sequences_for_dict(accessions, args):
 
             if args.fasta is not None:
                 file_io.write_out_fasta(record, temp_accession, args)
+            
+            if args.fasta_only is not None:
+                file_io.write_out_fasta_only(record, temp_accession, args)
 
             if args.blastdb is not None:
                 # need all squences in a single FASTA file to create a BLASTdb
@@ -169,21 +157,7 @@ def check_ncbi_seq_data(genbank_accessions, gbk_records_without_seq, args):
 
     genbank_records_to_update = []
 
-    accessions_list = ",".join(genbank_accessions)
-
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost,
-            args,
-            db="Protein",
-            id=accessions_list,
-            retmode="text",
-        )
-    )
-
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
+    epost_webenv, epost_query_key = bulk_query_ncbi(genbank_accessions, args)
 
     # retrieve summary docs to check the sequence 'UpdateDates' in NCBI
     with entrez_retry(
@@ -250,19 +224,9 @@ def get_sequences(accessions, args):
     Return nothing.
     """
     logger = logging.getLogger(__name__)
+
     # perform batch query of Entrez
-    accessions_string = ",".join(accessions)
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost,
-            args,
-            db="Protein",
-            id=accessions_string,
-        )
-    )
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
+    epost_webenv, epost_query_key = bulk_query_ncbi(accessions, args)
 
     # retrieve the protein sequences
     with entrez_retry(
@@ -473,3 +437,31 @@ def entrez_retry(entrez_func, args, *func_args, **func_kwargs):
         return
 
     return record
+
+
+def bulk_query_ncbi(accessions, args):
+    """Bulk query NCBI and retrieve webenvironment and history tags
+
+    :param accessions: list of GenBank protein accessions
+    :param args: cmd-line args parser
+
+    Return webenv and query key
+    """
+    # perform batch query of Entrez
+    accessions_string = ",".join(accessions)
+
+    # Runtime error captured by try/except function call
+    epost_result = Entrez.read(
+        entrez_retry(
+            Entrez.epost,
+            args,
+            db="Protein",
+            id=accessions_string,
+        )
+    )
+
+    # retrieve the web environment and query key from the Entrez post
+    epost_webenv = epost_result["WebEnv"]
+    epost_query_key = epost_result["QueryKey"]
+
+    return epost_webenv, epost_query_key
