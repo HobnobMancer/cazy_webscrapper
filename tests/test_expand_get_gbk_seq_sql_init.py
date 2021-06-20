@@ -520,3 +520,39 @@ def test_parse_gbk_all_filters(genbanks_to_parse, monkeypatch):
         session,
     )
 
+
+# test check_if_to_update()
+
+
+def test_check_if_update_seq(monkeypatch):
+    """Test check_if_to_update()"""
+
+    def mock_check_update(*args, **kwargs):
+        return ["ACC123456"]
+    
+    monkeypatch.setattr(ncbi, "check_ncbi_seq_data", mock_check_update)
+
+    gbk1 = Genbank(genbank_accession="Acc123", sequence=None)
+    gbk2 = Genbank(genbank_accession="Acc123", sequence="MASTRVMASRTGILKP")
+    gbks = [gbk1, gbk1, gbk2, gbk2]
+
+    args_namespace = {"args": Namespace(epost=2)}
+
+    from_sql_db.check_if_to_update(gbks, args_namespace["args"])
+
+
+def test_check_if_update_seq_runtime_error(monkeypatch):
+    """Test check_if_to_update()"""
+
+    def mock_check_update(*args, **kwargs):
+        raise RuntimeError
+    
+    monkeypatch.setattr(ncbi, "check_ncbi_seq_data", mock_check_update)
+
+    gbk1 = Genbank(genbank_accession="Acc123", sequence=None)
+    gbk2 = Genbank(genbank_accession="Acc123", sequence="MASTRVMASRTGILKP")
+    gbks = [gbk1, gbk1, gbk2, gbk2]
+
+    args_namespace = {"args": Namespace(epost=2)}
+
+    from_sql_db.check_if_to_update(gbks, args_namespace["args"])
