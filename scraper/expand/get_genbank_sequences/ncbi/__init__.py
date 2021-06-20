@@ -307,19 +307,9 @@ def get_sequences_add_to_db(accessions, date_today, session, args):
     Return nothing.
     """
     logger = logging.getLogger(__name__)
+
     # perform batch query of Entrez
-    accessions_string = ",".join(accessions)
-    epost_result = Entrez.read(
-        entrez_retry(
-            Entrez.epost,
-            args,
-            db="Protein",
-            id=accessions_string,
-        )
-    )
-    # retrieve the web environment and query key from the Entrez post
-    epost_webenv = epost_result["WebEnv"]
-    epost_query_key = epost_result["QueryKey"]
+    epost_webenv, epost_query_key = bulk_query_ncbi(accessions, args)
 
     # retrieve the protein sequences
     with entrez_retry(
