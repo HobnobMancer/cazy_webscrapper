@@ -328,13 +328,7 @@ def get_genbank_accessions(
             )
 
     # check if any records were retrived from the querying of the local CAZyme database
-    try:
-        if len(query_results) == 0:
-            logger.warning(
-                "Retrieved no records from the local CAZyme database mathcing provided criteria"
-            )
-            return
-    except TypeError:
+    if len(query_results) == 0:
         logger.warning(
             "Retrieved no records from the local CAZyme database mathcing provided criteria"
         )
@@ -455,7 +449,7 @@ def parse_genbank_query(
         tax_filtered_genbank_accessions,
         desc="Applying EC number filter",
     ):
-        ec_annotations = query_sql_db.query_sql_db.query_ec_number(
+        ec_annotations = query_sql_db.query_ec_number(
             session,
             query_result.genbank_accession,
         )
