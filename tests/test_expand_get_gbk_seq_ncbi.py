@@ -69,7 +69,14 @@ def gbk_accessions():
 
 @pytest.fixture
 def args_namespace():
-    args_dict = {"args": Namespace(fasta="path", fasta_only="path", blastdb="path")}
+    args_dict = {
+        "args": Namespace(
+            fasta="path",
+            fasta_only="path",
+            blastdb="path",
+            retries=1,
+        ),
+    }
     return args_dict
 
 
@@ -227,3 +234,33 @@ def test_get_seq_from_ncbi_to_db(args_namespace, fasta_path, db_session, monkeyp
         ]
 
         ncbi.get_sequences_add_to_db(gbks, "2021/06/20", db_session, args_namespace["args"])
+
+
+# test entrez_retry()
+
+
+def test_entry_retry(args_namespace, monkeypatch):
+    """Test entrez_retry."""
+
+    def mock_record(*args, **kwargs):
+        return "test_record"
+
+    assert "test_record" == ncbi.entrez_retry(mock_record, args_namespace["args"])
+
+
+def test_entrez_retry_none(args_namespace):
+    """Test entrez_retry when nothing is returned."""
+
+    def mock_record(*args, **kwargs):
+        return
+
+    assert ncbi.entrez_retry(mock_record, args_namespace["args"]) is None
+
+
+def test_entrez_retry_IOError(args_namespace):
+    """Test entrez_retry when an IOError is raised."""
+
+    def mock_record(*args, **kwargs):
+        raise IOError
+
+    ncbi.entrez_retry(mock_record, args_namespace["args"])
