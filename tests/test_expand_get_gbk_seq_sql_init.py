@@ -50,8 +50,10 @@ import pytest
 from argparse import Namespace, ArgumentParser
 from pathlib import Path
 
-from scraper.expand.get_genbank_sequences import from_sql_db, ncbi
+from scraper.expand.get_genbank_sequences import from_sql_db
+from scraper.expand.get_genbank_sequences.from_sql_db  import query_sql_db, ncbi
 from scraper.sql import sql_orm
+from scraper.sql.sql_orm import Genbank
 from scraper.utilities import parse_configuration
 
 
@@ -73,6 +75,9 @@ def args_not_fasta_only():
         epost=4,
     )}
     return args
+
+
+# test sequences_for_proteins_from_db()
 
 
 def test_sequences_for_proteins_from_db_none(db_session, args_fasta_only, monkeypatch):
@@ -157,3 +162,141 @@ def test_sequences_for_proteins_from_db_acc_retrieved(db_session, args_not_fasta
     monkeypatch.setattr(ncbi, "get_sequences_add_to_db", mock_runtime_error)
 
     from_sql_db.sequences_for_proteins_from_db("data_today", args_not_fasta_only["args"])
+
+
+# test get_genbank_accessions() with config dict
+
+
+def test_get_acc_update_primary_none(db_session, monkeypatch):
+    """Test get_genbank_accessions, when a config is given and args.update  and args.primary are True"""
+
+    def mock_query_db(*args, **kwargs):
+        return [], []
+
+    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
+
+    args_mocker = {'args': Namespace(update=True, primary=True, fasta_only=False)}
+
+    from_sql_db.get_genbank_accessions(
+        args_mocker["args"],
+        db_session,
+        "data_today",
+        {"classes": [], "GH": ["GH1"]},
+        set(),
+        set(),
+        set()
+    )
+
+
+def test_get_acc_update_primary(db_session, monkeypatch):
+    """Test get_genbank_accessions, when a config is given and args.update  and args.primary are True"""
+
+    def mock_query_db(*args, **kwargs):
+        return ["acc1"], ["acc2", "acc3"]
+    
+    def mock_retrieve_accessions(*args, **kwargs):
+        return ["acc1", "acc2", "acc3"]
+    
+    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
+    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
+
+    args_mocker = {'args': Namespace(update=True, primary=True, fasta_only=False)}
+
+    from_sql_db.get_genbank_accessions(
+        args_mocker["args"],
+        db_session,
+        "data_today",
+        {"classes": [], "GH": ["GH1"]},
+        set(),
+        set(),
+        set()
+    )
+
+
+def test_get_acc_update(db_session, monkeypatch):
+    """Test get_genbank_accessions, when a config is given and args.update is True"""
+
+    def mock_query_db(*args, **kwargs):
+        return ["acc1"], ["acc2", "acc3"]
+    
+    def mock_retrieve_accessions(*args, **kwargs):
+        return ["acc1", "acc2", "acc3"]
+    
+    monkeypatch.setattr(query_sql_db, "get_all_gnbk_acc_from_clss_fams", mock_query_db)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
+    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
+
+    args_mocker = {'args': Namespace(update=True, primary=False, fasta_only=False)}
+
+    from_sql_db.get_genbank_accessions(
+        args_mocker["args"],
+        db_session,
+        "data_today",
+        {"classes": [], "GH": ["GH1"]},
+        set(),
+        set(),
+        set()
+    )
+
+
+def test_get_acc_primary(db_session, monkeypatch):
+    """Test get_genbank_accessions, when a config is given and args.primary is True"""
+
+    genbank_1 = Genbank(genbank_accession="GBK123456")
+    genbank_2 = Genbank(genbank_accession="GBK123456")
+
+    def mock_query_db(*args, **kwargs):
+        return [genbank_1], [genbank_2]
+    
+    def mock_retrieve_accessions(*args, **kwargs):
+        return [genbank_1, genbank_2]
+    
+    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
+    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
+
+    args_mocker = {'args': Namespace(update=False, primary=True, fasta_only=False)}
+
+    from_sql_db.get_genbank_accessions(
+        args_mocker["args"],
+        db_session,
+        "data_today",
+        {"classes": [], "GH": ["GH1"]},
+        set(),
+        set(),
+        set()
+    )
+
+
+def test_get_acc_all(db_session, monkeypatch):
+    """Test get_genbank_accessions, when a config is given and args.primary and args.update are False"""
+
+    genbank_1 = Genbank(genbank_accession="GBK123456")
+    genbank_2 = Genbank(genbank_accession="GBK123456")
+
+    def mock_query_db(*args, **kwargs):
+        return [genbank_1], [genbank_2]
+    
+    def mock_retrieve_accessions(*args, **kwargs):
+        return [genbank_1, genbank_2]
+    
+    monkeypatch.setattr(query_sql_db, "get_all_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
+    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
+
+    args_mocker = {'args': Namespace(update=False, primary=False, fasta_only=False)}
+
+    from_sql_db.get_genbank_accessions(
+        args_mocker["args"],
+        db_session,
+        "data_today",
+        {"classes": [], "GH": ["GH1"]},
+        set(),
+        set(),
+        set()
+    )
+
+
+
+# test get_genbank_accessions() with no config dict
