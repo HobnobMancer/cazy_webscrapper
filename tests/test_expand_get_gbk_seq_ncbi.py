@@ -81,6 +81,14 @@ def sum_doc_path(test_dir):
     return path_
 
 
+@pytest.fixture
+def sum_doc_acc_path(test_dir):
+    path_ = test_dir / "test_inputs"
+    path_ = path_ / "test_inputs_expand"
+    path_ = path_ / "summary_doc_acc.xml"
+    return path_
+
+
 def test_get_dict_ncbi(gbk_accessions, args_namespace, fasta_path, monkeypatch):
     """Test get_sequences_for_dict()"""
 
@@ -136,10 +144,10 @@ def test_check_ncbi_seq_data_no_version(sum_doc_path, args_namespace, monkeypatc
         ncbi.check_ncbi_seq_data(gbk_accessions, gbk_dict, args_namespace["args"])
 
 
-def test_check_ncbi_seq_data(sum_doc_path, args_namespace, monkeypatch):
+def test_check_ncbi_seq_data(gbk_accessions, sum_doc_acc_path, args_namespace, monkeypatch):
     """Test check_ncbi_seq_data()"""
 
-    with open(sum_doc_path, "rb") as fh:
+    with open(sum_doc_acc_path, "rb") as fh:
         retrieved_record = fh
 
         def mock_epost(*args, **kwargs):

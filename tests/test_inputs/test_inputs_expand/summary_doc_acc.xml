@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!DOCTYPE eSummaryResult PUBLIC "-//NLM//DTD esummary v1 20041029//EN" "https://eutils.ncbi.nlm.nih.gov/eutils/dtd/20041029/esummary-v1.dtd">
+<eSummaryResult>
+
+<DocSum>
+	<Id>485666162</Id>
+	<Item Name="Caption" Type="String">WP_001307453</Item>
+	<Item Name="Title" Type="String">MULTISPECIES: cellulase [Enterobacteriaceae]</Item>
+	<Item Name="Extra" Type="String">gi|485666162|ref|WP_001307453.1|[485666162]</Item>
+	<Item Name="Gi" Type="Integer">485666162</Item>
+	<Item Name="CreateDate" Type="String">2013/05/02</Item>
+	<Item Name="UpdateDate" Type="String">2019/06/01</Item>
+	<Item Name="Flags" Type="Integer">512</Item>
+	<Item Name="TaxId" Type="Integer">543</Item>
+	<Item Name="Length" Type="Integer">368</Item>
+	<Item Name="Status" Type="String">live</Item>
+	<Item Name="ReplacedBy" Type="String"></Item>
+	<Item Name="Comment" Type="String"><![CDATA[  ]]></Item>
+	<Item Name="AccessionVersion" Type="String">WP_001307453.1</Item>
+</DocSum>
+
+<DocSum>
+	<Id>1335259102</Id>
+	<Item Name="Caption" Type="String">PNY18054</Item>
+	<Item Name="Title" Type="String">cellulase [Trifolium pratense]</Item>
+	<Item Name="Extra" Type="String">gi|1335259102|gb|PNY18054.1||gnl|WGS:ASHM|L195_Tp9910_g14811[1335259102]</Item>
+	<Item Name="Gi" Type="Integer">1335259102</Item>
+	<Item Name="CreateDate" Type="String">2018/01/26</Item>
+	<Item Name="UpdateDate" Type="String">2018/01/26</Item>
+	<Item Name="Flags" Type="Integer">0</Item>
+	<Item Name="TaxId" Type="Integer">57577</Item>
+	<Item Name="Length" Type="Integer">442</Item>
+	<Item Name="Status" Type="String">live</Item>
+	<Item Name="ReplacedBy" Type="String"></Item>
+	<Item Name="Comment" Type="String"><![CDATA[  ]]></Item>
+	<Item Name="AccessionVersion" Type="String">PNY18054.1</Item>
+</DocSum>
+</eSummaryResult>
