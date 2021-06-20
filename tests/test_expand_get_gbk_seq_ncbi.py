@@ -173,3 +173,27 @@ def test_check_ncbi_seq_data(gbk_accessions, sum_doc_acc_path, args_namespace, m
         gbk_dict = {'WP_001307453.1': gbk, "PNY18054.1": gbk1}
 
         ncbi.check_ncbi_seq_data(gbk_accessions, gbk_dict, args_namespace["args"])
+
+
+def test_get_seq_from_ncbi(gbk_accessions, args_namespace, fasta_path, monkeypatch):
+    """Test get_sequences()"""
+
+    with open(fasta_path, "r") as fh:
+        retrieved_record = fh
+
+        def mock_epost(*args, **kwargs):
+            return {'QueryKey': '1', 'WebEnv': 'MCID_60cf5b5ef457b676172c93c4'}
+
+        def mock_entrez(*args, **kwargst):
+            return retrieved_record
+
+        def mock_writing_fastas(*args, **kwargs):
+            return
+
+        monkeypatch.setattr(ncbi, "bulk_query_ncbi", mock_epost)
+        monkeypatch.setattr(ncbi, "entrez_retry", mock_entrez)
+        monkeypatch.setattr(file_io, "write_out_fasta", mock_writing_fastas)
+        monkeypatch.setattr(file_io, "write_out_fasta_only", mock_writing_fastas)
+        monkeypatch.setattr(file_io, "write_fasta_for_db", mock_writing_fastas)
+
+        ncbi.get_sequences(gbk_accessions, args_namespace["args"])
