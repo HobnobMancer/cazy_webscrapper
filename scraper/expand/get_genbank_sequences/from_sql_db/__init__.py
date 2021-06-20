@@ -136,6 +136,7 @@ def sequences_for_proteins_from_db(date_today, args):
                     "Will query accessions individualy after.\n"
                     f"The following error was raised:\n{err}"
                 )
+                accessions_lists_for_individual_queries.append(accession_list)
 
         else:  # write seqs to db (and FASTA if enabled)
             try:
@@ -151,6 +152,7 @@ def sequences_for_proteins_from_db(date_today, args):
                     "Will query accessions individualy after.\n"
                     f"The following error was raised:\n{err}"
                 )
+                accessions_lists_for_individual_queries.append(accession_list)
 
     if len(accessions_lists_for_individual_queries) != 0:
         for accession_list in tqdm(
