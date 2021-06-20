@@ -53,7 +53,7 @@ from pathlib import Path
 from scraper.expand.get_genbank_sequences import from_sql_db
 from scraper.expand.get_genbank_sequences.from_sql_db  import query_sql_db, ncbi
 from scraper.sql import sql_orm
-from scraper.sql.sql_orm import Genbank
+from scraper.sql.sql_orm import Genbank, Cazyme, Taxonomy, Kingdom
 from scraper.utilities import parse_configuration
 
 
@@ -75,6 +75,20 @@ def args_not_fasta_only():
         epost=4,
     )}
     return args
+
+
+@pytest.fixture
+def genbanks_to_parse():
+    genbank = Genbank(genbank_accession="WP123456")
+    caz_gbk = "item"
+    cazyme = Cazyme(cazyme_name="cazyme_name")
+    taxonomy = Taxonomy(genus="Aspergillus", species="Fumagatus strain123")
+    kingdom = Kingdom(kingdom="Bacteria")
+
+    query_result = [genbank, caz_gbk, cazyme, taxonomy, kingdom]
+    query_results = [query_result, query_result, query_result]
+    
+    return query_results
 
 
 # test sequences_for_proteins_from_db()
@@ -430,3 +444,78 @@ def test_get_acc_all_no_config(db_session, monkeypatch):
         set(),
         set()
     )
+
+
+# test parse_genbank_query
+
+
+def test_parse_gbk_no_filters(genbanks_to_parse):
+    """Test parse_genbank() when no filters are applied"""
+    taxonomy_filters = None
+    kingdoms = None
+    ec_filters = None
+    session = None
+
+    from_sql_db.parse_genbank_query(
+        genbanks_to_parse,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        session,
+    )
+
+
+def test_parse_gbk_only_tax_filter(genbanks_to_parse):
+    """Test parse_genbank() when only a taxonomy filter is applied are applied"""
+    taxonomy_filters = {"Aspergillus", "Fumagatus"}
+    kingdoms = None
+    ec_filters = None
+    session = None
+
+    from_sql_db.parse_genbank_query(
+        genbanks_to_parse,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        session,
+    )
+
+
+
+def test_parse_gbk_only_kingdom_filter(genbanks_to_parse):
+    """Test parse_genbank() when only a kingdom filter is applied are applied"""
+    taxonomy_filters = None
+    kingdoms = {"Bacteria"}
+    ec_filters = None
+    session = None
+
+    from_sql_db.parse_genbank_query(
+        genbanks_to_parse,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        session,
+    )
+
+
+def test_parse_gbk_all_filters(genbanks_to_parse, monkeypatch):
+    """Test parse_genbank() when all filters is applied are applied"""
+    taxonomy_filters = {"Aspergillus"}
+    kingdoms = {"Bacteria"}
+    ec_filters = {"2.4.1.-"}
+    session = None
+
+
+    def mock_get_ec_numbers(*args, **kwargs):
+        return ["2.4.1.-"]
+    
+    monkeypatch.setattr(query_sql_db, "query_ec_number", mock_get_ec_numbers)
+
+    from_sql_db.parse_genbank_query(
+        genbanks_to_parse,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        session,
+    )
+
