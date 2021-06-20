@@ -265,7 +265,7 @@ def test_get_acc_primary(db_session, monkeypatch):
         return [genbank_1], [genbank_2]
     
     def mock_retrieve_accessions(*args, **kwargs):
-        return [genbank_1, genbank_2]
+        return [[genbank_1], [genbank_2]]
     
     monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
