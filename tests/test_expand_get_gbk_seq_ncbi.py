@@ -74,7 +74,7 @@ def args_namespace():
             fasta="path",
             fasta_only="path",
             blastdb="path",
-            retries=1,
+            retries=0,
         ),
     }
     return args_dict
@@ -93,6 +93,14 @@ def sum_doc_acc_path(test_dir):
     path_ = test_dir / "test_inputs"
     path_ = path_ / "test_inputs_expand"
     path_ = path_ / "summary_doc_acc.xml"
+    return path_
+
+
+@pytest.fixture
+def epost_result(test_dir):
+    path_ = test_dir / "test_inputs"
+    path_ = path_ / "test_inputs_expand"
+    path_ = path_ / "epost.xml"
     return path_
 
 
@@ -245,7 +253,7 @@ def test_entry_retry(args_namespace, monkeypatch):
     def mock_record(*args, **kwargs):
         return "test_record"
 
-    assert "test_record" == ncbi.entrez_retry(mock_record, args_namespace["args"])
+    ncbi.entrez_retry(mock_record, args_namespace["args"])
 
 
 def test_entrez_retry_none(args_namespace):
@@ -264,3 +272,20 @@ def test_entrez_retry_IOError(args_namespace):
         raise IOError
 
     ncbi.entrez_retry(mock_record, args_namespace["args"])
+
+
+# test bulk_query_ncbi()
+
+
+def test_bulk_query_ncbi(epost_result, gbk_accessions, args_namespace, monkeypatch):
+    """Test bulk_query_ncbi()"""
+
+    with open(epost_result, "rb") as fh:
+        retrieved_record = fh
+
+        def mock_entrez(*args, **kwargst):
+            return retrieved_record
+
+        monkeypatch.setattr(ncbi, "entrez_retry", mock_entrez)
+
+        ncbi.bulk_query_ncbi(gbk_accessions, args_namespace["args"])
