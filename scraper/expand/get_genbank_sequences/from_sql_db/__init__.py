@@ -50,7 +50,7 @@ from scraper.expand.get_genbank_sequences import ncbi
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
 from scraper.sql.sql_interface import log_scrape_in_db
-from scraper.utilities import parse_configuration
+from scraper.utilities import parse_configuration, file_io
 
 
 def sequences_for_proteins_from_db(date_today, args):
@@ -345,6 +345,30 @@ def get_genbank_accessions(
                 f"Retrieved {len(query_results)} records from the local CAZyme database\n"
                 "Prior to apply any taxonomy and EC number filters"
             )
+
+    if args.accessions is not None:
+        logger.info(
+            "Retrieving records from the local CAZyme database for accessions "
+            "provided using args.accessions"
+        )
+        accessions_list = (args.accessions).split(",")
+        user_accessions = query_sql_db.get_user_accessions(accessions_list, session)
+
+        query_results += user_accessions
+    
+    if args.accessions_path is not None:
+        logger.info(
+            f"Retrieveing accessions listed in\n{args.accessions_path}"
+        )
+        accessions_list = file_io.get_accessions_from_file(args)
+
+        logger.info(
+            "Retrieving records from the local CAZyme database for accessions "
+            "provided using args.accessions_path"
+        )
+        user_accessions = query_sql_db.get_user_accessions(accessions_list, session)
+
+        query_results += user_accessions
 
     # check if any records were retrived from the querying of the local CAZyme database
     if len(query_results) == 0:

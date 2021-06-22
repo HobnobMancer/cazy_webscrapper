@@ -96,6 +96,28 @@ def make_output_directory(output, force, nodelete):
     return
 
 
+def get_accessions_from_file(args):
+    """Retrieve user specified GenBank accessions from a plain text file.
+
+    :param args: cmd-line args parser
+
+    Return list of GenBank accessions
+    """
+    logger = logging.getLogger(__name__)
+
+    try:
+        with open(args.accessions_path, "r") as fh:
+            lines = fh.read().splitlines()
+    except FileNotFoundError:
+        logger.error(
+            "Could not find the accessions file at:\n"
+            f"{args.accessions_path}\n"
+            "Please check the path is correct.\n"
+        )
+    
+    return [acc.remove("\n","") for acc in lines]
+
+
 def write_out_fasta(record, genbank_accession, args):
     """Write out GenBank protein record to a FASTA file.
 

@@ -438,6 +438,41 @@ def get_genbank_accessions_with_no_seq(session):
     return genbank_query
 
 
+# get the GenBank records for accessions provided by the user
+
+
+def get_user_accessions(accessions_list, session):
+    """Retrieve GenBank records from the local CAZyme database that contain an accession from a user
+    specified list of GenBank accessions.
+
+    :param accessions_list: list of GenBank protein accessions
+    :param session: open SQL db session
+
+    Return list of query results.
+    """
+    logger = logging.getLogger(__name__)
+
+    all_query_results = []
+
+    for accession in tqdm(accessions_list, desc="Retrieving records for provided accessions"):
+        genbank_query = session.query(Genbank, Cazymes_Genbanks, Cazyme, Taxonomy, Kingdom).\
+            join(Taxonomy, (Taxonomy.kingdom_id == Kingdom.kingdom_id)).\
+            join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
+            join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
+            join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
+            filter(Genbank.genbank_accession == None).\
+            all()
+        if genbank_query is not None:
+            all_query_results.append(genbank_query)
+
+    if len(all_query_results) == 0:
+        logger.warning(
+            "No GenBank records in the local CAZyme database were found for the provided accessions"
+        )
+
+    return genbank_query
+
+
 # check the EC number of the CAZyme
 
 
@@ -464,3 +499,4 @@ def query_ec_number(session, genbank_accession):
             record_ecs.append(f"EC{record[-1].ec_number}")
 
     return record_ecs
+

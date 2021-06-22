@@ -273,7 +273,10 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     # Create parser object
     parser = argparse.ArgumentParser(
         prog="genbank_sequences.py",
-        description="Populates local CAZy database with protein sequences from GenBank",
+        description=(
+            "Populates local CAZy database with protein sequences from GenBank\n"
+            "and can optional write them out to FASTA files"
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -294,6 +297,29 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
 
     # Add optional arguments to parser
 
+    # add option for user to specify their own genbank accessions
+    parser.add_argument(
+        "--accessions",
+        type=str,
+        default=None,
+        help=(
+            "List of GenBank protein accessions to retrieve protein sequences for\n"
+            "Separate the accessions with a single comma\n"
+            "For example 'WP00001.1,PYN15678.2"
+        ),
+    )
+
+    parser.add_argument(
+        "--accessions_path",
+        type=Path,
+        default=None,
+        help=(
+            "Path to a plain text file containing a list of GenBank protein accessions "
+            "to retrieve protein sequences for\n"
+            "Write one unique Genbank accession per line of the text file\n"
+        ),
+    )
+
     # Add option for building a BLAST database of retrieved protein sequences
     parser.add_argument(
         "-b",
@@ -302,7 +328,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Enable creating a BLAST db of retrieved protein sequences.\n"
-            "Path to a FILE (without file extension) for a BLAST database.\n"
+            "Pass a path to a FILE (without file extension) for a BLAST database.\n"
             "This path will be used to create the FASTA file for the database and the database."
         ),
     )
@@ -330,7 +356,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         "--classes",
         type=str,
         default=None,
-        help="Classes from which all families are to be scraped. Separate classes by ','"
+        help="CAZy Classes to retrieve protein sequences for. Separate classes by ','"
     )
 
     # specify the number of accessions posted in single ePost to NCBI
@@ -364,7 +390,10 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         "--families",
         type=str,
         default=None,
-        help="Families to scrape. Separate families by commas 'GH1,GH2'",
+        help=(
+            "CAZy familes and subfamilies to retreive protein sequences for.\n"
+            "Separate families by commas 'GH1,GH2,GH5_1'"
+        ),
     )
 
     # Add option to enable writing sequences to FASTA file or files, or not at all
@@ -374,7 +403,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Enable writing out retrieved sequences to FASTA file(s).\n"
-            "Path to a dir to write out one FASTA file for each retrieved seq\n"
+            "Pass a path to a dir to write out one FASTA file for each retrieved seq\n"
             "OR a path to a FASTA file to write all retrieved seqs to"
         ),
     )
@@ -387,7 +416,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         default=None,
         help=(
             "Enable writing out retrieved sequences to FASTA file(s) ONLY.\n"
-            "Path to a dir to write out one FASTA file for each retrieved seq\n"
+            "Pass a path to a dir to write out one FASTA file for each retrieved seq\n"
             "OR a path to a FASTA file to write all retrieved seqs to\n"
             "This ignores if seqs are/aren't in the local db and if they do/do not need updating.\n"
             "NO SEQUENCES ARE ADDED TO THE DATABASE. WRITTEN TO FASTA FILE ONLY."
@@ -410,7 +439,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         "--genera",
         type=str,
         default=None,
-        help="Genera to restrict the scrape to"
+        help="Genera to restrict the retrieve of protein sequences to"
     )
 
     # Add log file name option
@@ -432,7 +461,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         dest="nodelete",
         action="store_true",
         default=False,
-        help="enable/disable deletion of exisiting files",
+        help="Enable not deleteing content in already existing output directory",
     )
 
     # enable retrieving protein sequences for only primary GenBank accessions
@@ -451,7 +480,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         "--retries",
         type=int,
         default=10,
-        help="Number of times to retry scraping a family or class page if error encountered",
+        help="Number of times to retry conenction to NCBI if connection fails",
     )
 
     # Add option to restrict the scrape to specific species. This will scrape CAZymes from
@@ -460,7 +489,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         "--species",
         type=str,
         default=None,
-        help="Species (written as Genus Species) to restrict the scrape to"
+        help="Species (written as Genus Species) to restrict the retrieve of protein sequences to"
     )
 
     # Add option to restrict scraping to specific strains of organisms
@@ -469,7 +498,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         type=str,
         default=None,
         help=(
-            "Specific strains of organisms to restrict the scrape to "
+            "Specific strains of organisms to restrict the retrieve of protein sequences to"
             "(written as Genus Species Strain)"
         ),
     )
@@ -497,7 +526,7 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
         dest="verbose",
         action="store_true",
         default=False,
-        help="Set logger level to 'INFO'",
+        help="Set logger level to 'INFO' (default level is warning)",
     )
 
     if argv is None:
