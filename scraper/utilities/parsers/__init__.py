@@ -480,10 +480,14 @@ def build_genbank_sequences_parser(argv: Optional[List] = None):
     parser.add_argument(
         "-u",
         "--update",
-        dest="update",
-        action="store_true",
-        default=False,
-        help="Enable overwriting sequences in the database if the retrieved sequence is different",
+        choices=["update_only", "overwrite"],
+        default=None,
+        help=(
+            "Enable updating sequences in the local CAZyme db.\n"
+            "Choices:\n"
+            "update_only - only update seqs that have been updated in NCBI since last retrieval\n"
+            "overwrite - retrieve seqs for all proteins and overwrite seqs in the local CAZyme db"
+        ),
     )
 
     # Add option for more detail (verbose) logging
