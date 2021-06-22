@@ -42,6 +42,7 @@
 
 
 import logging
+from sqlalchemy import exc
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
@@ -151,8 +152,11 @@ def log_scrape_in_db(
         new_log.kingdoms = "ALL (Archaea, Bacteria, Eukaryota, Viruses, Unclassified"
 
     # get EC numbers defined by user to be scraped
-    if len(ec_filters) != 0:
-        new_log.ec_numbers = str(ec_filters).replace("[", "").replace("]", "").replace("'", "")
+    try:
+        if len(ec_filters) != 0:
+            new_log.ec_numbers = str(ec_filters).replace("[", "").replace("]", "").replace("'", "")
+    except TypeError:
+        pass  # raised when ec_filters is None
 
     # retrieve commands from the command line
     cmd_line = ""
