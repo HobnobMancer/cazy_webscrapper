@@ -78,6 +78,22 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     
     Entrez.email = args.email
 
+    if args.update is not None:
+        message = f"Update mode {args.update} enabled.\n"
+
+        if args.update == "update_only":
+            message += "Retrieving seqs for proteins that do not seqs in the local CAZyme db\n"
+            message += (
+                "and for seqs whose seq has been updated in NCBI since last retrieval and\n"
+                "addition to the local CAZyme database\n"
+            )
+        
+        elif args.update == "overwrite":
+            message += "Retrieving seqs for all proteins matching criteria and\n"
+            message += "overwritting seqs in the local CAZyme database"
+
+        logger.info(message)
+
     if args.fasta is not None:
         logger.info("Enabled writing out FASTA files")
 
