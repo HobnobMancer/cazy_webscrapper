@@ -134,3 +134,17 @@ def test_expnd_seq_ec_query_remove_EC(db_session):
     genbank_accession = "GAL67220.1"
 
     query_get_gbk.query_ec_number(db_session, genbank_accession)
+
+
+def test_user_accession_empty(db_session):
+    """Test get_user_accessions() when no records are retireved."""
+
+    gbks = ["fake", "test"]
+    query_get_gbk.get_user_accessions(gbks, db_session)
+
+
+def test_user_accessions_susccess(db_session):
+    """Test get_user_accessions()."""
+
+    gbks = ["WP_019387681.1", "CDF79931.1"]
+    query_get_gbk.get_user_accessions(gbks, db_session)
