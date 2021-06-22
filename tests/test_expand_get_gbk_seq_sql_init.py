@@ -47,11 +47,12 @@ pytest -v
 
 import pytest
 
-from argparse import Namespace, ArgumentParser
+from argparse import Namespace
 from pathlib import Path
 
 from scraper.expand.get_genbank_sequences import from_sql_db
-from scraper.expand.get_genbank_sequences.from_sql_db  import query_sql_db, ncbi
+from scraper.expand.query_sql_db import query_get_gbk
+from scraper.expand.get_genbank_sequences.from_sql_db  import ncbi
 from scraper.sql import sql_orm
 from scraper.sql.sql_orm import Genbank, Cazyme, Taxonomy, Kingdom
 from scraper.utilities import parse_configuration
@@ -188,7 +189,7 @@ def test_get_acc_update_primary_none(db_session, monkeypatch):
     def mock_query_db(*args, **kwargs):
         return [], []
 
-    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
 
     args_mocker = {'args': Namespace(update=True, primary=True, fasta_only=False)}
 
@@ -212,7 +213,7 @@ def test_get_acc_update_primary(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return ["acc1", "acc2", "acc3"]
     
-    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -238,7 +239,7 @@ def test_get_acc_update(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return ["acc1", "acc2", "acc3"]
     
-    monkeypatch.setattr(query_sql_db, "get_all_gnbk_acc_from_clss_fams", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_all_gnbk_acc_from_clss_fams", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -267,7 +268,7 @@ def test_get_acc_primary(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return [[genbank_1], [genbank_2]]
     
-    monkeypatch.setattr(query_sql_db, "get_prim_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -296,7 +297,7 @@ def test_get_acc_all(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return [genbank_1, genbank_2]
     
-    monkeypatch.setattr(query_sql_db, "get_all_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_all_gnbk_acc_from_clss_fams_no_seq", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -322,7 +323,7 @@ def test_get_acc_update_primary_none_no_config(db_session, monkeypatch):
     def mock_query_db(*args, **kwargs):
         return []
 
-    monkeypatch.setattr(query_sql_db, "get_prim_genbank_acc_for_update", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_genbank_acc_for_update", mock_query_db)
 
     args_mocker = {'args': Namespace(update=True, primary=True, fasta_only=False)}
 
@@ -346,7 +347,7 @@ def test_get_acc_update_primary_no_config(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return ["acc1", "acc2", "acc3"]
     
-    monkeypatch.setattr(query_sql_db, "get_prim_genbank_acc_for_update", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_genbank_acc_for_update", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -372,7 +373,7 @@ def test_get_acc_update_no_config(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return ["acc1", "acc2", "acc3"]
     
-    monkeypatch.setattr(query_sql_db, "get_all_genbank_acc_for_update", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_all_genbank_acc_for_update", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -401,7 +402,7 @@ def test_get_acc_primary_no_config(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return [genbank_1, genbank_2]
     
-    monkeypatch.setattr(query_sql_db, "get_prim_genbank_accessions_with_no_seq", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_prim_genbank_accessions_with_no_seq", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -430,7 +431,7 @@ def test_get_acc_all_no_config(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return [genbank_1, genbank_2]
     
-    monkeypatch.setattr(query_sql_db, "get_genbank_accessions_with_no_seq", mock_query_db)
+    monkeypatch.setattr(query_get_gbk, "get_genbank_accessions_with_no_seq", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
     monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
 
@@ -510,7 +511,7 @@ def test_parse_gbk_all_filters(genbanks_to_parse, monkeypatch):
     def mock_get_ec_numbers(*args, **kwargs):
         return ["2.4.1.-"]
     
-    monkeypatch.setattr(query_sql_db, "query_ec_number", mock_get_ec_numbers)
+    monkeypatch.setattr(query_get_gbk, "query_ec_number", mock_get_ec_numbers)
 
     from_sql_db.parse_genbank_query(
         genbanks_to_parse,
