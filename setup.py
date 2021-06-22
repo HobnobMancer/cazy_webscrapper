@@ -75,8 +75,9 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "cazy_webscraper = scraper.cazy_webscraper:main",
-            "cazy_webscraper_get_genbank_sequences = scraper.expand.get_genbank_sequences:main",
-            "cazy_webscraper_get_pdb_structures = scraper.expand.get_pdb_structures:main",
+            "cazy_webscraper_get_gbk_sequences = scraper.expand.get_genbank_sequences.get_genbank_sequences:main",
+            "cazy_webscraper_get_pdb_structures = scraper.expand.get_pdb_structures.get_pdb_structures:main",
+            "cazy_webscraper_extract_sequences = scraper.expand.extract_db_sequences.extract_db_sequences:main"
         ]
     },
     install_requires=[
