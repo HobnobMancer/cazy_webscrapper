@@ -200,6 +200,62 @@ def write_fasta_for_db(record, args):
     return
 
 
+def write_out_extract_seq_to_fasta(sequence, genbank_accession, args):
+    """Write out GenBank protein record to a FASTA file.
+
+    :param sequence: str, protein sequence
+    :param genbank_accession: str, accession number of the protein sequence in NCBI.GenBank
+    :param args: cmd-line arguments parser
+
+    Return nothing.
+    """
+    logger = logging.getLogger(__name__)
+
+    sequence = "\n".join([sequence[i : i + 60] for i in range(0, len(sequence), 60)])
+    file_content = f">{genbank_accession}\n{sequence}\n"
+
+    # determine if writing out a single FASTA for each protein or writing all proteins seq
+    # to a single fasta
+    if len((args.fasta).suffix) == 0:
+        # writing out fasta to a single FASTA in the dir specified by the user
+        fasta_name = f"{genbank_accession}.fasta"
+        fasta_name = args.fasta / fasta_name
+
+        logger.debug(f"Writing out seq to {fasta_name}")
+
+        with open(fasta_name, "w") as fh:
+            fh.write(file_content)
+
+    else:  # add sequences to the FASTA file specified by the user
+
+        logger.debug(f"Writing out seq to {args.fasta}")
+
+        with open(args.fasta, "a") as fh:
+            fh.write(file_content)
+
+    return
+
+
+def write_extracted_fasta_for_db(sequence, genbank_accession, args):
+    """Write out protein sequences to FASTA file for building a BLAST db of all retrieved sequences.
+
+    :param sequence: str, protein sequence
+    :param genbank_accession: str, accession number of the protein sequence in NCBI.GenBank
+    :param args: cmd-line arguments parser
+
+    Return nothing.
+    """
+    fasta_name = f"{args.blastdb}.fasta"
+
+    sequence = "\n".join([sequence[i : i + 60] for i in range(0, len(sequence), 60)])
+    file_content = f">{genbank_accession}\n{sequence}\n"
+
+    with open(fasta_name, "a") as fh:
+        fh.write(file_content)
+
+    return
+
+
 def build_blast_db(args):
     """Build BLAST database of sequences retrieved from GenBank.
 
