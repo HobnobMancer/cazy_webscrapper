@@ -76,12 +76,6 @@ def output_dir(test_dir):
 
 
 @pytest.fixture
-def db_path():
-    db_path = "tests/test_inputs/unit_test_database/unit_test_2021-04-27--11-54-58.db"
-    return db_path
-
-
-@pytest.fixture
 def logs_dir(output_dir):
     path_ = output_dir / "test_webscraper" / "test_logs"
     return path_
@@ -328,7 +322,6 @@ def test_main_db_raises_error(output_dir, cazy_dictionary, taxonomic_filter_dict
 
 def test_main_existing_db_scrape_local_pages(
     output_dir,
-    null_logger,
     cazy_dictionary,
     db_path,
     input_dir,
