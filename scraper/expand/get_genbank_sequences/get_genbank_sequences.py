@@ -40,8 +40,6 @@
 
 
 import logging
-import os
-import sys
 
 import pandas as pd
 
@@ -78,7 +76,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     
     Entrez.email = args.email
 
-    if args.update is not None:
+    if args.update is not None:  # write out logger.info message
         message = f"Update mode {args.update} enabled.\n"
 
         if args.update == "update_only":
@@ -94,7 +92,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
         logger.info(message)
 
-    if args.fasta is not None:
+    if args.fasta is not None:  # build output directorires if necessary
         logger.info("Enabled writing out FASTA files")
 
         # check if passed a path to a file or dir
@@ -120,7 +118,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             
                 file_io.make_output_directory(dir_path, args.force, args.nodelete)
 
-    if args.fasta_only is not None:
+    if args.fasta_only is not None:  # build out dirs if necessary
         logger.info(
             "Enabled writing out FASTA files ONLY\n"
             "Seqs will be retrieved irrespective of the local CAZyme db seq storage status\n"
@@ -165,12 +163,12 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             logger.info(f"Nucking dir for the BLAST db: {args.nodelete}")
             file_io.make_output_directory(dir_path, args.force, args.nodelete)
 
-    if (args.database).suffix == ".json":
+    if (args.database).suffix == ".json":  # retrieving seqs for proteins in json file
         logger.info("CAZy dictionary (JSON file) provided")
         # move to script that handles retrieving sequences for proteins in dict (JSON file)
         err = from_dict.sequences_for_proteins_from_dict(date_today, args)
 
-    else:
+    else:  # retrieve seqs for proteins in db
         logger.info("CAZy database provided")
         # move to script that handles retrieving sequences for proteins in a SQL database
         err = from_sql_db.sequences_for_proteins_from_db(date_today, args)
