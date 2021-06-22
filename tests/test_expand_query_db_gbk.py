@@ -44,14 +44,9 @@ These test are intened to be run from the root of the repository using:
 pytest -v
 """
 
-from scraper.expand import get_genbank_sequences
 import pytest
 
-from argparse import Namespace, ArgumentParser
-from pathlib import Path
-
-from scraper.utilities import parse_configuration
-from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
+from scraper.expand.query_sql_db import query_get_gbk
 
 
 def test_expnd_seq_prim_gbk_class_fams(db_session):
@@ -63,7 +58,7 @@ def test_expnd_seq_prim_gbk_class_fams(db_session):
         "PL": None,
     }
 
-    query_sql_db.get_prim_gnbk_acc_from_clss_fams(db_session, config_data)
+    query_get_gbk.get_prim_gnbk_acc_from_clss_fams(db_session, config_data)
 
 
 def test_expnd_seq_all_gbk_class_fams(db_session):
@@ -75,7 +70,7 @@ def test_expnd_seq_all_gbk_class_fams(db_session):
         "PL": None,
     }
 
-    query_sql_db.get_all_gnbk_acc_from_clss_fams(db_session, config_data)
+    query_get_gbk.get_all_gnbk_acc_from_clss_fams(db_session, config_data)
 
 
 def test_expnd_seq_prim_gbk_class_fams_no_seq(db_session):
@@ -87,7 +82,7 @@ def test_expnd_seq_prim_gbk_class_fams_no_seq(db_session):
         "PL": None,
     }
 
-    query_sql_db.get_prim_gnbk_acc_from_clss_fams_no_seq(db_session, config_data)
+    query_get_gbk.get_prim_gnbk_acc_from_clss_fams_no_seq(db_session, config_data)
 
 
 def test_expnd_seq_all_gbk_class_fams_no_seq(db_session):
@@ -99,43 +94,43 @@ def test_expnd_seq_all_gbk_class_fams_no_seq(db_session):
         "PL": None,
     }
 
-    query_sql_db.get_all_gnbk_acc_from_clss_fams_no_seq(db_session, config_data)
+    query_get_gbk.get_all_gnbk_acc_from_clss_fams_no_seq(db_session, config_data)
 
 
 
 def test_expnd_seq_prim_gbk_update(db_session):
     """Test get_prim_genbank_acc_for_update()"""
 
-    query_sql_db.get_prim_genbank_acc_for_update(db_session)
+    query_get_gbk.get_prim_genbank_acc_for_update(db_session)
 
 
 def test_expnd_seq_all_gbk_update(db_session):
     """Test get_all_genbank_acc_for_update()"""
 
-    query_sql_db.get_all_genbank_acc_for_update(db_session)
+    query_get_gbk.get_all_genbank_acc_for_update(db_session)
 
 
 def test_expnd_seq_prim_gbk_no_swq(db_session):
     """Test get_prim_genbank_accessions_with_no_seq()"""
 
-    query_sql_db.get_prim_genbank_accessions_with_no_seq(db_session)
+    query_get_gbk.get_prim_genbank_accessions_with_no_seq(db_session)
 
 
 def test_expnd_seq_all_gbk_no_seq(db_session):
     """Test get_genbank_accessions_with_no_seq()"""
 
-    query_sql_db.get_genbank_accessions_with_no_seq(db_session)
+    query_get_gbk.get_genbank_accessions_with_no_seq(db_session)
 
 
 def test_expnd_seq_ec_query(db_session):
     """Test query_ec_number()"""
     genbank_accession = "WP_038530530.1"
 
-    query_sql_db.query_ec_number(db_session, genbank_accession)
+    query_get_gbk.query_ec_number(db_session, genbank_accession)
 
 
 def test_expnd_seq_ec_query_remove_EC(db_session):
     """Test query_ec_number() when need to remove 'EC' prefix"""
     genbank_accession = "GAL67220.1"
 
-    query_sql_db.query_ec_number(db_session, genbank_accession)
+    query_get_gbk.query_ec_number(db_session, genbank_accession)
