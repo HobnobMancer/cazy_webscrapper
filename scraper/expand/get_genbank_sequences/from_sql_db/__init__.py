@@ -47,7 +47,7 @@ from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
 from scraper.expand.get_genbank_sequences import ncbi
-from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
+from scraper.expand.query_sql_db import query_get_gbk
 from scraper.sql.sql_orm import get_db_session
 from scraper.sql.sql_interface import log_scrape_in_db
 from scraper.utilities import parse_configuration, file_io
@@ -69,8 +69,7 @@ def sequences_for_proteins_from_db(date_today, args):
     except Exception as err:
         logger.error(
             "Could not connect to local CAZyme database.\n"
-            "The following error was raised:\n"
-            f"{err}\nTerminating program\n"
+            f"The following error was raised:\n{err}\nTerminating program\n"
         )
         sys.exit(1)
 
@@ -82,7 +81,7 @@ def sequences_for_proteins_from_db(date_today, args):
         ec_filters,
     ) = parse_configuration.parse_configuration_for_cazy_database(args)
 
-    if args.fasta_only is not None:
+    if args.fasta_only is None:  # will be adding retrieved sequences to the database
         logger.info("Adding log of sequence retrieval to the local CAZyme database")
         log_scrape_in_db(
             data_addition="GenBank sequences",
@@ -96,6 +95,7 @@ def sequences_for_proteins_from_db(date_today, args):
         )
 
     logger.info("Retrieving GenBank accessions that match provided criteria")
+
     genbank_accessions = get_genbank_accessions(
         args,
         session,
@@ -233,12 +233,14 @@ def get_genbank_accessions(
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
-        if (args.update is not None) or (args.fasta_only):
+        if (args.update is not None) or (args.fasta_only):  # retrieve all GBK records
             if args.update is not None:
                 logger.info("Enabled updating sequences in local CAZyme database")
             else:
                 logger.info("Retrieving protein seqs. Writing to FASTA only, NOT to the db")
-            
+
+             # retrieve all GBK records irrespective if they have a sequence or not
+
             if args.primary:
                 logger.warning(
                     "Retrieving sequences for PRIMARY GenBank accessions that:\n"
@@ -248,7 +250,7 @@ def get_genbank_accessions(
                 (
                     genbank_query_class,
                     genbank_query_family,
-                ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams(
+                ) = query_get_gbk.get_prim_gnbk_acc_from_clss_fams(
                     session,
                     config_dict,
                 )
@@ -262,7 +264,7 @@ def get_genbank_accessions(
                 (
                     genbank_query_class,
                     genbank_query_family,
-                ) = query_sql_db.get_all_gnbk_acc_from_clss_fams(
+                ) = query_get_gbk.get_all_gnbk_acc_from_clss_fams(
                     session,
                     config_dict,
                 )
@@ -280,7 +282,7 @@ def get_genbank_accessions(
                 (
                     genbank_query_class,
                     genbank_query_family,
-                ) = query_sql_db.get_prim_gnbk_acc_from_clss_fams_no_seq(
+                ) = query_get_gbk.get_prim_gnbk_acc_from_clss_fams_no_seq(
                     session,
                     config_dict,
                 )
@@ -293,7 +295,7 @@ def get_genbank_accessions(
                 (
                     genbank_query_class,
                     genbank_query_family,
-                ) = query_sql_db.get_all_gnbk_acc_from_clss_fams_no_seq(
+                ) = query_get_gbk.get_all_gnbk_acc_from_clss_fams_no_seq(
                     session,
                     config_dict,
                 )
@@ -304,23 +306,29 @@ def get_genbank_accessions(
             "prior to apply any taxonomy and EC number filters"
         )
 
-    else:
-        if (args.update) or (args.fasta_only):  # retrieve all GenBank accessions
-            logger.info("Enabled updating sequences in local CAZyme database")
+    else:  # Retrieving CAZymes from all CAZy classes and families
+
+        if (args.update is not None) or (args.fasta_only):  # retrieve all GBK records
+            if args.update is not None:
+                logger.info("Enabled updating sequences in local CAZyme database")
+            else:
+                logger.info("Retrieving protein seqs. Writing to FASTA only, NOT to the db")
+
+            # retrieve all GBK records irrespective if they have a sequence or not
 
             if args.primary:
                 logger.warning(
                     "Retrieving sequences for all PRIMARY GenBank accessions that:\n"
                     "Do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                query_results = query_sql_db.get_prim_genbank_acc_for_update(session)
+                query_results = query_get_gbk.get_prim_genbank_acc_for_update(session)
 
             else:
                 logger.warning(
                     "Retrieving sequences for ALL GenBank accessions that\n"
                     "do not have a sequence in the db OR the sequence has been updated in NCBI"
                 )
-                query_results = query_sql_db.get_all_genbank_acc_for_update(session)
+                query_results = query_get_gbk.get_all_genbank_acc_for_update(session)
 
         else:  # retrieve GenBank accesions of records that don't have a sequence
             logger.info(
@@ -332,14 +340,14 @@ def get_genbank_accessions(
                     "Retrieving sequences for all PRIMARY GenBank accessions that\n"
                     "do not have a sequence in the db"
                 )
-                query_results = query_sql_db.get_prim_genbank_accessions_with_no_seq(session)
+                query_results = query_get_gbk.get_prim_genbank_accessions_with_no_seq(session)
 
             else:
                 logger.warning(
                     "Retrieving sequences for ALL GenBank accessions that\n"
                     "do not have a sequence in the db"
                 )
-                query_results = query_sql_db.get_genbank_accessions_with_no_seq(session)
+                query_results = query_get_gbk.get_genbank_accessions_with_no_seq(session)
             
             logger.info(
                 f"Retrieved {len(query_results)} records from the local CAZyme database\n"
@@ -352,7 +360,7 @@ def get_genbank_accessions(
             "provided using args.accessions"
         )
         accessions_list = (args.accessions).split(",")
-        user_accessions = query_sql_db.get_user_accessions(accessions_list, session)
+        user_accessions = query_get_gbk.get_user_accessions(accessions_list, session)
 
         query_results += user_accessions
     
@@ -366,7 +374,7 @@ def get_genbank_accessions(
             "Retrieving records from the local CAZyme database for accessions "
             "provided using args.accessions_path"
         )
-        user_accessions = query_sql_db.get_user_accessions(accessions_list, session)
+        user_accessions = query_get_gbk.get_user_accessions(accessions_list, session)
 
         query_results += user_accessions
 
@@ -393,9 +401,8 @@ def get_genbank_accessions(
 
     if args.update == "update_only":
         logger.info(
-            f"Checking which records of {len(filtered_query_results)} have no seq in the "
-            "local db and\n"
-            "which have a seq to update"
+            f"Checking which records of {len(filtered_query_results)} records\n"
+            "have no seq in the local db and which have a seq to update"
         )
         
         genbank_accessions = check_if_to_update(
@@ -496,7 +503,7 @@ def parse_genbank_query(
         tax_filtered_genbank_accessions,
         desc="Applying EC number filter",
     ):
-        ec_annotations = query_sql_db.query_ec_number(
+        ec_annotations = query_get_gbk.query_ec_number(
             session,
             query_result.genbank_accession,
         )
