@@ -43,6 +43,7 @@ import logging
 import math
 import sys
 
+from datetime import datetime
 from tqdm import tqdm
 
 from scraper.expand import get_accession_chunks
@@ -61,6 +62,7 @@ def sequences_for_proteins_from_db(date_today, args):
     
     Return nothing.
     """
+    time_stamp = datetime.now().strftime("%Y-%m-%d--%H-%M-%S") 
     logger = logging.getLogger(__name__)
 
     # get database session
@@ -85,7 +87,7 @@ def sequences_for_proteins_from_db(date_today, args):
         logger.info("Adding log of sequence retrieval to the local CAZyme database")
         log_scrape_in_db(
             data_addition="GenBank sequences",
-            time_stamp=f"<Seq addition>",
+            time_stamp=time_stamp,
             config_dict=config_dict,
             taxonomy_filters=taxonomy_filters,
             kingdoms=kingdoms,
