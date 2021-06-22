@@ -142,8 +142,8 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
 
     for record in tqdm(genbank_records, desc="Writing out seqs to FASTA"):
         file_io.write_out_extract_seq_to_fasta(
-            record.sequence, 
-            record.genbank_accession,
+            record[0].sequence, 
+            record[0].genbank_accession,
             args,
         )
 
@@ -152,8 +152,8 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     if (args.blastdb is not None):  # build a local BLAST database
         for record in tqdm(genbank_records, desc="Writing out seqs to FASTA for BLAST db"):
             file_io.write_extracted_fasta_for_db(
-                record.sequence,
-                record.genbank_accession,
+                record[0].sequence,
+                record[0].genbank_accession,
                 args,
             )
 
