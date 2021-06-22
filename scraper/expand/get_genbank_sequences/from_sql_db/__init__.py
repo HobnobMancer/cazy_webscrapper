@@ -49,6 +49,7 @@ from scraper.expand import get_accession_chunks
 from scraper.expand.get_genbank_sequences import ncbi
 from scraper.expand.get_genbank_sequences.from_sql_db import query_sql_db
 from scraper.sql.sql_orm import get_db_session
+from scraper.sql.sql_interface import log_scrape_in_db
 from scraper.utilities import parse_configuration
 
 
@@ -80,6 +81,19 @@ def sequences_for_proteins_from_db(date_today, args):
         kingdoms,
         ec_filters,
     ) = parse_configuration.parse_configuration_for_cazy_database(args)
+
+    if args.fasta_only is not None:
+        logger.info("Adding log of sequence retrieval to the local CAZyme database")
+        log_scrape_in_db(
+            data_addition="GenBank sequences",
+            time_stamp=f"<Seq addition>",
+            config_dict=config_dict,
+            taxonomy_filters=taxonomy_filters,
+            kingdoms=kingdoms,
+            ec_filters=ec_filters,
+            session=session,
+            args=args,
+        )
 
     logger.info("Retrieving GenBank accessions that match provided criteria")
     genbank_accessions = get_genbank_accessions(

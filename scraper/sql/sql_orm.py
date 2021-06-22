@@ -488,6 +488,7 @@ class Log(Base):
     __tablename__ = "logs"
 
     log_id = Column(Integer, primary_key=True)
+    data = Column(String)  # data added to db (CAZy scrape, GenBank seqs)
     date = Column(String)  # date CAZy scrape was initiated
     time = Column(String)  # time scrape was initated
     classes = Column(String)  # CAZy classes scraped

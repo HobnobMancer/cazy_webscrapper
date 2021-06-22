@@ -71,6 +71,7 @@ class SqlInterfaceException(Exception):
 
 
 def log_scrape_in_db(
+    data_addition,
     time_stamp,
     config_dict,
     taxonomy_filters,
@@ -81,6 +82,7 @@ def log_scrape_in_db(
 ):
     """Add a log of scraping CAZy to the local database.
 
+    :param data_addition: str, type of data added to the db (CAZy scrape, GenBank seqs)
     :param time_stamp: str, date and time cazy_webscraper was invoked
     :param config_dict: dict of CAZy classes and families to be scraped
     :param taxonomy_filters: dict of genera, species and strains to restrict the scrape to
@@ -93,7 +95,7 @@ def log_scrape_in_db(
     date = time_stamp[:time_stamp.find("--")]
     time = time_stamp[((time_stamp.find("--")) + 2):].replace("-", ":")
 
-    new_log = sql_orm.Log(date=date, time=time)
+    new_log = sql_orm.Log(data=data_addition, date=date, time=time)
 
     if config_dict is not None:
         # get classes that user named to be scraped
@@ -154,20 +156,37 @@ def log_scrape_in_db(
 
     # retrieve commands from the command line
     cmd_line = ""
-    for cmd in [
-        [args.classes, " --classes '"],
-        [args.families, " --families '"],
-        [args.kingdoms, " --kingdoms"],
-        [args.genera, " --genera '"],
-        [args.species, " --species '"],
-        [args.strains, " --strains '"],
-        [args.ec, " --ec '"],
-        [args.streamline, "--streamline '"],
-    ]:
-        try:
-            cmd_line = cmd_line + cmd[1] + cmd[0] + "'"
-        except TypeError:
-            pass
+    if data_addition == "CAZy scrape":
+        for cmd in [
+            [args.classes, " --classes '"],
+            [args.families, " --families '"],
+            [args.kingdoms, " --kingdoms"],
+            [args.genera, " --genera '"],
+            [args.species, " --species '"],
+            [args.strains, " --strains '"],
+            [args.ec, " --ec '"],
+            [args.streamline, "--streamline '"],
+        ]:
+            try:
+                cmd_line = cmd_line + cmd[1] + cmd[0] + "'"
+            except TypeError:
+                pass
+
+    elif data_addition == "GenBank sequences":
+        for cmd in [
+            [args.classes, " --classes '"],
+            [args.families, " --families '"],
+            [args.kingdoms, " --kingdoms"],
+            [args.genera, " --genera '"],
+            [args.species, " --species '"],
+            [args.strains, " --strains '"],
+            [args.ec, " --ec '"],
+            [args.update, "--update '"],
+        ]:
+            try:
+                cmd_line = cmd_line + cmd[1] + cmd[0] + "'"
+            except TypeError:
+                pass
 
     if len(cmd_line) != 0:
         cmd_line = cmd_line.strip()

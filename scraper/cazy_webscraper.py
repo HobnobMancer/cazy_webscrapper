@@ -184,6 +184,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         # log scraping of CAZy in local db
         logger.info("Add log of scrape to the local CAZyme database")
         sql_interface.log_scrape_in_db(
+            "CAZy scrape",
             time_stamp,
             config_dict,
             taxonomy_filters_dict,
