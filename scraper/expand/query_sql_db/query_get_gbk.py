@@ -460,7 +460,7 @@ def get_user_accessions(accessions_list, session):
             join(Cazyme, (Cazyme.taxonomy_id == Taxonomy.taxonomy_id)).\
             join(Cazymes_Genbanks, (Cazymes_Genbanks.cazyme_id == Cazyme.cazyme_id)).\
             join(Genbank, (Genbank.genbank_id == Cazymes_Genbanks.genbank_id)).\
-            filter(Genbank.genbank_accession == None).\
+            filter(Genbank.genbank_accession == accession).\
             all()
         if genbank_query is not None:
             all_query_results.append(genbank_query)
