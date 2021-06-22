@@ -233,8 +233,11 @@ def get_genbank_accessions(
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
-        if (args.update) or (args.fasta_only):
-            logger.info("Enabled updating sequences in local CAZyme database")
+        if (args.update is not None) or (args.fasta_only):
+            if args.update is not None:
+                logger.info("Enabled updating sequences in local CAZyme database")
+            else:
+                logger.info("Retrieving protein seqs. Writing to FASTA only, NOT to the db")
             
             if args.primary:
                 logger.warning(
@@ -364,9 +367,9 @@ def get_genbank_accessions(
         session,
     )
 
-    if args.update:
+    if args.update == "update_only":
         logger.info(
-            f"Out of {len(filtered_query_results)} records, checking which have no seq in the "
+            f"Checking which records of {len(filtered_query_results)} have no seq in the "
             "local db and\n"
             "which have a seq to update"
         )
@@ -375,6 +378,10 @@ def get_genbank_accessions(
             filtered_query_results,
             args,
         )
+
+    # if args.update == "overwrite" then retrieves sequences for all proteins matching user criteria
+    # and overwrites the data in the local CAZyme database, regardless if there was a seq there or
+    # not, and if the seq had been updated in NCBI since its last retrieval or not
 
     else:
         logger.info(
