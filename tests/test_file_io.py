@@ -312,6 +312,38 @@ def test_write_out_fasta_separate_files(making_output_dir):
     shutil.rmtree(path_)
 
 
+def test_write_out_single_fasta_extracted(making_output_dir):
+    """Test writing out a single FASTA file for extracted protein seqs"""
+    # prepare dir for writing test output
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+    # define path to write test output to
+    fasta_path = path_ / "test.fasta"
+
+    genbank_accession = "test_accession"
+    record = "MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"
+    args = {"args": Namespace(fasta=fasta_path)}
+
+    file_io.write_out_extract_seq_to_fasta(record, genbank_accession, args["args"])
+
+    shutil.rmtree(path_)
+
+
+def test_write_out_fasta_separate_files_extracted(making_output_dir):
+    """Test writing out FASTA file for extracted protein seqs"""
+    # prepare dir for test
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+
+    genbank_accession = "test_accession"
+    record = "MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF"
+    args = {"args": Namespace(fasta=path_)}
+
+    file_io.write_out_extract_seq_to_fasta(record, genbank_accession, args["args"])
+
+    shutil.rmtree(path_)
+
+
 # test writing out fastas in fasta_only mode
 
 
@@ -376,6 +408,24 @@ def test_write_fasta_for_db(making_output_dir):
     args = {"args": Namespace(blastdb=db_path)}
 
     file_io.write_fasta_for_db(record, args["args"])
+
+    shutil.rmtree(path_)
+
+
+def test_write_fasta_for_db_with_extracted_seq(making_output_dir):
+    """Test write_extracted_fasta_for_db()"""
+    # prepare dir for test
+    path_ = making_output_dir / "fasta_test"
+    file_io.make_output_directory(path_, True, False)
+    db_path = path_ / "test_blast_db"
+
+    args = {"args": Namespace(blastdb=db_path)}
+
+    file_io.write_extracted_fasta_for_db(
+        "MKQHKAMIVALIVTAVVAALVTRKDLCEHIRTGQTEVAVAVF",
+        "fake_protein.1",
+        args["args"],
+    )
 
     shutil.rmtree(path_)
 
