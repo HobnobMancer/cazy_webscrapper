@@ -209,7 +209,7 @@ def test_get_acc_update_primary_none(db_session, monkeypatch):
     args_mocker = {'args': Namespace(
         update="update_only",
         primary=True,
-        fasta_only=None,
+        fasta_only="path_path",
         accessions="acc1,acc2",
         accessions_path="path_path_path"
     )}
@@ -249,7 +249,7 @@ def test_get_acc_update_primary(db_session, monkeypatch):
     args_mocker = {'args': Namespace(
         update="update_only",
         primary=True,
-        fasta_only=None,
+        fasta_only="path_path",
         accessions="acc1,acc2",
         accessions_path="path_path_path",
     )}
