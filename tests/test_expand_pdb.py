@@ -138,11 +138,6 @@ def args_outdir(test_dir):
     return args
 
 
-class MockConnectionError:
-    def __init__(self, *args, **kwargs):
-        raise requests.exceptions.ConnectionError
-
-
 # test main()
 
 
@@ -347,6 +342,12 @@ def test_get_sesh_false_path(args_no_db):
     assert pytest_wrapped_e.type == SystemExit
 
 
+def test_get_sesh_false_path_2(args_no_db):
+    """Test get_database_session when the path does not exist"""
+    with pytest.raises(SystemExit):
+        get_pdb_structures.get_database_session(args_no_db["args"])
+
+
 def test_get_sesh_error(args_parser, monkeypatch):
     """Test get_database_session when an error arises when opening the session."""
     
@@ -359,7 +360,11 @@ def test_get_sesh_error(args_parser, monkeypatch):
 
 
 def test_get_session_fail(args_parser, monkeypatch):
-    monkeypatch.setattr(sql_orm, "get_db_session", MockConnectionError)
+    def mock_raise_error(*args, **kawrgs):
+        raise Exception
+
+    monkeypatch.setattr(sql_orm, "get_db_session", mock_raise_error)
+
     get_pdb_structures.get_database_session(args_parser["args"])
 
 
