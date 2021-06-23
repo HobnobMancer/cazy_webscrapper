@@ -293,9 +293,8 @@ def get_user_accessions(accessions_list, session):
             filter(Genbank.genbank_accession == accession).\
             filter(Genbank.sequence != None).\
             all()
-        if genbank_query is not None:
+        if len(genbank_query) == 0:
             all_query_results.append(genbank_query)
-
     if len(all_query_results) == 0:
         logger.warning(
             "No GenBank records in the local CAZyme database were found for the provided accessions"

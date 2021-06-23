@@ -87,7 +87,7 @@ def test_user_accession_empty_extracted(db_session):
     """Test get_user_accessions() when no records are retireved."""
 
     gbks = ["fake", "test"]
-    query_extract_seq.get_user_accessions(gbks, db_session)
+    assert [] == query_extract_seq.get_user_accessions(gbks, db_session)
 
 
 def test_user_accessions_susccess_extracted(db_session):
