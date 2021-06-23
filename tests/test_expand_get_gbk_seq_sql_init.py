@@ -88,7 +88,7 @@ def genbanks_to_parse():
 
     query_result = [genbank, caz_gbk, cazyme, taxonomy, kingdom]
     query_result_na = [Genbank(genbank_accession="NA"), caz_gbk, cazyme, taxonomy, kingdom]
-    query_results = [query_result, query_result, query_result]
+    query_results = [query_result, query_result, query_result, query_result_na]
     
     return query_results
 
