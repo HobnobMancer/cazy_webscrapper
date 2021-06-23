@@ -87,8 +87,12 @@ def get_sequences_for_dict(accessions, args):
                     try:
                         re.match(
                             (
-                                r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
-                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                                r"(\D{3}\d{5,7}\.\d+)|"
+                                r"(\D\d(\D|\d){3}\d)|"
+                                r"((\D\d(\D|\d){3}\d)\.\d)|"
+                                r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)|"
+                                r"((\D\d(\D|\d){3}\d\D(\D|\d){2}\d)\.\d)|"
+                                r"(\D\D_\d{9}\.\d)"
                             ),
                             item,
                         ).group()
@@ -250,8 +254,12 @@ def get_sequences(accessions, args):
                 try:  # check if item is an accession number
                     re.match(
                         (
-                            r"(\D{3}\d{5,7}\.\d+)|(\D\d(\D|\d){3}\d)|"
-                            r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)"
+                            r"(\D{3}\d{5,7}\.\d+)|"
+                            r"(\D\d(\D|\d){3}\d)|"
+                            r"((\D\d(\D|\d){3}\d)\.\d)|"
+                            r"(\D\d(\D|\d){3}\d\D(\D|\d){2}\d)|"
+                            r"((\D\d(\D|\d){3}\d\D(\D|\d){2}\d)\.\d)|"
+                            r"(\D\D_\d{9}\.\d)"
                         ),
                         item,
                     ).group()
