@@ -235,7 +235,7 @@ def get_genbank_accessions(
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
 
-        if (args.update is not None) or (args.fasta_only):  # retrieve all GBK records
+        if (args.update is not None) or (args.fasta_only is not None):  # retrieve all GBK records
             if args.update is not None:
                 logger.info("Enabled updating sequences in local CAZyme database")
             if args.fasta_only is not None:
@@ -310,7 +310,7 @@ def get_genbank_accessions(
 
     else:  # Retrieving CAZymes from all CAZy classes and families
 
-        if (args.update is not None) or (args.fasta_only):  # retrieve all GBK records
+        if (args.update is not None) or (args.fasta_only is not None):  # retrieve all GBK records
             if args.update is not None:
                 logger.info("Enabled updating sequences in local CAZyme database")
             if args.fasta_only is not None:
