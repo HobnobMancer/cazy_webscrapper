@@ -85,8 +85,11 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         sys.exit(1)
 
     if args.fasta is not None:
+        if args.fasta == Path('.'):
+                logger.info(f"Writing out FASTA file {args.fasta} to the current working directory")
+
         # check if passed a path to a file or dir
-        if len((args.fasta).suffix) == 0:  # passed path to a dir
+        elif len((args.fasta).suffix) == 0:  # passed path to a dir
             logger.info(f"Building directory for FASTA files: {args.fasta}")
             logger.info(f"Writing out to dir if already exists: {args.force}")
             logger.info(f"Nucking dir for the FASTA file: {args.nodelete}")
@@ -207,7 +210,7 @@ def get_genbank_records(
     """
     logger = logging.getLogger(__name__)
 
-    if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
+    if config_dict is not None:  # there are specific CAZy classes/families to retrieve sequences for
 
         if args.primary:
             logger.warning(
