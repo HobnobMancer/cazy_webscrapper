@@ -200,6 +200,27 @@ def test_add_data_to_protein_record(db_session, monkeypatch):
     )
 
 
+
+def test_add_data_to_protein_record_subfam(db_session, monkeypatch):
+    """Test add_data_to_protein_record()."""
+    def mock_no_return(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(add_cazyme_data, "add_cazy_subfamily", mock_no_return)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_no_return)
+
+    add_cazyme_data.add_data_to_protein_record(
+        Cazyme(cazyme_name="test_cazyme"),
+        "GH3_1",
+        db_session,
+        ec_numbers=["EC number", "ec number"],
+        gbk_nonprimary=["gen1", "gen2"],
+        uni_primary=["primary_uni"],
+        uni_nonprimary=["uni1", "uni2"],
+        pdb_accessions=["pdb1", "pdb2"],
+    )
+
+
 # Unit tests for add_cazy_family
 
 
@@ -362,6 +383,20 @@ def test_finding_multiple_ecs(db_session):
     """Testing handling when multiple duplicate EC#s are found."""
 
     cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 50).all()[0]
+
+    ec = ["duplicate_EC"]
+
+    add_cazyme_data.add_ec_numbers(
+        ec,
+        cazyme,
+        db_session,
+    )
+
+
+def test_finding_multiple_ecs_rel(db_session):
+    """Testing handling when multiple duplicate EC#s are found."""
+
+    cazyme = db_session.query(Cazyme).filter(Cazyme.cazyme_id == 51).all()[0]
 
     ec = ["duplicate_EC"]
 
