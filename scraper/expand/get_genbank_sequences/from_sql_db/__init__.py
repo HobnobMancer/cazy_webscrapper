@@ -129,7 +129,7 @@ def sequences_for_proteins_from_db(date_today, args):
     # args.epost=size of chunks
 
     accessions_lists_for_individual_queries = []
-
+    logger.info("Preparing to barch query NCBI")
     for accession_list in tqdm(
         get_accession_chunks(genbank_accessions, args.epost),
         desc="Batch retrieving sequences from NCBI",
@@ -171,6 +171,7 @@ def sequences_for_proteins_from_db(date_today, args):
                 accessions_lists_for_individual_queries.append(accession_list)
 
     if len(accessions_lists_for_individual_queries) != 0:
+        logger.info("Individually querying NCBI with accessions that raised errors previously")
         for accession_list in tqdm(
             accessions_lists_for_individual_queries,
             desc="Performing individual queries for records that previously raised errors",
@@ -234,6 +235,7 @@ def get_genbank_accessions(
     logger = logging.getLogger(__name__)
 
     if config_dict:  # there are specific CAZy classes/families to retrieve sequences for
+        logger.info("Retrieving GenBank accessions for CAZymes in specific class/(sub)fams")
 
         if (args.update is not None) or (args.fasta_only is not None):  # retrieve all GBK records
             if args.update is not None:
@@ -309,6 +311,7 @@ def get_genbank_accessions(
         )
 
     else:  # Retrieving CAZymes from all CAZy classes and families
+        logger.info("CAZy class/(sub)fam filter not applied to accession retrieval")
 
         if (args.update is not None) or (args.fasta_only is not None):  # retrieve all GBK records
             if args.update is not None:
@@ -450,6 +453,8 @@ def parse_genbank_query(
     Return list of GenBank records from the query results that meet the user's criteria.
     """
     logger = logging.getLogger(__name__)
+
+    logger.info("Applying additional taxonomy and EC number filters is provided")
 
     tax_filtered_genbank_accessions = []
 
