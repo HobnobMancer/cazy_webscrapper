@@ -284,7 +284,7 @@ def get_genbank_records(
             "Retrieving records from the local CAZyme database for accessions "
             "provided using args.accessions_path"
         )
-        user_accessions = query_extract_seq.get_user_acceget_user_accessions_with_seqssions(
+        user_accessions = query_extract_seq.get_user_accessions_with_seq(
             accessions_list,
             session,
         )

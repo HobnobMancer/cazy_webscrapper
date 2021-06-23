@@ -52,8 +52,13 @@ from pathlib import Path
 
 from scraper import utilities
 from scraper.expand.extract_db_sequences import extract_db_sequences
+from scraper.expand.query_sql_db import query_extract_seq
+from scraper.expand.get_genbank_sequences import from_sql_db
 from scraper.sql.sql_orm import Genbank
 from scraper.utilities import file_io, parsers, parse_configuration
+
+
+# test main()
 
 
 def test_main_both_none(monkeypatch):
@@ -165,3 +170,25 @@ def test_main_output_files(monkeypatch):
     monkeypatch.setattr(file_io, "build_blast_db", mock_build_db)
 
     extract_db_sequences.main()
+
+
+# test get_genbank_records()
+
+
+def test_get_acc_config_prim(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is True"""
+    config_dict = {}
+
+    args_dict = {"args": Namespace(primary=True, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]], [[genbank], [genbank]]
+    
+    def mock_acc_file(*args, **kwargs):
+        return [1,2,3,4]
+    
+    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)

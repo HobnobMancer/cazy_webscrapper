@@ -56,7 +56,7 @@ from scraper.sql.sql_orm import (
 # Retrieve all records from specific CAZy classes and families
 
 
-def get_prim_gnbk_acc_from_clss_fam_with_seq(session, config_dict):
+def get_prim_gnbk_acc_from_clss_fams_with_seq(session, config_dict):
     """Retrieve Primary GenBank accession and associated Taxonomy and EC number records of CAZymes.
 
     :param session: open SQL database session
@@ -271,7 +271,7 @@ def get_genbank_accessions_with_seq(session):
     return genbank_query
 
 
-def get_user_accessions(accessions_list, session):
+def get_user_accessions_with_seq(accessions_list, session):
     """Retrieve GenBank records from the local CAZyme database that contain an accession from a user
     specified list of GenBank accessions.
 
