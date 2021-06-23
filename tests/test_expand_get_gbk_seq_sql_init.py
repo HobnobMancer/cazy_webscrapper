@@ -64,6 +64,7 @@ def args_fasta_only():
         fasta_only=Path("fasta_only_path"),
         database=Path("db.db"),
         epost=4,
+        update="update_only",
     )}
     return args
 
