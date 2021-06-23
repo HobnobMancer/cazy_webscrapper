@@ -45,6 +45,7 @@ pytest -v
 """
 
 
+from re import M
 import pytest
 
 from argparse import Namespace, ArgumentParser
@@ -313,6 +314,15 @@ def test_extrct_get_acc_config_prim(monkeypatch):
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
 
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )
+
 
 def test_extrct_get_acc_config_prim_no_acc(monkeypatch):
     """Test get_genbank_records(), config_dict provided, primary is True"""
@@ -322,7 +332,7 @@ def test_extrct_get_acc_config_prim_no_acc(monkeypatch):
 
     def mock_db_query(*args, **kwargs):
         genbank = Genbank(genbank_accession="accession")
-        return []
+        return [], []
     
     def mock_acc_file(*args, **kwargs):
         return []
@@ -331,6 +341,15 @@ def test_extrct_get_acc_config_prim_no_acc(monkeypatch):
     monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )
 
 
 def test_extrct_get_acc_config_all(monkeypatch):
@@ -346,10 +365,19 @@ def test_extrct_get_acc_config_all(monkeypatch):
     def mock_acc_file(*args, **kwargs):
         return [1,2,3,4]
     
-    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_all_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
     monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )
 
 
 def test_extrct_get_acc_no_config_prim(monkeypatch):
@@ -365,10 +393,19 @@ def test_extrct_get_acc_no_config_prim(monkeypatch):
     def mock_acc_file(*args, **kwargs):
         return [1,2,3,4]
     
-    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_prim_genbank_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )
 
 
 def test_extrct_get_acc_no_config_all(monkeypatch):
@@ -384,7 +421,16 @@ def test_extrct_get_acc_no_config_all(monkeypatch):
     def mock_acc_file(*args, **kwargs):
         return [1,2,3,4]
     
-    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_genbank_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )
