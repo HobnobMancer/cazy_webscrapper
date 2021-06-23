@@ -490,6 +490,48 @@ def test_get_kingdoms_none(args_config_cmd):
     parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
 
 
+def test_get_kingdoms_no_config_dict(args_config_cmd):
+    """Test get_kingdoms no config file is given."""
+    raw_config_dict = None
+    parse_configuration.get_kingdoms(args_config_cmd['args'], raw_config_dict)
+
+
+def test_get_kingdoms_no_viable_kngs():
+    """Test get_kingdoms no valid kingdoms are provided."""
+    raw_config_dict = {'kingdoms': 'aaa'}
+    args_dict = {
+        "args": Namespace(
+            config=None,
+            classes=None,
+            families=None,
+            genera=None,
+            species=None,
+            strains=None,
+            kingdoms="aaa,bbb,ccc",
+            ec=None,
+        )
+    }
+    parse_configuration.get_kingdoms(args_dict['args'], raw_config_dict)
+
+
+def test_get_kingdoms_all_kngs():
+    """Test get_kingdoms no kingdoms are provided."""
+    raw_config_dict = None
+    args_dict = {
+        "args": Namespace(
+            config=None,
+            classes=None,
+            families=None,
+            genera=None,
+            species=None,
+            strains=None,
+            kingdoms=None,
+            ec=None,
+        )
+    }
+    parse_configuration.get_kingdoms(args_dict['args'], raw_config_dict)
+
+
 # test get_cazy_dict_std_names()
 
 
@@ -778,3 +820,33 @@ def test_parse_expand_config_dict(args_config_file, raw_config_dict, monkeypatch
     monkeypatch.setattr(parse_configuration, "get_cmd_defined_fams_classes", mock_get_config)
 
     parse_configuration.parse_configuration_for_cazy_dict(args_config_file['args'])
+
+
+def test_parse_expand_config_dict_2(args_config_file, raw_config_dict, monkeypatch):
+    """Test parse_configuration_for_cazy_dict()"""
+
+    def mock_std_names(*args, **kwargs):
+        return raw_config_dict, ['classes']
+    
+    def mock_get_config(*args, **kwargs):
+        return raw_config_dict
+    
+    monkeypatch.setattr(parse_configuration, "get_cazy_dict_std_names", mock_std_names)
+    monkeypatch.setattr(parse_configuration, "get_yaml_configuration", mock_get_config)
+    monkeypatch.setattr(parse_configuration, "get_cmd_defined_fams_classes", mock_get_config)
+
+    args_dict = {
+        "args": Namespace(
+            config=None,
+            classes="PL,GT",
+            families=None,
+            genera=None,
+            species=None,
+            strains=None,
+            kingdoms=None,
+            ec=None,
+            cazy_synonyms=None,
+        )
+    }
+
+    parse_configuration.parse_configuration_for_cazy_dict(args_dict['args'])

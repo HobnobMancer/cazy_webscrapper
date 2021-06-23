@@ -652,6 +652,11 @@ def parse_configuration_for_cazy_dict(args):
         'Carbohydrate Esterases (CEs)': [],
         'Auxiliary Activities (AAs)': [],
         'Carbohydrate-Binding Modules (CBMs)': [],
+        'genera': [],
+        'species': [],
+        'strains': [],
+        'kingdoms': [],
+        'ECs': [],
     }
     cmd_config = config_dict
 
