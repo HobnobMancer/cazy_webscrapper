@@ -387,7 +387,7 @@ def test_get_acc_update_primary_none_no_config(db_session, monkeypatch):
 
     monkeypatch.setattr(query_get_gbk, "get_prim_genbank_acc_for_update", mock_query_db)
 
-    args_mocker = {'args': Namespace(update="update_only", primary=True, fasta_only=None, accessions=None, accessions_path=None)}
+    args_mocker = {'args': Namespace(update="update_only", primary=True, fasta_only="path_path", accessions=None, accessions_path=None)}
 
     from_sql_db.get_genbank_accessions(
         args_mocker["args"],
