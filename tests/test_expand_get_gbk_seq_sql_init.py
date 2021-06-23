@@ -236,9 +236,12 @@ def test_get_acc_update_primary(db_session, monkeypatch):
     def mock_retrieve_accessions(*args, **kwargs):
         return [[genbank_1], [genbank_2]]
     
+    def mock_accession(*args, **kwargs):
+        return ["GBK123456", "GBK123456"]
+    
     monkeypatch.setattr(query_get_gbk, "get_prim_gnbk_acc_from_clss_fams", mock_query_db)
     monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_retrieve_accessions)
-    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_retrieve_accessions)
+    monkeypatch.setattr(from_sql_db, "check_if_to_update", mock_accession)
     monkeypatch.setattr(file_io, "get_accessions_from_file", mock_retrieve_accessions)
     monkeypatch.setattr(query_get_gbk, "get_user_accessions", mock_retrieve_accessions)
 
