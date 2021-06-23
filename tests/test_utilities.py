@@ -124,3 +124,13 @@ def test_pdb_struc_parser():
 def test_pdb_struc_parser_arsv():
     """Test building the parser when argsv is not None"""
     parsers.build_pdb_structures_parser(["database", "pdb"])
+
+
+def test_extract_seq_parser():
+    """Test building the parser when argsv is None"""
+    parsers.build_genbank_sequences_parser()
+
+
+def test_extract_seq_parser_arsv():
+    """Test building the parser when argsv is not None"""
+    parsers.build_genbank_sequences_parser(["database", "pdb"])
