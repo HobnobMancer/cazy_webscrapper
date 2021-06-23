@@ -88,16 +88,22 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         config_logger(args)
     
     # validate PDB file choices
+    logger.info("Checking valid file types were provided")
     validate_pdb_file_types(args)
 
+    logger.info("Opening session to local CAZyme database")
     session = get_database_session(args)
 
     # create output directory
     if args.outdir is not None:
+        logger.info(f"Preparing output directory {args.outdir}")
+        logger.info(f"Force writing in outfir if already exists: {args.force}")
+        logger.info(f"Delete content in outdir: {args.nodelete}")
         file_io.make_output_directory(args.outdir, args.force, args.nodelete)
     # else write files to the CWD
 
     # get list of all PDB accessions to retrieve structure files for
+    logger.info("Preparing to retrieve PDB accessions from local CAZyme database")
     pdb_accessions = get_pdb_accessions(args=args, session=session)
 
     if len(pdb_accessions) == 0:
