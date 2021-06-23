@@ -236,7 +236,7 @@ def get_all_gnbk_acc_from_clss_fams_with_seq(session, config_dict):
 # Retrieve records from all CAZy classes and families
 
 
-def get_prim_genbank_accessions_no_seq(session):
+def get_prim_genbank_accessions_with_seq(session):
     """Retrieve all PRIMARY GenBank accessions that have a sequence in the database
 
     :param session: open SQL database session
