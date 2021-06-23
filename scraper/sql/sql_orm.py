@@ -528,12 +528,17 @@ def build_db(time_stamp, args):
         # write to cwd, this is deleted in scrape is successful
         cwd = os.getcwd()
         db_path = cwd + f"cazy_scrape_temp_{time_stamp}.db"
+        db_path = f"sqlite+pysqlite:///{db_path}"
+    
+    elif args.output == "memory":
+        db_path = 'sqlite://'
 
     else:
         # write to specified output directory
         db_path = args.output / f"cazy_scrape_{time_stamp}.db"
+        db_path = f"sqlite+pysqlite:///{db_path}"
 
-    engine = create_engine(f"sqlite+pysqlite:///{db_path}", echo=False)
+    engine = create_engine(db_path, echo=False)
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 

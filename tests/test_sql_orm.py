@@ -53,6 +53,7 @@ from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
 
+from sqlalchemy import String
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from scraper.utilities import file_io
@@ -68,6 +69,9 @@ from scraper.sql.sql_orm import (
     Pdb,
     Log,
     Cazymes_Genbanks,
+    ReString,
+    sqlite_engine_connect,
+    sqlite_regex_match,
 )
 
 
@@ -113,6 +117,21 @@ def test_regex_search(db_session):
         all()
 
     assert len(class_query) == 26
+
+
+def test_regex_search_in_mem_db():
+    """Test a regular expression search can be performed successfully."""
+
+    args_dict = {'args': Namespace(output="memory")}
+    mem_session = sql_orm.build_db("time_stamp", args_dict['args'])
+
+    cazy_class = "PL"
+    class_query = mem_session.query(Cazyme.cazyme_id).\
+        join(CazyFamily, Cazyme.families).\
+        filter(CazyFamily.family.regexp(rf"{cazy_class}\d+")).\
+        all()
+
+    assert len(class_query) == 0
 
 
 def test_calling_class_instances():
@@ -180,3 +199,11 @@ def test_build_db_stdout():
     args = {"args": Namespace(output=sys.stdout)}
     sql_orm.build_db("time_stamp", args["args"])
     shutil.rmtree(path_)
+
+
+def test_restring():
+    ReString(String("mystring"))
+
+
+def test_enging_connect_no_instance():
+    sqlite_engine_connect(None, None)
