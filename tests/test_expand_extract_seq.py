@@ -61,7 +61,7 @@ from scraper.utilities import file_io, parsers, parse_configuration
 # test main()
 
 
-def test_main_both_none(monkeypatch):
+def test_extrct_main_both_none(monkeypatch):
     """Test main FASTA and BLASTDB are None"""
 
     db_path = Path("cazy_database.db")
@@ -112,7 +112,7 @@ def test_main_both_none(monkeypatch):
         extract_db_sequences.main()
 
 
-def test_main_output_files(monkeypatch):
+def test_extrct_main_output_files(monkeypatch):
     """Test main when writing proteins to one fasta file"""
 
     db_path = Path("cazy_database.db")
@@ -175,11 +175,87 @@ def test_main_output_files(monkeypatch):
 # test get_genbank_records()
 
 
-def test_get_acc_config_prim(monkeypatch):
+def test_extrct_get_acc_config_prim(monkeypatch):
     """Test get_genbank_records(), config_dict provided, primary is True"""
     config_dict = {}
 
     args_dict = {"args": Namespace(primary=True, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]], [[genbank], [genbank]]
+    
+    def mock_acc_file(*args, **kwargs):
+        return [1,2,3,4]
+    
+    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+
+def test_extrct_get_acc_config_prim_no_acc(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is True"""
+    config_dict = {}
+
+    args_dict = {"args": Namespace(primary=True, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return []
+    
+    def mock_acc_file(*args, **kwargs):
+        return []
+    
+    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+
+def test_extrct_get_acc_config_all(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is False"""
+    config_dict = {}
+
+    args_dict = {"args": Namespace(primary=False, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]], [[genbank], [genbank]]
+    
+    def mock_acc_file(*args, **kwargs):
+        return [1,2,3,4]
+    
+    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+
+def test_extrct_get_acc_no_config_prim(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is True"""
+    config_dict = None
+
+    args_dict = {"args": Namespace(primary=True, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]], [[genbank], [genbank]]
+    
+    def mock_acc_file(*args, **kwargs):
+        return [1,2,3,4]
+    
+    monkeypatch.setattr(query_extract_seq, "get_prim_gnbk_acc_from_clss_fams_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+
+def test_extrct_get_acc_no_config_all(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is False"""
+    config_dict = None
+
+    args_dict = {"args": Namespace(primary=False, accessions="acc,acc", accessions_path="acc")}
 
     def mock_db_query(*args, **kwargs):
         genbank = Genbank(genbank_accession="accession")
