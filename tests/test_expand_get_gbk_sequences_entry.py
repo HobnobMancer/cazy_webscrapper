@@ -75,6 +75,7 @@ def test_main_db(monkeypatch):
         blastdb=Path("blastdb_dir/dir1/dir2"),
         force=False,
         nodelete=False,
+        update="uptate_only",
     )}
 
     def mock_building_parser(*args, **kwargs):
@@ -131,6 +132,7 @@ def test_main_fastas_into_cwd(monkeypatch):
         blastdb=Path("blastdb_dir/dir1/dir2"),
         force=False,
         nodelete=False,
+        update="overwrite",
     )}
 
     def mock_building_parser(*args, **kwargs):
@@ -187,6 +189,7 @@ def test_main_dict(monkeypatch):
         blastdb=Path("blastdb_dir/dir1/dir2"),
         force=False,
         nodelete=False,
+        update=None,
     )}
 
     def mock_building_parser(*args, **kwargs):
