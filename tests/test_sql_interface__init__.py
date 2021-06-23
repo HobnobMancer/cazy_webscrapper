@@ -474,11 +474,11 @@ def test_streamline_addition(db_session, monkeypatch):
 
     cazyme_name = 'ulvan lyase (BN863_22190)'
     primary_genbank = 'WP_038530530.1'
-    gbk_nonprimary = ['CDF79931.1', f'nonprimary_{time_stamp}']
-    ec_numbers = [f'EC{time_stamp}']
+    gbk_nonprimary = ['CDF79931.1', f'nonprimary_{time_stamp}', f'nonnonprimary_{time_stamp}']
+    ec_numbers = [f'EC{time_stamp}', f'ec{time_stamp}']
     uni_primary = [f'primaryUNI{time_stamp}']
-    uni_nonprimary = [f'nonprimaryUNI{time_stamp}']
-    pdb_accessions = [f'PDB{time_stamp}']
+    uni_nonprimary = [f'nonprimaryUNI{time_stamp}', f'nonnonprimaryUNI{time_stamp}']
+    pdb_accessions = [f'PDB{time_stamp}', f'pdb{time_stamp}']
     family = f"FAM{time_stamp}"
     source_organism = "Formosa agariphila KMM 3901"
     kingdom = "Bacteria"
@@ -490,9 +490,9 @@ def test_streamline_addition(db_session, monkeypatch):
     
     monkeypatch.setattr(sql_interface, "add_nonprimary_gbk_accessions", mock_none)
     monkeypatch.setattr(sql_interface, "add_cazy_family", mock_none)
-    monkeypatch.setattr(sql_interface, "add_ec_numbers", mock_none)
-    monkeypatch.setattr(sql_interface, "add_uniprot_accessions", mock_none)
-    monkeypatch.setattr(sql_interface, "add_pdb_accessions", mock_none)
+    monkeypatch.setattr(add_cazyme_data, "add_ec_numbers", mock_none)
+    monkeypatch.setattr(add_cazyme_data, "add_uniprot_accessions", mock_none)
+    monkeypatch.setattr(add_cazyme_data, "add_pdb_accessions", mock_none)
 
     sql_interface.streamline_addition(
         cazyme_name,
