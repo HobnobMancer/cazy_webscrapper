@@ -108,6 +108,9 @@ def get_accessions_from_file(args):
     try:
         with open(args.accessions_path, "r") as fh:
             lines = fh.read().splitlines()
+
+        return [acc.replace("\n","") for acc in lines]
+
     except FileNotFoundError:
         logger.error(
             "Could not find the accessions file at:\n"
@@ -115,7 +118,7 @@ def get_accessions_from_file(args):
             "Please check the path is correct.\n"
         )
     
-    return [acc.replace("\n","") for acc in lines]
+        return []
 
 
 def write_out_fasta(record, genbank_accession, args):
