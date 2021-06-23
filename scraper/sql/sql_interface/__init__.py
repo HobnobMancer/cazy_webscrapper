@@ -250,6 +250,7 @@ def add_protein_to_db(
 
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
     error_message = None
     # Each unique protein is identified by a unique primary GenBank accession
     try:
@@ -262,6 +263,7 @@ def add_protein_to_db(
 
         # check if assuming for each family a protein appears, it's data is identical
         if args.streamline is not None:
+            logger.info("Protein added to db before, streamlining adding additional annotations")
             streamline_addition(
                 cazyme_name,
                 family,
@@ -293,6 +295,7 @@ def add_protein_to_db(
 
         return
 
+    logger.info("Add a new protein to the db")
     error_message = add_new_protein_to_db(
         cazyme_name,
         family,
@@ -560,6 +563,9 @@ def add_deleted_cazy_family(family, session):
 
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
+    logger.info(f"Adding deleted/empty CAZy family {family} to db")
+
     if family.find("_") != -1:
         subfamily = family[:family.find("_")]
         deleted_fam = CazyFamily(family=family[:family.find("_")], subfamily=subfamily)
