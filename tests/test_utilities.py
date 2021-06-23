@@ -128,9 +128,9 @@ def test_pdb_struc_parser_arsv():
 
 def test_extract_seq_parser():
     """Test building the parser when argsv is None"""
-    parsers.build_genbank_sequences_parser()
+    parsers.build_extract_sequences_parser()
 
 
 def test_extract_seq_parser_arsv():
     """Test building the parser when argsv is not None"""
-    parsers.build_genbank_sequences_parser(["database", "pdb"])
+    parsers.build_extract_sequences_parser(["database"])
