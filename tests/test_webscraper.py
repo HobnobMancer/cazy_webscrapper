@@ -557,7 +557,6 @@ def test_main_new_database(output_dir, cazy_dictionary, monkeypatch):
     file_io.make_output_directory(output_dir, True, False)
 
 
-
 def test_main_dict(output_dir, cazy_dictionary, monkeypatch):
     """Test main() when a dict/json file is created"""
 
@@ -626,6 +625,74 @@ def test_main_dict(output_dir, cazy_dictionary, monkeypatch):
     # delete newly build db
     file_io.make_output_directory(output_dir, True, False)
 
+
+def test_main_new_database_in_cwd(output_dir, cazy_dictionary, monkeypatch):
+    """Test main() when a new database_file is created"""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="cazy_webscraper.py",
+            usage=None,
+            description="Scrape the CAZy database",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    output_path = output_dir / "test_webscraper" / "temp_dir_for_db"
+    os.makedirs(output_path, exist_ok=True)
+
+    def mock_parser(*args, **kwargs):
+        parser = Namespace(
+            config=None,
+            classes=None,
+            database=None,
+            ec=None,
+            force=True,
+            families=None,
+            genera=None,
+            get_pages=False,
+            kingdoms=None,
+            log=None,
+            nodelete=False,
+            output=".",
+            retries=10,
+            scrape_files=None,
+            subfamilies=True,
+            species=None,
+            strains=None,
+            streamline="streamline_args",
+            timeout=45,
+            verbose=False,
+        )
+        return parser
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_retrieving_configuration(*args, **kwargs):
+        # excluded_classes, config_dict, cazy_dict, taxonomy_filter, kingdoms, ec_filter
+        return None, None, cazy_dictionary, taxonomic_filter_dict, [], []
+
+    def mock_filter_set(*args, **kwargs):
+        return set()
+
+    def mock_none(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(parse_configuration, "parse_configuration", mock_retrieving_configuration)
+    monkeypatch.setattr(cazy_webscraper, "get_filter_set", mock_filter_set)
+    monkeypatch.setattr(parse_configuration, "create_streamline_scraping_warning", mock_none)
+    monkeypatch.setattr(sql.sql_interface, "log_scrape_in_db", mock_none)
+    monkeypatch.setattr(cazy_webscraper, "get_cazy_data", mock_none)
+
+    cazy_webscraper.main(["argv"])
+
+    # delete newly build db
+    file_io.make_output_directory(output_dir, True, False)
 
 
 # test get_filter_set
