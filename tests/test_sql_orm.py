@@ -122,7 +122,7 @@ def test_regex_search(db_session):
 def test_regex_search_in_mem_db():
     """Test a regular expression search can be performed successfully."""
 
-    args_dict = {'args': Namespace(output="memory")}
+    args_dict = {'args': Namespace(output=sys.stdout)}
     mem_session = sql_orm.build_db("time_stamp", args_dict['args'])
 
     cazy_class = "PL"

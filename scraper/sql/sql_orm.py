@@ -525,13 +525,12 @@ def build_db(time_stamp, args):
     logger.info("Building empty db to store data")
 
     if args.output is sys.stdout:
-        # write to cwd, this is deleted in scrape is successful
+        db_path = 'sqlite://'
+    
+    elif args.output == ".":
         cwd = os.getcwd()
         db_path = cwd + f"cazy_scrape_temp_{time_stamp}.db"
         db_path = f"sqlite+pysqlite:///{db_path}"
-    
-    elif args.output == "memory":
-        db_path = 'sqlite://'
 
     else:
         # write to specified output directory
