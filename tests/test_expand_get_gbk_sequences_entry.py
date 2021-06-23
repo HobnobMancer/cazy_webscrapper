@@ -75,7 +75,7 @@ def test_main_db(monkeypatch):
         blastdb=Path("blastdb_dir/dir1/dir2"),
         force=False,
         nodelete=False,
-        update="uptate_only",
+        update="update_only",
     )}
 
     def mock_building_parser(*args, **kwargs):

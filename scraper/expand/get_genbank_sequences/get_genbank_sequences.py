@@ -74,6 +74,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         logger = logging.getLogger(__package__)
         config_logger(args)
     
+    logger.info("Providing user email address to NCBI.Entrez")
     Entrez.email = args.email
 
     if args.update is not None:  # write out logger.info message
@@ -174,6 +175,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         err = from_sql_db.sequences_for_proteins_from_db(date_today, args)
 
     if (args.blastdb is not None) and (err is None):  # build a local BLAST database
+        logger.info("Preparing to build BLAST database")
         file_io.build_blast_db(args)
     
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
