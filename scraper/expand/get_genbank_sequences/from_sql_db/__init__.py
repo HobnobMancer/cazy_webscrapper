@@ -238,7 +238,7 @@ def get_genbank_accessions(
         if (args.update is not None) or (args.fasta_only):  # retrieve all GBK records
             if args.update is not None:
                 logger.info("Enabled updating sequences in local CAZyme database")
-            else:
+            if args.fasta_only is not None:
                 logger.info("Retrieving protein seqs. Writing to FASTA only, NOT to the db")
 
              # retrieve all GBK records irrespective if they have a sequence or not
