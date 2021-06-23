@@ -453,3 +453,23 @@ def test_build_db(making_output_dir, monkeypatch):
 
     # delete all
     shutil.rmtree(temp_dir)
+
+
+def test_open_accessions_list_no_file(test_dir):
+    """Test get_accessions_from_file()"""
+
+    acc_path = test_dir / "fake_path.txt"
+    args_dict = {"args": Namespace(accessions_path=acc_path)}
+
+    assert [] == file_io.get_accessions_from_file(args_dict["args"])
+
+
+def test_open_accessions_list(test_dir):
+    """Test get_accessions_from_file()"""
+
+    acc_path = test_dir / "test_inputs"
+    acc_path = acc_path / "test_inputs_fileio"
+    acc_path = acc_path / "accessions_list.txt"
+    args_dict = {"args": Namespace(accessions_path=acc_path)}
+
+    assert ['accession1', 'accession2', 'accession3'] == file_io.get_accessions_from_file(args_dict["args"])
