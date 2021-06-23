@@ -46,6 +46,7 @@ pytest -v
 
 
 import pytest
+import requests
 
 from argparse import Namespace, ArgumentParser
 
@@ -137,6 +138,11 @@ def args_outdir(test_dir):
     return args
 
 
+class MockConnectionError:
+    def __init__(self, *args, **kwargs):
+        raise requests.exceptions.ConnectionError
+
+
 # test main()
 
 
@@ -168,6 +174,49 @@ def test_main_args(args_parser, monkeypatch):
     def mock_pdb_acc(*args, **kwargs):
         acc1 = {'acc': Namespace(pdb_accession="accession1")}
         return [acc1['acc']]
+    
+    def mock_download(*args, **kwargs):
+        return
+
+    monkeypatch.setattr(parsers, "build_pdb_structures_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(get_pdb_structures, "get_database_session", mock_get_sess)
+    monkeypatch.setattr(file_io, "make_output_directory", mock_making_output_dir)
+    monkeypatch.setattr(get_pdb_structures, "get_pdb_accessions", mock_pdb_acc)
+    monkeypatch.setattr(get_pdb_structures, "download_pdb_structures", mock_download)
+    
+    get_pdb_structures.main()
+
+
+def test_main_args_no_pdb_accessions(args_parser, monkeypatch):
+    """Test main() when args is None."""
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="get_pdb_structures",
+            usage=None,
+            description="Retrieve structures for CAZymes",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    def mock_parser(*args, **kwargs):
+        return args_parser["args"]
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_get_sess(*args, **kwargs):
+        return
+
+    def mock_making_output_dir(*args, **kwargs):
+        return
+    
+    def mock_pdb_acc(*args, **kwargs):
+        acc1 = {'acc': Namespace(pdb_accession="accession1")}
+        return []
     
     def mock_download(*args, **kwargs):
         return
@@ -302,10 +351,15 @@ def test_get_sesh_error(args_parser, monkeypatch):
     """Test get_database_session when an error arises when opening the session."""
     
     def mock_raise_error(*args, **kawrgs):
-        return ValueError
+        raise ValueError
 
     monkeypatch.setattr(sql_orm, "get_db_session", mock_raise_error)
 
+    get_pdb_structures.get_database_session(args_parser["args"])
+
+
+def test_get_session_fail(args_parser, monkeypatch):
+    monkeypatch.setattr(sql_orm, "get_db_session", MockConnectionError)
     get_pdb_structures.get_database_session(args_parser["args"])
 
 
