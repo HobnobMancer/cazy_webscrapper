@@ -108,6 +108,19 @@ def args_get_cazy_data_stdout(logs_dir):
 
 
 @pytest.fixture
+def args_get_cazy_data_cwd(logs_dir):
+    argsdict = {
+        "args": Namespace(
+            subfamilies=True,
+            retries=2,
+            timeout=5,
+            output=".",
+        )
+    }
+    return argsdict
+
+
+@pytest.fixture
 def config_dict():
     configuration_dict = {
         "Glycoside Hydrolases (GHs)": ["GH3"],
@@ -906,5 +919,51 @@ def test_get_cazy_data_config_data_kingdom_stdout(
         time_stamp="timestamp",
         session={},
         args=args_get_cazy_data_stdout["args"],
+    )
+    file_io.make_output_directory(logs_dir, True, False)
+
+
+def test_get_cazy_data_config_data_kingdom_cwd(
+    time_stamp,
+    cazy_home_url,
+    cazy_dictionary,
+    args_get_cazy_data_cwd,
+    logs_dir,
+    monkeypatch,
+):
+    """Test get_cazy_data() when kingdoms are specified and configuration given."""
+    # prepare dir for log files
+    os.makedirs(logs_dir, exist_ok=True)
+
+    fam1 = crawler.Family("GH1", "test_class", "test_url")
+
+    config_dict = {"Glycoside Hydrolases": ["GH1"]}
+
+    def mock_get_classes(*args, **kwargs):
+        class1 = crawler.CazyClass(
+            name="Glycoside Hydrolases",
+            url="test_class_url.html",
+            tries=0,
+            failed_families={fam1: 0},
+        )
+        return [class1]
+
+    def mock_parse_family(*args, **kwargs):
+        return fam1, True, ["fail1", "fail2"], ["sqlFail1", "sqlFail2"], ["format error"], {}
+
+    monkeypatch.setattr(crawler, "get_cazy_classes", mock_get_classes)
+    monkeypatch.setattr(scrape_by_kingdom, "parse_family_by_kingdom", mock_parse_family)
+
+    cazy_webscraper.get_cazy_data(
+        cazy_home=cazy_home_url,
+        excluded_classes=None,
+        config_dict=config_dict,
+        cazy_dict=cazy_dictionary,
+        taxonomy_filters=set(),
+        kingdoms=["Bacteria", "Viruses"],
+        ec_filters=[],
+        time_stamp="timestamp",
+        session={},
+        args=args_get_cazy_data_cwd["args"],
     )
     file_io.make_output_directory(logs_dir, True, False)

@@ -531,7 +531,7 @@ def build_db(time_stamp, args):
         cwd = os.getcwd()
         db_path = cwd + f"cazy_scrape_temp_{time_stamp}.db"
         db_path = f"sqlite+pysqlite:///{db_path}"
-
+        
     else:
         # write to specified output directory
         db_path = args.output / f"cazy_scrape_{time_stamp}.db"

@@ -104,7 +104,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         logger = logging.getLogger(__package__)
         config_logger(args)
 
-    if args.output is not sys.stdout:
+    if (args.output is not sys.stdout) and (args.output != "."):
         logger.info("Preparing output directory")
         logger.info(
             f"Output dir:{args.output}\n"
@@ -297,6 +297,8 @@ def get_cazy_data(
 
     Return nothing.
     """
+    logger = logging.getLogger(__name__)
+
     if args.output is not sys.stdout:
         out_log_path = args.output
     else:
@@ -319,6 +321,7 @@ def get_cazy_data(
 
     # scrape each retrieved class page
     for cazy_class in tqdm(cazy_classes, desc="Parsing CAZy classes"):
+        logger.info("Scraping CAZy classes")
 
         # first attempt of scraping, retrieve URLs to CAZy families
         if len(list(cazy_class.failed_families.keys())) == 0:
@@ -429,6 +432,8 @@ def get_cazy_data(
 
             for family in tqdm(class_families, desc=f"Parsing {cazy_class.name} families"):
 
+                logger.info("Scraping CAZy families")
+
                 # Allow retrieval of subfamilies when only the parent CAZy family was named in the
                 # config file, by searching by the family not subfamily in the config file
                 if (args.subfamilies is True) and (family.name.find("_") != -1):
@@ -504,10 +509,17 @@ def get_cazy_data(
                     format_failures_logger.warning(error)
 
     if type(session) is dict:
-        if args.output is not sys.stdout:
-            output_path = args.output / f"cazy_dict_{time_stamp}.json"
-        else:
+        if args.output is sys.stdout:
+            logger.info("Writing CAZy dict to STDOUT")
+            json.dump(session, args.output)
+            return
+
+        if args.output == ".":
             output_path = Path(f"{os.getcwd()}/cazy_dict_{time_stamp}.json")
+            logger.info(f"Writing CAZy dict to {output_path}")
+        else:
+            output_path = args.output / f"cazy_dict_{time_stamp}.json"
+            logger.info(f"Writing CAZy dict to {output_path}")
         with open(output_path, 'w') as f:
             json.dump(session, f)
 

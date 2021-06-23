@@ -94,10 +94,10 @@ def build_logger(output, file_name):
     logger = logging.getLogger(file_name[:-4])
 
     if output is None:
-        output = os.getcwd()
-        path_ = Path(f"{output}/{file_name}")
+        output = Path(os.getcwd())
+        path_ = output / file_name
     else:
-        path_ = output / f"{file_name}"
+        path_ = Path(output) / f"{file_name}"
 
     # Set format of loglines
     log_formatter = logging.Formatter(file_name + ": {} - {}".format("%(asctime)s", "%(message)s"))
