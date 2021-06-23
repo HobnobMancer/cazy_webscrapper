@@ -434,3 +434,32 @@ def test_extrct_get_acc_no_config_all(monkeypatch):
         set(),
         set(),
     )
+
+
+
+def test_extrct_get_acc_no_config_all_no_accessions(monkeypatch):
+    """Test get_genbank_records(), config_dict provided, primary is False"""
+    config_dict = None
+
+    args_dict = {"args": Namespace(primary=False, accessions="acc,acc", accessions_path="acc")}
+
+    def mock_db_query(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return []
+    
+    def mock_acc_file(*args, **kwargs):
+        return []
+    
+    monkeypatch.setattr(query_extract_seq, "get_genbank_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(query_extract_seq, "get_user_accessions_with_seq", mock_db_query)
+    monkeypatch.setattr(file_io, "get_accessions_from_file", mock_acc_file)
+    monkeypatch.setattr(from_sql_db, "parse_genbank_query", mock_acc_file)
+
+    extract_db_sequences.get_genbank_records(
+        args_dict["args"],
+        "session",
+        config_dict,
+        set(),
+        set(),
+        set(),
+    )

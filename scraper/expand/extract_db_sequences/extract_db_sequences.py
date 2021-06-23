@@ -85,7 +85,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         sys.exit(1)
 
     if args.fasta is not None:
-        if args.fasta == Path('.'):
+        if (args.fasta == Path('.')) or (str(args.fasta) == '.'):
                 logger.info(f"Writing out FASTA file {args.fasta} to the current working directory")
 
         # check if passed a path to a file or dir
