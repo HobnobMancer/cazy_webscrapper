@@ -53,6 +53,7 @@ from datetime import datetime, time
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from scraper.sql import sql_interface
+from scraper.sql.sql_interface import add_cazyme_data
 
 
 def test_custom_error():
@@ -84,6 +85,7 @@ def test_add_db_log_no_config(db_session):
     }
 
     sql_interface.log_scrape_in_db(
+        "CAZy scrape",
         "YYYY-MM-DD--HH-MM-SS",
         config_dict,
         taxonomy_filters,
@@ -117,6 +119,7 @@ def test_add_db_log_with_config(db_session):
     }
 
     sql_interface.log_scrape_in_db(
+        "CAZy scrape",
         "YYYY-MM-DD--HH-MM-SS",
         config_dict,
         taxonomy_filters,
@@ -154,6 +157,7 @@ def test_add_db_log_with_full_config(db_session):
     }
 
     sql_interface.log_scrape_in_db(
+        "CAZy scrape",
         "YYYY-MM-DD--HH-MM-SS",
         config_dict,
         taxonomy_filters,
@@ -307,6 +311,8 @@ def test_multiple_genbanks_multiple_cazymes_streamline(db_session, monkeypatch):
         return
 
     monkeypatch.setattr(sql_interface, "parse_unique_genbank_conflict", mock_add_protein_to_db)
+    monkeypatch.setattr(sql_interface, "add_cazy_family", mock_add_protein_to_db)
+    monkeypatch.setattr(add_cazyme_data, "add_cazy_family", mock_add_protein_to_db)
 
     identical_genbank_accession = "identical_accession"
 
