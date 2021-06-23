@@ -112,6 +112,9 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
             f"Delete content of exiting output dir: {args.nodelete}\n"
         )
         file_io.make_output_directory(args.output, args.force, args.nodelete)
+    
+    if args.output == ".":
+        logger.info("Building CAZyme database in the current working directory")
 
     cazy_home = "http://www.cazy.org"
 
