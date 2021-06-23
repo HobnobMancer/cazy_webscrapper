@@ -172,6 +172,126 @@ def test_extrct_main_output_files(monkeypatch):
     extract_db_sequences.main()
 
 
+def test_extrct_main_output_dir(monkeypatch):
+    """Test main when writing proteins to one fasta file per seq"""
+
+    db_path = Path("cazy_database.db")
+    email = "dummy.email@domain"
+    fasta_file = Path("fasta_dir/fasta_file")
+
+    args_namespace = {"args": Namespace(
+        database=db_path,
+        fasta=fasta_file,
+        verbose=False,
+        log=None,
+        blastdb=Path("blastdb_dir/dir1/dir2"),
+        force=False,
+        nodelete=False,
+    )}
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="extract_db_sequences",
+            usage=None,
+            description="Retrieve protein sequences from local database",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    def mock_parser(*args, **kwargs):
+        return args_namespace["args"]
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_making_output_dir(*args, **kwargs):
+        return
+
+    def mock_build_db(*args, **kwargs):
+        return
+    
+    def mock_configuration(*args, **kwargs):
+        return {}, set(), set(), set()
+    
+    def mock_accession(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]]
+
+    monkeypatch.setattr(parsers, "build_extract_sequences_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(file_io, "make_output_directory", mock_making_output_dir)
+    monkeypatch.setattr(extract_db_sequences, "get_db_session", mock_build_db)
+    monkeypatch.setattr(parse_configuration, "parse_configuration_for_cazy_database", mock_configuration)
+    monkeypatch.setattr(extract_db_sequences, "get_genbank_records", mock_accession)
+    monkeypatch.setattr(file_io, "write_out_extract_seq_to_fasta", mock_making_output_dir)
+    monkeypatch.setattr(file_io, "write_extracted_fasta_for_db", mock_making_output_dir)
+    monkeypatch.setattr(file_io, "build_blast_db", mock_build_db)
+
+    extract_db_sequences.main()
+
+
+def test_extrct_main_output_cwd(monkeypatch):
+    """Test main when writing proteins to one fasta file per seq in the cwd"""
+
+    db_path = Path("cazy_database.db")
+    email = "dummy.email@domain"
+    fasta_file = Path(".")
+
+    args_namespace = {"args": Namespace(
+        database=db_path,
+        fasta=fasta_file,
+        verbose=False,
+        log=None,
+        blastdb=Path("blastdb_dir/dir1/dir2"),
+        force=False,
+        nodelete=False,
+    )}
+
+    def mock_building_parser(*args, **kwargs):
+        parser_args = ArgumentParser(
+            prog="extract_db_sequences",
+            usage=None,
+            description="Retrieve protein sequences from local database",
+            conflict_handler="error",
+            add_help=True,
+        )
+        return parser_args
+
+    def mock_parser(*args, **kwargs):
+        return args_namespace["args"]
+
+    def mock_config_logger(*args, **kwargs):
+        return
+
+    def mock_making_output_dir(*args, **kwargs):
+        return
+
+    def mock_build_db(*args, **kwargs):
+        return
+    
+    def mock_configuration(*args, **kwargs):
+        return {}, set(), set(), set()
+    
+    def mock_accession(*args, **kwargs):
+        genbank = Genbank(genbank_accession="accession")
+        return [[genbank], [genbank]]
+
+    monkeypatch.setattr(parsers, "build_extract_sequences_parser", mock_building_parser)
+    monkeypatch.setattr(ArgumentParser, "parse_args", mock_parser)
+    monkeypatch.setattr(utilities, "config_logger", mock_config_logger)
+    monkeypatch.setattr(file_io, "make_output_directory", mock_making_output_dir)
+    monkeypatch.setattr(extract_db_sequences, "get_db_session", mock_build_db)
+    monkeypatch.setattr(parse_configuration, "parse_configuration_for_cazy_database", mock_configuration)
+    monkeypatch.setattr(extract_db_sequences, "get_genbank_records", mock_accession)
+    monkeypatch.setattr(file_io, "write_out_extract_seq_to_fasta", mock_making_output_dir)
+    monkeypatch.setattr(file_io, "write_extracted_fasta_for_db", mock_making_output_dir)
+    monkeypatch.setattr(file_io, "build_blast_db", mock_build_db)
+
+    extract_db_sequences.main()
+
+
 # test get_genbank_records()
 
 
