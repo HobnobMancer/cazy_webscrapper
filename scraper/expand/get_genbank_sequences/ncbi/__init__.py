@@ -408,7 +408,9 @@ def entrez_retry(entrez_func, args, *func_args, **func_kwargs):
     Returns record.
     """
     logger = logging.getLogger(__name__)
-    record, retries, tries = None, args.retries, 0
+    record = None  # placce holder to allow checking if record was
+    retries = args.retries  # number of times to retry connection if connection fails
+    tries = 0  # number of times connection has been tried
 
     while record is None and tries < retries:
         try:
