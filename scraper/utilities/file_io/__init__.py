@@ -115,7 +115,7 @@ def get_accessions_from_file(args):
             "Please check the path is correct.\n"
         )
     
-    return [acc.remove("\n","") for acc in lines]
+    return [acc.replace("\n","") for acc in lines]
 
 
 def write_out_fasta(record, genbank_accession, args):
