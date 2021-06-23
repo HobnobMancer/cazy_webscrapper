@@ -58,7 +58,7 @@ def test_expnd_extract_seq_prim_gbk_class_fams(db_session):
         "PL": None,
     }
 
-    query_extract_seq.get_prim_gnbk_acc_from_clss_fam_with_seq(db_session, config_data)
+    query_extract_seq.get_prim_gnbk_acc_from_clss_fams_with_seq(db_session, config_data)
 
 
 def test_expnd_extract_seq_all_gbk_class_fams(db_session):
@@ -84,14 +84,14 @@ def test_expnd_extract_seq_all_gbk_update(db_session):
 
 
 def test_user_accession_empty_extracted(db_session):
-    """Test get_user_accessions() when no records are retireved."""
+    """Test get_user_accessions_with_seq() when no records are retireved."""
 
     gbks = ["fake", "test"]
-    assert [] == query_extract_seq.get_user_accessions(gbks, db_session)
+    assert [] == query_extract_seq.get_user_accessions_with_seq(gbks, db_session)
 
 
 def test_user_accessions_susccess_extracted(db_session):
-    """Test get_user_accessions()."""
+    """Test get_user_accessions_with_seq()."""
 
     gbks = ["WP_019387681.1", "CDF79931.1"]
-    query_extract_seq.get_user_accessions(gbks, db_session)
+    query_extract_seq.get_user_accessions_with_seq(gbks, db_session)
