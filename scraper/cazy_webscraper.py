@@ -73,6 +73,7 @@ from typing import List, Optional
 
 from tqdm import tqdm
 
+from scraper import VERSION_INFO, CITATION_INFO
 from scraper import crawler
 from scraper.crawler.cazy_html_pages import get_cazy_pages, parse_local_pages
 from scraper.crawler.parse_cazy_families import scrape_all, scrape_by_kingdom
@@ -103,6 +104,15 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     if logger is None:
         logger = logging.getLogger(__package__)
         config_logger(args)
+    
+    # check if printing out version or citation information
+    if args.version:
+        sys.stderr.write(f"{VERSION_INFO}\n")
+        return
+    
+    if args.citation:
+        sys.stderr.write("\n".join(CITATION_INFO) + "\n")
+        return
 
     if (args.output is not sys.stdout) and (args.output != "."):
         logger.info("Preparing output directory")
