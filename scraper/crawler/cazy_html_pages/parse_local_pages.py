@@ -258,24 +258,7 @@ def parse_local_pages(
         else:
             json.dump(session, sys.stdout)
 
-    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    end_time = pd.to_datetime(end_time)
-    total_time = end_time - start_time
-
-    logger.info(
-        "Finished scraping CAZy. Terminating program.\n"
-        f"Scrape initated at {start_time}\n"
-        f"Scrape finished at {end_time}\n"
-        f"Total run time: {total_time}"
-    )
-    print(
-        "=====================cazy_webscraper=====================\n"
-        "Finished scraping CAZy\n"
-        f"Scrape initated at {start_time}\n"
-        f"Scrape finished at {end_time}\n"
-        f"Total run time: {total_time}\n"
-    )
-    sys.exit(1)
+    return
 
 
 def get_html_files(args):

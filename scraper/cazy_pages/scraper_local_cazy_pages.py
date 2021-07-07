@@ -124,18 +124,29 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     
     # ADD IN GETTING SESSION !!!!!!!!!!!!!!!!!
 
-    # Check if scraping from local CAZy files
-    if args.scrape_files is not None:
-        logger.info("Scraping data from local CAZy HTML pages")
-        parse_local_pages.parse_local_pages(
-            args,
-            cazy_home,
-            start_time,
-            time_stamp,
-            session,
-            taxonomy_filters,
-            ec_filters,
-        )
+    # log scraping of CAZy in local db
+    logger.info("Add log of scrape to the local CAZyme database")
+    sql_interface.log_scrape_in_db(
+        "CAZy scrape",
+        time_stamp,
+        config_dict,
+        taxonomy_filters_dict,
+        kingdoms,
+        ec_filters,
+        session,
+        args,
+    )
+
+    logger.info("Scraping data from local CAZy HTML pages")
+    parse_local_pages.parse_local_pages(
+        args,
+        cazy_home,
+        start_time,
+        time_stamp,
+        session,
+        taxonomy_filters,
+        ec_filters,
+    )
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = pd.to_datetime(end_time)
