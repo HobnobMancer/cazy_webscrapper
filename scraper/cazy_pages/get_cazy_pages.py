@@ -56,7 +56,7 @@ from scraper.utilities import (
     parse_configuration,
     termcolour,
 )
-from scraper.utilities.parsers import parser_cazy_webscraper
+from scraper.utilities.parsers import parser_get_cazy_pages
 
 
 def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = None):
@@ -67,10 +67,10 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     start_time = pd.to_datetime(start_time)
 
     if argv is None:
-        parser = parser_cazy_webscraper.build_parser()
+        parser = parser_get_cazy_pages.build_parser()
         args = parser.parse_args()
     else:
-        parser = parser_cazy_webscraper.build_parser(argv)
+        parser = parser_get_cazy_pages.build_parser(argv)
         args = parser.parse_args()
 
     if logger is None:
