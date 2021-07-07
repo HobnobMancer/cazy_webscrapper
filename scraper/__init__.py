@@ -37,3 +37,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Web scraper to scrape the CAZy website."""
+
+
+from scraper.utilities import termcolour
+
+
+VERSION_INFO = f"cazy_webscraper version: {__version__}"
+
+
+CITATION_INFO = [
+    termcolour(
+        "If you use cazy_webscraper in your work, please cite the following publication:",
+        "green",
+    ),
+    termcolour(
+        "\tHobbs, E. E. M., Pritchard, L., Chapman, S., Gloster, T. M.,",
+        "blue",
+    ),
+    termcolour(
+        "\t(2021) cazy_webscraper Microbiology Society Annual Conference 2021 poster. ",
+        "blue",
+    ),
+    termcolour(
+        "\tFigShare. Poster.",
+        "blue",
+    ),
+    termcolour(
+        "\thttps://doi.org/10.6084/m9.figshare.14370860.v7",
+        "blue",
+    ),
+]
