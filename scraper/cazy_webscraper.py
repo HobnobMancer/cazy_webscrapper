@@ -73,32 +73,65 @@ from typing import List, Optional
 
 from tqdm import tqdm
 
-from scraper import VERSION_INFO, CITATION_INFO
 from scraper import crawler
 from scraper.crawler.cazy_html_pages import get_cazy_pages, parse_local_pages
 from scraper.crawler.parse_cazy_families import scrape_all, scrape_by_kingdom
 from scraper.sql import sql_orm, sql_interface
-from scraper.utilities import build_logger, config_logger, file_io, parsers, parse_configuration
+from scraper.utilities import (
+    build_logger,
+    config_logger,
+    file_io,
+    parse_configuration,
+    termcolour,
+)
+from scraper.utilities.parsers import parser_cazy_webscraper
+
+
+__version__ = "1.0.0-beta"
+VERSION_INFO = [
+    termcolour(
+        f"cazy_webscraper version: {__version__}",
+        "cyan",
+    ),
+]
+
+
+CITATION_INFO = [
+    termcolour(
+        "If you use cazy_webscraper in your work, please cite the following publication:",
+        "green",
+    ),
+    termcolour(
+        "\tHobbs, E. E. M., Pritchard, L., Chapman, S., Gloster, T. M.,",
+        "yellow",
+    ),
+    termcolour(
+        "\t(2021) cazy_webscraper Microbiology Society Annual Conference 2021 poster. ",
+        "yellow",
+    ),
+    termcolour(
+        "\tFigShare. Poster.",
+        "yellow",
+    ),
+    termcolour(
+        "\thttps://doi.org/10.6084/m9.figshare.14370860.v7",
+        "yellow",
+    ),
+]
 
 
 def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = None):
-    """Set up parser, logger and coordinate overal scrapping of CAZy.
-
-    The collected data can be stored as a singel dataframe containing (not split), split into
-    separate dataframes by class or by family. Excluded classes are CAZy classes not specified in
-    the configuration file and thus, will not be scraped. User_cazy_families is the list of CAZy
-    families specified to be scraped in the configration file.
-    """
+    """Set up parser, logger and coordinate overall scrapping of CAZy."""
     # Program preparation
     time_stamp = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")  # used in naming files
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # used in terminating message
     start_time = pd.to_datetime(start_time)
 
     if argv is None:
-        parser = parsers.build_parser()
+        parser = parser_cazy_webscraper.build_parser()
         args = parser.parse_args()
     else:
-        parser = parsers.build_parser(argv)
+        parser = parser_cazy_webscraper.build_parser(argv)
         args = parser.parse_args()
 
     if logger is None:
@@ -107,13 +140,14 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     
     # check if printing out version or citation information
     if args.version:
-        sys.stderr.write(f"{VERSION_INFO}\n")
+        sys.stderr.write("\n".join(VERSION_INFO) + "\n")
         return
     
     if args.citation:
         sys.stderr.write("\n".join(CITATION_INFO) + "\n")
         return
 
+    # check output setup
     if (args.output is not sys.stdout) and (args.output != "."):
         logger.info("Preparing output directory")
         logger.info(
