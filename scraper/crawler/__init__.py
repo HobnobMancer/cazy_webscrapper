@@ -706,6 +706,9 @@ def get_page(url, args, **kwargs):
 
     Return browser response object (the page).
     """
+    if args.complete_download:
+        time.sleep(1)
+
     # create browser object
     browser = mechanicalsoup.Browser()
     # create response object

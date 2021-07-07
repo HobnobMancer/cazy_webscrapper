@@ -95,6 +95,18 @@ def build_parser(argv: Optional[List] = None):
         help="Path to JSON file containing CAZy class synoymn names",
     )
 
+    # Add option to scrape all of CAZy
+    parser.add_argument(
+        "--complete_download",
+        dest="complete_download",
+        action="store_true",
+        default=False,
+        help=(
+            "Download all of CAZy. Note this is very demanding on the CAZy server\n"
+            "Please only what is required if possible"
+        ),
+    )
+
     # Add option to provide a path to an existing SQL database to add newly scraped data to
     parser.add_argument(
         "-d",

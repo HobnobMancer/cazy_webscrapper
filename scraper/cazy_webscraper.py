@@ -177,10 +177,10 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     taxonomy_filters = get_filter_set(taxonomy_filters_dict)
 
     # check download size and if to limit scraping rate
-    limit_rate = check_download_size(args, excluded_classes, config_dict)
+    args = check_download_size(args, excluded_classes, config_dict)
     # if a large a request that will require connecting to many CAZy pages is made
-    # limit_rate is not None
-    # if limit_scrape is not None, a limit to the rate of connection requets to CAZy is applied
+    # overwrite args.complete_scrape and make true to apply a 
+    # limit to the rate of connection requets to CAZy is applied
 
     # build database and return open database session
     if args.database is not None:  # open session for existing local database
@@ -231,6 +231,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         time_stamp,
         session,
         args,
+        limit_rate,
     )
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -300,9 +301,7 @@ def check_download_size(args, excluded_classes, config_dict):
     :param args: cmd-line args parser
     :param excluded_classes: list of CAZy classes not to scrape
     
-    Return None if the scrape does not appear to be too large.
-    If the scrape appears to require connecting to many CAZy pages, a str is returned to indicate
-    a limit to the rate of connection requests to CAZy is to be applied.
+    Return nothing.
     """
     logger = logging.getLogger(__name__)
 
@@ -314,7 +313,7 @@ def check_download_size(args, excluded_classes, config_dict):
             "Due to the large size of this request, the rate of requests will be limited to\n"
             "1 connection request per second to help maintain CAZy service for other users."
         )
-        return 'limit_scrape'
+        return args
 
     warning_message = (
             "\nThis appears to be a large download request and/or requires connecting to many CAZy pages.\n"
@@ -342,13 +341,14 @@ def check_download_size(args, excluded_classes, config_dict):
                 "Due to the large size of this request, the rate of requests will be limited to\n"
                 "1 connection request per second to help maintain CAZy service for other users."
             )
-            return 'limit_scrape'
+            args.complete_download = True
+            return args
         
-        if len(families > 10):
+        if len(families > 15):
             logger.warning(warning_message)
-            return
+            return args
         
-    return
+    return args
 
 
 def get_cazy_data(
@@ -362,6 +362,7 @@ def get_cazy_data(
     time_stamp,
     session,
     args,
+    limit_rate,
 ):
     """Coordinate retrieval of data from the CAZy website.
 
