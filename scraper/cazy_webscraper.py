@@ -176,98 +176,62 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     # convert taxonomy_filters to a set for quicker identification of species to scrape
     taxonomy_filters = get_filter_set(taxonomy_filters_dict)
 
-    # Check if retrieving pages from CAZy and writing to disk for scraping later
-    if args.get_pages:
-        logger.info("Creating local CAZy HTML page library")
-        get_cazy_pages.get_cazy_pages(
-            args,
-            cazy_home,
-            time_stamp,
-            excluded_classes,
-            cazy_dict,
-            config_dict,
-            kingdoms,
-            start_time,
-        )
+    # check download size and if to limit scraping rate
+    limit_rate = check_download_size(args, excluded_classes, config_dict)
+    # if a large a request that will require connecting to many CAZy pages is made
+    # limit_rate is not None
+    # if limit_scrape is not None, a limit to the rate of connection requets to CAZy is applied
 
-    else:
-        # build database and return open database session
-        if args.database is not None:  # open session for existing local database
-            if args.database == "dict":  # build dictionary of {genbank_accession: CAZy families}
-                logger.info("Creating JSON file of CAZy family classifications NOT a database")
-                session = {}
+    # build database and return open database session
+    if args.database is not None:  # open session for existing local database
+        if args.database == "dict":  # build dictionary of {genbank_accession: CAZy families}
+            logger.info("Creating JSON file of CAZy family classifications NOT a database")
+            session = {}
 
-            else:
-                if os.path.isfile(args.database) is False:
-                    logger.error(
-                        "Could not find local CAZy database. Check path is correct.\n"
-                        "Had looked for a local SQL database at:"
-                        f"{args.database}"
-                        "Terminating programme."
-                    )
-                    sys.exit(1)
-                try:
-                    logger.info("Opening session to existing local CAZyme database")
-                    session = sql_orm.get_db_session(args)
-                except Exception:
-                    logger.error("Failed to build SQL database. Terminating program", exc_info=True)
-                    sys.exit(1)
-
-        else:  # create a new empty database to populate
+        else:
+            if os.path.isfile(args.database) is False:
+                logger.error(
+                    "Could not find local CAZy database. Check path is correct.\n"
+                    "Had looked for a local SQL database at:"
+                    f"{args.database}"
+                    "Terminating programme."
+                )
+                sys.exit(1)
             try:
-                logger.info("Building a new local CAZyme database")
-                session = sql_orm.build_db(time_stamp, args)
+                logger.info("Opening session to existing local CAZyme database")
+                session = sql_orm.get_db_session(args)
             except Exception:
                 logger.error("Failed to build SQL database. Terminating program", exc_info=True)
                 sys.exit(1)
 
-        if args.subfamilies is True:
-            logger.warning("Enabled retrieval of subfamily classifications")
+    else:  # create a new empty database to populate
+        try:
+            logger.info("Building a new local CAZyme database")
+            session = sql_orm.build_db(time_stamp, args)
+        except Exception:
+            logger.error("Failed to build SQL database. Terminating program", exc_info=True)
+            sys.exit(1)
 
-        if args.streamline is not None:
-            logger.info("Configuring streamlined mode")
-            parse_configuration.create_streamline_scraping_warning(args)
+    if args.subfamilies is True:
+        logger.warning("Enabled retrieval of subfamily classifications")
 
-        # log scraping of CAZy in local db
-        logger.info("Add log of scrape to the local CAZyme database")
-        sql_interface.log_scrape_in_db(
-            "CAZy scrape",
-            time_stamp,
-            config_dict,
-            taxonomy_filters_dict,
-            kingdoms,
-            ec_filters,
-            session,
-            args,
-        )
+    if args.streamline is not None:
+        logger.info("Configuring streamlined mode")
+        parse_configuration.create_streamline_scraping_warning(args)
 
-        # Check if scraping from local CAZy files
-        if args.scrape_files is not None:
-            logger.info("Scraping data from local CAZy HTML pages")
-            parse_local_pages.parse_local_pages(
-                args,
-                cazy_home,
-                start_time,
-                time_stamp,
-                session,
-                taxonomy_filters,
-                ec_filters,
-            )
-
-        else:
-            logger.info("Scraping data directly from CAZy")
-            get_cazy_data(
-                cazy_home,
-                excluded_classes,
-                config_dict,
-                cazy_dict,
-                taxonomy_filters,
-                kingdoms,
-                ec_filters,
-                time_stamp,
-                session,
-                args,
-            )
+    logger.info("Scraping data directly from CAZy")
+    get_cazy_data(
+        cazy_home,
+        excluded_classes,
+        config_dict,
+        cazy_dict,
+        taxonomy_filters,
+        kingdoms,
+        ec_filters,
+        time_stamp,
+        session,
+        args,
+    )
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = pd.to_datetime(end_time)
@@ -328,6 +292,63 @@ def get_filter_set(taxonomy_filters_dict):
         taxonomy_filters = set(taxonomy_filters)
 
     return taxonomy_filters
+
+
+def check_download_size(args, excluded_classes, config_dict):
+    """Check if user is requesting to scrape a large proportion of CAZy.
+    
+    :param args: cmd-line args parser
+    :param excluded_classes: list of CAZy classes not to scrape
+    
+    Return None if the scrape does not appear to be too large.
+    If the scrape appears to require connecting to many CAZy pages, a str is returned to indicate
+    a limit to the rate of connection requests to CAZy is to be applied.
+    """
+    logger = logging.getLogger(__name__)
+
+    if args.complete_download:
+        logger.warning(
+            "\nDownloading the complete CAZy database uses a large amount of bandwidth\n"
+            "and may cause the CAZy service to deteriorate for other users.\n"
+            "Please consider downloading only the sequences you need, if possible.\n"
+            "Due to the large size of this request, the rate of requests will be limited to\n"
+            "1 connection request per second to help maintain CAZy service for other users."
+        )
+        return 'limit_scrape'
+
+    warning_message = (
+            "\nThis appears to be a large download request and/or requires connecting to many CAZy pages.\n"
+            "Downloading large datasets from the CAZy database uses a large amount of bandwidth\n"
+            "and may cause the CAZy service to deteriorate for other users.\n"
+            "Please consider downloading only the sequences you need, if possible."
+        )
+    
+    if (excluded_classes is None) or (len(excluded_classes) < 4):
+        # check how many complete classes are being scraped
+        classes = config_dict['classes']
+
+        # check how many families are being scraped
+        families = []
+        for key in config_dict:
+            if key == 'classes':
+                continue
+            if config_dict[key] is not None:
+                for fam in config_dict[key]:
+                    families.append(fam)
+        
+        if (len(classes) > 2) or ((len(families) > 5) and (len(classes) >= 2)):
+            logger.warning(warning_message)
+            logger.warning(
+                "Due to the large size of this request, the rate of requests will be limited to\n"
+                "1 connection request per second to help maintain CAZy service for other users."
+            )
+            return 'limit_scrape'
+        
+        if len(families > 10):
+            logger.warning(warning_message)
+            return
+        
+    return
 
 
 def get_cazy_data(
