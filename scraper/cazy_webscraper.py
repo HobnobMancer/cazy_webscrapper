@@ -279,14 +279,30 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         f"Scrape finished at {end_time}\n"
         f"Total run time: {total_time}"
     )
-
-    print(
-        "=====================cazy_webscraper=====================\n"
-        "Finished scraping CAZy\n"
-        f"Scrape initated at {start_time}\n"
-        f"Scrape finished at {end_time}\n"
-        f"Total run time: {total_time}\n"
-    )
+    
+    end_message = [
+        termcolour(
+            "=====================cazy_webscraper=====================",
+            "green",
+        ),
+        termcolour(
+            f"Scrape initated at {start_time}",
+            "cyan",
+        ),
+        termcolour(
+            f"Scrape finished at {end_time}",
+            "cyan",
+        ),
+        termcolour(
+            f"Total run time: {total_time}",
+            "cyan",
+        ),
+        termcolour(
+            "For citation information use: cazy_webscraper -C",
+            "white",
+        ),
+    ]
+    sys.stderr.write("\n".join(end_message) + "\n")
 
 
 def get_filter_set(taxonomy_filters_dict):
