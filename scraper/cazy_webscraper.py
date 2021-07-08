@@ -70,6 +70,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+from sqlalchemy import sql
 
 from tqdm import tqdm
 
@@ -147,18 +148,7 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         sys.stderr.write("\n".join(CITATION_INFO) + "\n")
         return
 
-    # check output setup
-    if (args.output is not sys.stdout) and (args.output != "."):
-        logger.info("Preparing output directory")
-        logger.info(
-            f"Output dir:{args.output}\n"
-            f"Force writing to exiting output dir: {args.force}\n"
-            f"Delete content of exiting output dir: {args.nodelete}\n"
-        )
-        file_io.make_output_directory(args.output, args.force, args.nodelete)
-    
-    if args.output == ".":
-        logger.info("Building CAZyme database in the current working directory")
+    session = open_db_session(args)
 
     cazy_home = "http://www.cazy.org"
 
@@ -182,36 +172,6 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     # overwrite args.complete_scrape and make true to apply a 
     # limit to the rate of connection requets to CAZy is applied
 
-    # build database and return open database session
-    if args.database is not None:  # open session for existing local database
-        if args.database == "dict":  # build dictionary of {genbank_accession: CAZy families}
-            logger.info("Creating JSON file of CAZy family classifications NOT a database")
-            session = {}
-
-        else:
-            if os.path.isfile(args.database) is False:
-                logger.error(
-                    "Could not find local CAZy database. Check path is correct.\n"
-                    "Had looked for a local SQL database at:"
-                    f"{args.database}"
-                    "Terminating programme."
-                )
-                sys.exit(1)
-            try:
-                logger.info("Opening session to existing local CAZyme database")
-                session = sql_orm.get_db_session(args)
-            except Exception:
-                logger.error("Failed to build SQL database. Terminating program", exc_info=True)
-                sys.exit(1)
-
-    else:  # create a new empty database to populate
-        try:
-            logger.info("Building a new local CAZyme database")
-            session = sql_orm.build_db(time_stamp, args)
-        except Exception:
-            logger.error("Failed to build SQL database. Terminating program", exc_info=True)
-            sys.exit(1)
-
     if args.subfamilies is True:
         logger.warning("Enabled retrieval of subfamily classifications")
 
@@ -231,7 +191,6 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         time_stamp,
         session,
         args,
-        limit_rate,
     )
 
     end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -268,6 +227,99 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
         ),
     ]
     sys.stderr.write("\n".join(end_message) + "\n")
+
+
+def open_db_session(args):
+    """Prepare output directories and open session to output database.
+    
+    :param args: cmd-line args parser
+    
+    Return session to a SQLite3 database.
+    """
+    logger = logging.getLogger(__name__)
+
+    # open existing database if provided
+    if args.database is not None:
+        session = sql_orm.get_db_session(args)
+    
+    elif args.cazy_dict is not None:
+        logger.info("Creating JSON file of CAZy family classifications NOT a database")
+
+        # check if target output path already exists
+        if (args.cazy_dict).exists():
+            if args.force:
+                logger.warning(
+                    "Target path for CAZy dict already exists.\n"
+                    "Overwritting existing output enabled.\n"
+                    f"Overwritting file at:\n{args.cazy_dict}"
+                )
+            else:
+                logger.warning(
+                    "Target path for CAZy dict already exists.\n"
+                    "Overwritting existing output not enabled.\n"
+                    "To enable overwritting an existing output file use the -f or --force flag\n"
+                    "Terminating program"
+                )
+                sys.exit(1)
+
+        else:
+            # check if need to build output directories
+            filepath_parts = str(args.cazy_dict).split("/")
+            dir_path = filepath_parts[:-1]
+
+            if len(dir_path) != 0:
+                dir_path = ("/").join(dir_path)
+                file_io.make_output_directory(Path(dir_path), True, args.nodelete)
+
+            session = {}
+    
+    else:  # create a new database
+        if args.database_dir is not sys.stdout:
+            if args.database_file:
+                db_path = args.database_file
+            else:
+                db_path = args.database_dir / f"cazy_scrape_{time_stamp}.db"
+            
+            logger.info(f"Target path for output CAZyme database:\n{db_path}")
+
+            # check if already exists
+            if db_path.exists():
+                logger.warning("Database already exists at the target output path")
+
+                if args.force:
+                    logger.warning(
+                        "Forced overwritting enabled.\n"
+                        f"Overwritting file at:\n{db_path}"
+                    )
+                    session = sql_orm.build_db(db_path, args)
+                
+                else:
+                    logger.warning(
+                        "Overwritting already existing database file not enabled.\n"
+                        "To overwrite the local database, use the -f or --force flag.\n"
+                        "Terminating program"
+                    )
+                    sys.exit(1)
+            
+            else:
+                # check if need to build directories in the target path
+                if (args.database_dir).exists is False:
+                    logger.info("Preparing output directory")
+                    logger.info(
+                        f"Output dir:{args.output}\n"
+                        f"Force writing to exiting output dir: {args.force}\n"
+                        f"Delete content of exiting output dir: {args.nodelete}\n"
+                    )
+                    file_io.make_output_directory(db_path, True, args.nodelete)
+
+                logger.info(f"Building new database at:\n{db_path}")
+                session = sql_orm.build_db(db_path, args)
+        
+        else:  # write database into memory
+            logger.info("Loading database into memory")
+            session = sql_orm.build_db(None, args)
+
+    return session
 
 
 def get_filter_set(taxonomy_filters_dict):
