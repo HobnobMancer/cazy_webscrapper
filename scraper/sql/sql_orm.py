@@ -513,10 +513,10 @@ class Log(Base):
         )
 
 
-def build_db(time_stamp, args):
+def build_db(db_path, args):
     """Build an empty SQL database and open a session.
 
-    :param time_stamp: str, date and time stamp of when scrape was initated
+    :param db_path: Path, target path to write out database to
     :param args: cmd args parser
 
     Return an open database session.
@@ -524,17 +524,10 @@ def build_db(time_stamp, args):
     logger = logging.getLogger(__name__)
     logger.info("Building empty db to store data")
 
-    if args.output is sys.stdout:
+    if args.database_dir is sys.stdout:
         db_path = 'sqlite://'
-    
-    elif args.output == ".":
-        cwd = os.getcwd()
-        db_path = cwd + f"cazy_scrape_temp_{time_stamp}.db"
-        db_path = f"sqlite+pysqlite:///{db_path}"
         
     else:
-        # write to specified output directory
-        db_path = args.output / f"cazy_scrape_{time_stamp}.db"
         db_path = f"sqlite+pysqlite:///{db_path}"
 
     engine = create_engine(db_path, echo=False)
@@ -560,6 +553,6 @@ def get_db_session(args):
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
-    logger.info(f"Opened session to local CAZyme database at:{db_path}")
+    logger.info(f"Opened session to local CAZyme database at:\n{db_path}")
 
     return Session()
