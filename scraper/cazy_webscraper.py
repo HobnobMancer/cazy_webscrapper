@@ -70,12 +70,10 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-from sqlalchemy import sql
 
 from tqdm import tqdm
 
 from scraper import crawler
-from scraper.crawler.cazy_html_pages import get_cazy_pages, parse_local_pages
 from scraper.crawler.parse_cazy_families import scrape_all, scrape_by_kingdom
 from scraper.sql import sql_orm, sql_interface
 from scraper.utilities import (
@@ -178,6 +176,19 @@ def main(argv: Optional[List[str]] = None, logger: Optional[logging.Logger] = No
     if args.streamline is not None:
         logger.info("Configuring streamlined mode")
         parse_configuration.create_streamline_scraping_warning(args)
+    
+    if type(session) != dict:
+        logger.info("Adding log to local CAZyme database")
+        sql_interface.log_scrape_in_db(
+            "CAZy scrape",
+            time_stamp,
+            config_dict,
+            taxonomy_filters,
+            kingdoms,
+            ec_filters,
+            session,
+            args,
+        )
 
     logger.info("Scraping data directly from CAZy")
     get_cazy_data(
